@@ -1,0 +1,455 @@
+["s72-v2",
+{
+	"type":"MESH",
+	"name":"Sphere",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-1",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-1.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-1.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-1.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-1.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-1",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-1"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-2",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-2.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-2.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-2.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-2.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-2",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-2"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-3",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-3.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-3.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-3.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-3.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-3",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-3"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-4",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-4.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-4.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-4.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-4.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-4",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-4"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-5",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-5.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-5.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-5.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-5.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-5",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-5"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-6",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-6.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-6.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-6.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-6.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-6",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-6"
+},
+{
+	"type":"MESH",
+	"name":"Sphere-7",
+	"topology":"TRIANGLE_LIST",
+	"count":960,
+	"attributes":{
+		"POSITION":{ "src":"sphereflake.Sphere-7.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"sphereflake.Sphere-7.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"sphereflake.Sphere-7.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"sphereflake.Sphere-7.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Sphere-7",
+	"translation":[0,0,1],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere-7"
+},
+{
+	"type":"NODE",
+	"name":"R-Top-6",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-7"]
+},
+{
+	"type":"NODE",
+	"name":"R-Back-6",
+	"translation":[8.42937e-08,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-7"]
+},
+{
+	"type":"NODE",
+	"name":"R-Front-6",
+	"translation":[-8.42937e-08,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-7"]
+},
+{
+	"type":"NODE",
+	"name":"R-Left-6",
+	"translation":[-1,0,1],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-7"]
+},
+{
+	"type":"NODE",
+	"name":"R-Right-6",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-7"]
+},
+{
+	"type":"NODE",
+	"name":"R-Top-5",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-6", "R-Top-6", "R-Back-6", "R-Front-6", "R-Left-6", "R-Right-6"]
+},
+{
+	"type":"NODE",
+	"name":"R-Back-5",
+	"translation":[8.42937e-08,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-6", "R-Top-6", "R-Back-6", "R-Front-6", "R-Left-6", "R-Right-6"]
+},
+{
+	"type":"NODE",
+	"name":"R-Front-5",
+	"translation":[-8.42937e-08,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-6", "R-Top-6", "R-Back-6", "R-Front-6", "R-Left-6", "R-Right-6"]
+},
+{
+	"type":"NODE",
+	"name":"R-Left-5",
+	"translation":[-1,0,1],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-6", "R-Top-6", "R-Back-6", "R-Front-6", "R-Left-6", "R-Right-6"]
+},
+{
+	"type":"NODE",
+	"name":"R-Right-5",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-6", "R-Top-6", "R-Back-6", "R-Front-6", "R-Left-6", "R-Right-6"]
+},
+{
+	"type":"NODE",
+	"name":"R-Top-4",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-5", "R-Top-5", "R-Back-5", "R-Front-5", "R-Left-5", "R-Right-5"]
+},
+{
+	"type":"NODE",
+	"name":"R-Back-4",
+	"translation":[8.42937e-08,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-5", "R-Top-5", "R-Back-5", "R-Front-5", "R-Left-5", "R-Right-5"]
+},
+{
+	"type":"NODE",
+	"name":"R-Front-4",
+	"translation":[-8.42937e-08,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-5", "R-Top-5", "R-Back-5", "R-Front-5", "R-Left-5", "R-Right-5"]
+},
+{
+	"type":"NODE",
+	"name":"R-Left-4",
+	"translation":[-1,0,1],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-5", "R-Top-5", "R-Back-5", "R-Front-5", "R-Left-5", "R-Right-5"]
+},
+{
+	"type":"NODE",
+	"name":"R-Right-4",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-5", "R-Top-5", "R-Back-5", "R-Front-5", "R-Left-5", "R-Right-5"]
+},
+{
+	"type":"NODE",
+	"name":"R-Top-3",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-4", "R-Top-4", "R-Back-4", "R-Front-4", "R-Left-4", "R-Right-4"]
+},
+{
+	"type":"NODE",
+	"name":"R-Back-3",
+	"translation":[8.42937e-08,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-4", "R-Top-4", "R-Back-4", "R-Front-4", "R-Left-4", "R-Right-4"]
+},
+{
+	"type":"NODE",
+	"name":"R-Front-3",
+	"translation":[-8.42937e-08,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-4", "R-Top-4", "R-Back-4", "R-Front-4", "R-Left-4", "R-Right-4"]
+},
+{
+	"type":"NODE",
+	"name":"R-Left-3",
+	"translation":[-1,0,1],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-4", "R-Top-4", "R-Back-4", "R-Front-4", "R-Left-4", "R-Right-4"]
+},
+{
+	"type":"NODE",
+	"name":"R-Right-3",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-4", "R-Top-4", "R-Back-4", "R-Front-4", "R-Left-4", "R-Right-4"]
+},
+{
+	"type":"NODE",
+	"name":"R-Top-2",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-3", "R-Top-3", "R-Back-3", "R-Front-3", "R-Left-3", "R-Right-3"]
+},
+{
+	"type":"NODE",
+	"name":"R-Back-2",
+	"translation":[8.42937e-08,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-3", "R-Top-3", "R-Back-3", "R-Front-3", "R-Left-3", "R-Right-3"]
+},
+{
+	"type":"NODE",
+	"name":"R-Front-2",
+	"translation":[-8.42937e-08,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-3", "R-Top-3", "R-Back-3", "R-Front-3", "R-Left-3", "R-Right-3"]
+},
+{
+	"type":"NODE",
+	"name":"R-Left-2",
+	"translation":[-1,0,1],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-3", "R-Top-3", "R-Back-3", "R-Front-3", "R-Left-3", "R-Right-3"]
+},
+{
+	"type":"NODE",
+	"name":"R-Right-2",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-3", "R-Top-3", "R-Back-3", "R-Front-3", "R-Left-3", "R-Right-3"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.006",
+	"translation":[0,0,2],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-2", "R-Top-2", "R-Back-2", "R-Front-2", "R-Left-2", "R-Right-2"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.007",
+	"translation":[0,1,1],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-2", "R-Top-2", "R-Back-2", "R-Front-2", "R-Left-2", "R-Right-2"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.009",
+	"translation":[0,-1,1],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-2", "R-Top-2", "R-Back-2", "R-Front-2", "R-Left-2", "R-Right-2"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.010",
+	"translation":[-1,0,1],
+	"rotation":[-0.270598,-0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-2", "R-Top-2", "R-Back-2", "R-Front-2", "R-Left-2", "R-Right-2"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.011",
+	"translation":[1,0,1],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-2", "R-Top-2", "R-Back-2", "R-Front-2", "R-Left-2", "R-Right-2"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1",
+	"translation":[4.21468e-08,1.74578e-08,1],
+	"rotation":[0,0,0.382683,0.92388],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.001",
+	"translation":[8.42937e-08,1,2.46891e-08],
+	"rotation":[-0.653282,0.270598,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.002",
+	"translation":[-4.21468e-08,1.01751e-07,-1],
+	"rotation":[-0.92388,-0.382683,2.88918e-08,6.9751e-08],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.003",
+	"translation":[-8.42937e-08,-1,-1.43898e-07],
+	"rotation":[0.653282,0.270598,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.004",
+	"translation":[-1,0,5.96046e-08],
+	"rotation":[0.270598,-0.653282,-0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"NODE",
+	"name":"Level 1.005",
+	"translation":[1,0,5.96046e-08],
+	"rotation":[0.270598,0.653282,0.270598,0.653282],
+	"scale":[0.55,0.55,0.55],
+	"children":["Sphere-1", "Level 1.006", "Level 1.007", "Level 1.009", "Level 1.010", "Level 1.011"]
+},
+{
+	"type":"SCENE",
+	"name":"sphereflake.blend",
+	"roots":["Sphere", "Level 1", "Level 1.001", "Level 1.002", "Level 1.003", "Level 1.004", "Level 1.005"]
+}
+]

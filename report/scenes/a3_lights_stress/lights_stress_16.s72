@@ -1,0 +1,404 @@
+["s72-v2",
+{
+
+	"type":"LIGHT",
+	"name":"Light",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light",
+	"translation":[-4.67135,3.07387,7.90107],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light"
+},
+{
+
+	"type":"CAMERA",
+	"name":"Camera",
+	"perspective":{
+		"aspect":1.77778,
+		"vfov":0.47109,
+		"near":0.1,
+		"far":100
+	}
+},
+{
+	"type":"NODE",
+	"name":"Camera",
+	"translation":[10.463,1.58698,6.79304],
+	"rotation":[0.392326,0.351347,0.567114,0.633259],
+	"scale":[1,1,1],
+	"camera":"Camera"
+},
+{
+	"type":"MATERIAL",
+	"name":"lambertian: blue",
+	"lambertian":{
+		"albedo":[ 0.0466651, 0.234551, 0.799103 ]
+	}
+},
+{
+	"type":"MESH",
+	"name":"Sphere",
+	"topology":"TRIANGLE_LIST",
+	"count":11904,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_16.Sphere.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_16.Sphere.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_16.Sphere.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_16.Sphere.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian: blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere",
+	"translation":[-0.920226,-0.0935112,1.23766],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere"
+},
+{
+	"type":"MESH",
+	"name":"Sphere.001",
+	"topology":"TRIANGLE_LIST",
+	"count":11904,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_16.Sphere.001.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_16.Sphere.001.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_16.Sphere.001.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_16.Sphere.001.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian: blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere.001",
+	"translation":[-0.924542,3.08422,1.19336],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere.001"
+},
+{
+	"type":"MESH",
+	"name":"Sphere.002",
+	"topology":"TRIANGLE_LIST",
+	"count":190464,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_16.Sphere.002.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_16.Sphere.002.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_16.Sphere.002.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_16.Sphere.002.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian: blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere.002",
+	"translation":[-0.841654,5.75441,1.20401],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere.002"
+},
+{
+	"type":"MESH",
+	"name":"Plane",
+	"topology":"TRIANGLE_LIST",
+	"count":6,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_16.Plane.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_16.Plane.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_16.Plane.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_16.Plane.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Plane",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[11.2554,11.2554,11.2554],
+	"mesh":"Plane"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.001",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.001",
+	"translation":[-4.72716,4.98641,7.3844],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.001"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.002",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.002",
+	"translation":[-3.41244,6.18645,6.43422],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.002"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.003",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.003",
+	"translation":[-3.35663,4.27391,6.95089],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.003"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.004",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.004",
+	"translation":[-4.19558,4.27102,7.12158],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.004"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.005",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.005",
+	"translation":[-4.25139,6.18357,6.60492],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.005"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.006",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.006",
+	"translation":[-5.56611,4.98353,7.55509],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.006"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.007",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.007",
+	"translation":[-5.5103,3.07098,8.07176],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.007"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.008",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.008",
+	"translation":[-1.10518,4.46657,6.92245],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.008"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.009",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.009",
+	"translation":[-1.16098,6.37912,6.40578],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.009"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.010",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.010",
+	"translation":[-2.47571,5.17907,7.35596],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.010"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.011",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.011",
+	"translation":[-2.4199,3.26653,7.87263],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.011"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.012",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.012",
+	"translation":[1.67475,4.65835,6.78021],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.012"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.013",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.013",
+	"translation":[1.61894,6.5709,6.26354],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.013"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.014",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.014",
+	"translation":[0.304219,5.37085,7.21372],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.014"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.015",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.015",
+	"translation":[0.360026,3.45831,7.73039],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.015"
+},
+{
+	"type":"SCENE",
+	"name":"/Users/tunger/Downloads/lights_stress_16.blend",
+	"roots":["Light", "Camera", "Sphere", "Sphere.001", "Sphere.002", "Plane", "Light.001", "Light.002", "Light.003", "Light.004", "Light.005", "Light.006", "Light.007", "Light.008", "Light.009", "Light.010", "Light.011", "Light.012", "Light.013", "Light.014", "Light.015"]
+}
+]

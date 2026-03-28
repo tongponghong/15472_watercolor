@@ -1,0 +1,177 @@
+["s72-v2",
+{
+	"type":"ENVIRONMENT",
+	"name":"environment.png",
+	"radiance":{"src":"environment.png", "type":"cube", "format":"rgbe"}
+},
+{
+	"type":"NODE",
+	"name":"!environment:environment.png",
+	"translation":[0,0,4.48802],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"environment":"environment.png"
+},
+{
+
+	"type":"CAMERA",
+	"name":"Camera",
+	"perspective":{
+		"aspect":1,
+		"vfov":0.238858,
+		"near":0.1,
+		"far":100
+	}
+},
+{
+	"type":"NODE",
+	"name":"Camera",
+	"translation":[2,-34.7317,22.0284],
+	"rotation":[0.491617,0,0,0.870811],
+	"scale":[1,1,1],
+	"camera":"Camera"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light-Sphere",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.1,
+		"power":1000
+	}
+},
+
+{
+	"type":"NODE",
+	"name":"Light-Sphere",
+	"translation":[-2.1638,-1.98072,-4.3904],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light-Sphere"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light-Spot",
+	"tint":[1, 0.893203, 0.651166],
+	"spot":{
+		"radius":0.03,
+		"power":40,
+		"fov":1.30376,
+		"blend":0.261111
+	},
+	"shadow":256
+},
+{
+	"type":"NODE",
+	"name":"Light-Spot",
+	"translation":[1.72268,1.24481,4.53215],
+	"rotation":[-0.140511,-0.124451,0.982226,2.84452e-08],
+	"scale":[1,1,1],
+	"light":"Light-Spot"
+},
+{
+	"type":"MATERIAL",
+	"name":"lambertian:Plane",
+	"lambertian":{
+		"albedo":{ "src":"checker.png", "format":"srgb" }
+	}
+},
+{
+	"type":"MESH",
+	"name":"Plane",
+	"topology":"TRIANGLE_LIST",
+	"count":1152,
+	"attributes":{
+		"POSITION":{ "src":"materials.Plane.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"materials.Plane.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"materials.Plane.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"materials.Plane.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:Plane"
+},
+{
+	"type":"NODE",
+	"name":"Plane",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Plane",
+    "children": ["Cube"]
+},
+{
+	"type":"MATERIAL",
+	"name":"pbr:PBRMaterial",
+	"normalMap":{ "src":"wood_nor.png", "format":"linear" },
+	"displacementMap":{ "src":"wood_disp.png", "format":"linear" },
+	"pbr":{
+		"albedo":{ "src":"wood_diff.png", "format":"srgb" },
+		"roughness":{ "src":"wood_rough.png", "format":"linear" },
+		"metalness":0
+	}
+},
+{
+	"type":"MESH",
+	"name":"Cube",
+	"topology":"TRIANGLE_LIST",
+	"count":36,
+	"attributes":{
+		"POSITION":{ "src":"materials.Cube.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"materials.Cube.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"materials.Cube.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"materials.Cube.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"pbr:PBRMaterial"
+},
+{
+	"type":"MATERIAL",
+	"name":"environment:EnvironmentMaterial",
+	"environment":{}
+},
+{
+	"type":"NODE",
+	"name":"Cube",
+	"translation":[8.0,0.5,0.0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Cube",
+    "children":["Sphere"]
+},
+
+{
+	"type":"MESH",
+	"name":"Sphere",
+	"topology":"TRIANGLE_LIST",
+	"count":2880,
+	"attributes":{
+		"POSITION":{ "src":"materials.Sphere.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"materials.Sphere.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"materials.Sphere.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"materials.Sphere.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"environment:EnvironmentMaterial"
+},
+{
+	"type":"NODE",
+	"name":"Sphere",
+	"translation":[0.0,1.5,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere"
+},
+{
+	"type":"DRIVER",
+	"name":"Cube-translation",
+	"node":"Cube",
+	"channel":"translation",
+	"times":[0.0, 5.0, 10.0, 15.0, 20.0],
+	"values":[-8.0,0.5,0.0, 0.0,0.5,0.0, 8.0,0.5,0.0, 0.0,0.5,0.0, -8.0,0.5,0.0],
+	"interpolation":"SLERP"
+},
+{
+	"type":"SCENE",
+	"name":"example-scene",
+	"roots":["!environment:environment.png", "Camera", "Light-Sphere", "Light-Spot", "Plane"]
+}
+]

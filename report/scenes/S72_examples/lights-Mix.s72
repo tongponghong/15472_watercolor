@@ -1,0 +1,356 @@
+["s72-v2",
+{
+	"type":"MATERIAL",
+	"name":"lambertian:Light Grey",
+	"lambertian":{
+		"albedo":[ 0.8, 0.8, 0.8 ]
+	}
+},
+{
+	"type":"MESH",
+	"name":"Twist-Pillar",
+	"topology":"TRIANGLE_LIST",
+	"count":6516,
+	"attributes":{
+		"POSITION":{ "src":"lights-Mix.Twist-Pillar.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights-Mix.Twist-Pillar.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights-Mix.Twist-Pillar.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights-Mix.Twist-Pillar.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:Light Grey"
+},
+{
+	"type":"NODE",
+	"name":"Twist-Pillar",
+	"translation":[-2,0,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Twist-Pillar"
+},
+{
+	"type":"MATERIAL",
+	"name":"lambertian:White",
+	"lambertian":{
+		"albedo":[ 1, 1, 1 ]
+	}
+},
+{
+	"type":"MESH",
+	"name":"Steps",
+	"topology":"TRIANGLE_LIST",
+	"count":372,
+	"attributes":{
+		"POSITION":{ "src":"lights-Mix.Steps.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights-Mix.Steps.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights-Mix.Steps.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights-Mix.Steps.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:White"
+},
+{
+	"type":"NODE",
+	"name":"Steps",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Steps"
+},
+{
+	"type":"NODE",
+	"name":"Twist-Pillar.001",
+	"translation":[0,-1,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Twist-Pillar"
+},
+{
+	"type":"NODE",
+	"name":"Twist-Pillar.002",
+	"translation":[2,0,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Twist-Pillar"
+},
+{
+	"type":"NODE",
+	"name":"Twist-Pillar.003",
+	"translation":[0,1,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Twist-Pillar"
+},
+{
+	"type":"MESH",
+	"name":"Cap",
+	"topology":"TRIANGLE_LIST",
+	"count":192,
+	"attributes":{
+		"POSITION":{ "src":"lights-Mix.Cap.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights-Mix.Cap.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights-Mix.Cap.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights-Mix.Cap.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:White"
+},
+{
+	"type":"NODE",
+	"name":"Cap",
+	"translation":[0,0,3],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Cap"
+},
+{
+	"type":"MATERIAL",
+	"name":"lambertian:Gray",
+	"lambertian":{
+		"albedo":[ 0.4, 0.4, 0.4 ]
+	}
+},
+{
+	"type":"MESH",
+	"name":"Stick-Sphere",
+	"topology":"TRIANGLE_LIST",
+	"count":3066,
+	"attributes":{
+		"POSITION":{ "src":"lights-Mix.Stick-Sphere.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights-Mix.Stick-Sphere.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights-Mix.Stick-Sphere.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights-Mix.Stick-Sphere.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:Gray"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere",
+	"translation":[-2.7,-3.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.001",
+	"translation":[2.7,-3.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.002",
+	"translation":[4.7,-1.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.003",
+	"translation":[-4.7,-1.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.004",
+	"translation":[-4.7,1.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.005",
+	"translation":[-2.7,3.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.006",
+	"translation":[2.7,3.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.007",
+	"translation":[4.7,1.7,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.008",
+	"translation":[1.7,-1.2,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.009",
+	"translation":[1.7,1.2,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.010",
+	"translation":[-1.7,1.2,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Stick-Sphere.011",
+	"translation":[-1.7,-1.2,1.2],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Stick-Sphere"
+},
+{
+	"type":"NODE",
+	"name":"Platform",
+	"translation":[0,0,0.4],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"children":["Twist-Pillar", "Steps", "Twist-Pillar.001", "Twist-Pillar.002", "Twist-Pillar.003", "Cap", "Stick-Sphere", "Stick-Sphere.001", "Stick-Sphere.002", "Stick-Sphere.003", "Stick-Sphere.004", "Stick-Sphere.005", "Stick-Sphere.006", "Stick-Sphere.007", "Stick-Sphere.008", "Stick-Sphere.009", "Stick-Sphere.010", "Stick-Sphere.011"]
+},
+{
+	"type":"MESH",
+	"name":"Ground",
+	"topology":"TRIANGLE_LIST",
+	"count":372,
+	"attributes":{
+		"POSITION":{ "src":"lights-Mix.Ground.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights-Mix.Ground.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights-Mix.Ground.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights-Mix.Ground.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:Gray"
+},
+{
+	"type":"NODE",
+	"name":"Ground",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Ground"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Middle-Sphere",
+	"tint":[0.988261, 1, 0.162169],
+	"sphere":{
+		"radius":0.4,
+		"power":25,
+		"limit":10
+	},
+	"shadow":256
+},
+{
+	"type":"NODE",
+	"name":"Middle-Sphere",
+	"translation":[0,0,2.98638],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"light":"Middle-Sphere"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Corner-Spot",
+	"tint":[1, 0.893203, 0.651166],
+	"spot":{
+		"radius":0.03,
+		"power":40,
+		"fov":1.30376,
+		"blend":0.261111
+	},
+	"shadow":256
+},
+{
+	"type":"NODE",
+	"name":"Corner-Spot.001",
+	"translation":[-1.72268,-1.24481,4.53215],
+	"rotation":[-0.124451,0.140511,3.7927e-09,0.982226],
+	"scale":[1,1,1],
+	"light":"Corner-Spot"
+},
+{
+	"type":"NODE",
+	"name":"Corner-Spot.002",
+	"translation":[1.72268,1.24481,4.53215],
+	"rotation":[-0.140511,-0.124451,0.982226,2.84452e-08],
+	"scale":[1,1,1],
+	"light":"Corner-Spot"
+},
+{
+	"type":"NODE",
+	"name":"Corner-Spot.003",
+	"translation":[1.64826,-1.3418,4.53215],
+	"rotation":[-0.187235,-0.0131958,0.779253,0.597942],
+	"scale":[1,1,1],
+	"light":"Corner-Spot"
+},
+{
+	"type":"NODE",
+	"name":"Corner-Spot",
+	"translation":[-1.65019,1.33942,4.53215],
+	"rotation":[-0.013331,0.187226,-0.597379,0.779684],
+	"scale":[1,1,1],
+	"light":"Corner-Spot"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Sun",
+	"tint":[0.233253, 0.450668, 1],
+	"sun":{
+		"angle":0.523599,
+		"strength":0.39
+	},
+	"shadow":512
+},
+{
+	"type":"NODE",
+	"name":"Sun",
+	"translation":[0,-3.91797,6.96206],
+	"rotation":[0.354237,-0.104162,4.00855e-09,0.929336],
+	"scale":[1,1,1],
+	"light":"Sun"
+},
+{
+
+	"type":"CAMERA",
+	"name":"Camera",
+	"perspective":{
+		"aspect":1.2,
+		"vfov":1.03829,
+		"near":0.1,
+		"far":1000
+	}
+},
+{
+	"type":"NODE",
+	"name":"Camera",
+	"translation":[-6.77367,-6.763,6.22249],
+	"rotation":[0.478484,-0.196913,-0.325665,0.791341],
+	"scale":[1,1,1],
+	"camera":"Camera"
+},
+{
+	"type":"SCENE",
+	"name":"lights.blend",
+	"roots":["Platform", "Ground", "Middle-Sphere", "Corner-Spot.001", "Corner-Spot.002", "Corner-Spot.003", "Corner-Spot", "Sun", "Camera"]
+}
+]

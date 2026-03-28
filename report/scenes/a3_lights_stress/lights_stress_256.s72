@@ -1,0 +1,4724 @@
+["s72-v2",
+{
+
+	"type":"LIGHT",
+	"name":"Light",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light",
+	"translation":[-4.67135,3.07387,7.90107],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light"
+},
+{
+
+	"type":"CAMERA",
+	"name":"Camera",
+	"perspective":{
+		"aspect":1.77778,
+		"vfov":0.47109,
+		"near":0.1,
+		"far":100
+	}
+},
+{
+	"type":"NODE",
+	"name":"Camera",
+	"translation":[10.463,1.58698,6.79304],
+	"rotation":[0.392326,0.351347,0.567114,0.633259],
+	"scale":[1,1,1],
+	"camera":"Camera"
+},
+{
+	"type":"MATERIAL",
+	"name":"lambertian:blue",
+	"lambertian":{
+		"albedo":[ 0.0466651, 0.234551, 0.799103 ]
+	}
+},
+{
+	"type":"MESH",
+	"name":"Sphere",
+	"topology":"TRIANGLE_LIST",
+	"count":11904,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_256.Sphere.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_256.Sphere.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_256.Sphere.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_256.Sphere.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere",
+	"translation":[-0.920226,-0.0935112,1.23766],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere"
+},
+{
+	"type":"MESH",
+	"name":"Sphere.001",
+	"topology":"TRIANGLE_LIST",
+	"count":11904,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_256.Sphere.001.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_256.Sphere.001.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_256.Sphere.001.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_256.Sphere.001.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere.001",
+	"translation":[-0.924542,3.08422,1.19336],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere.001"
+},
+{
+	"type":"MESH",
+	"name":"Sphere.002",
+	"topology":"TRIANGLE_LIST",
+	"count":190464,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_256.Sphere.002.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_256.Sphere.002.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_256.Sphere.002.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_256.Sphere.002.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	},
+	"material":"lambertian:blue"
+},
+{
+	"type":"NODE",
+	"name":"Sphere.002",
+	"translation":[-0.841654,5.75441,1.20401],
+	"rotation":[0,0,0,1],
+	"scale":[1,1,1],
+	"mesh":"Sphere.002"
+},
+{
+	"type":"MESH",
+	"name":"Plane",
+	"topology":"TRIANGLE_LIST",
+	"count":6,
+	"attributes":{
+		"POSITION":{ "src":"lights_stress_256.Plane.pnTt.b72", "offset":0, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"NORMAL":{ "src":"lights_stress_256.Plane.pnTt.b72", "offset":12, "stride":48, "format":"R32G32B32_SFLOAT" },
+		"TANGENT":{ "src":"lights_stress_256.Plane.pnTt.b72", "offset":24, "stride":48, "format":"R32G32B32A32_SFLOAT" },
+		"TEXCOORD":{ "src":"lights_stress_256.Plane.pnTt.b72", "offset":40, "stride":48, "format":"R32G32_SFLOAT" }
+	}
+},
+{
+	"type":"NODE",
+	"name":"Plane",
+	"translation":[0,0,0],
+	"rotation":[0,0,0,1],
+	"scale":[11.2554,11.2554,11.2554],
+	"mesh":"Plane"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.001",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.001",
+	"translation":[-4.72716,4.98641,7.3844],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.001"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.002",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.002",
+	"translation":[-3.41244,6.18645,6.43422],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.002"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.003",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.003",
+	"translation":[-3.35663,4.27391,6.95089],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.003"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.004",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.004",
+	"translation":[-4.19558,4.27102,7.12158],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.004"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.005",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.005",
+	"translation":[-4.25139,6.18357,6.60492],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.005"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.006",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.006",
+	"translation":[-5.56611,4.98353,7.55509],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.006"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.007",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.007",
+	"translation":[-5.5103,3.07098,8.07176],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.007"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.008",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.008",
+	"translation":[-1.10518,4.46657,6.92245],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.008"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.009",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.009",
+	"translation":[-1.16098,6.37912,6.40578],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.009"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.010",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.010",
+	"translation":[-2.47571,5.17907,7.35596],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.010"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.011",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.011",
+	"translation":[-2.4199,3.26653,7.87263],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.011"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.012",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.012",
+	"translation":[1.67475,4.65835,6.78021],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.012"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.013",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.013",
+	"translation":[1.61894,6.5709,6.26354],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.013"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.014",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.014",
+	"translation":[0.304219,5.37085,7.21372],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.014"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.015",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.015",
+	"translation":[0.360026,3.45831,7.73039],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.015"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.016",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.016",
+	"translation":[0.540742,-1.4293,8.25239],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.016"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.017",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.017",
+	"translation":[0.484934,0.483238,7.73572],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.017"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.018",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.018",
+	"translation":[1.79966,1.68328,6.78554],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.018"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.019",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.019",
+	"translation":[1.85546,-0.229264,7.30221],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.019"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.020",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.020",
+	"translation":[-2.23918,-1.62108,8.39463],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.020"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.021",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.021",
+	"translation":[-2.29499,0.291458,7.87796],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.021"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.022",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.022",
+	"translation":[-0.980269,1.4915,6.92778],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.022"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.023",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.023",
+	"translation":[-0.924461,-0.421044,7.44445],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.023"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.024",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.024",
+	"translation":[-5.32959,-1.81663,8.59376],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.024"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.025",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.025",
+	"translation":[-5.38539,0.0959096,8.0771],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.025"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.026",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.026",
+	"translation":[-4.07067,1.29595,7.12692],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.026"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.027",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.027",
+	"translation":[-4.01486,-0.616592,7.64358],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.027"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.028",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.028",
+	"translation":[-3.17591,-0.613704,7.47289],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.028"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.029",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.029",
+	"translation":[-3.23172,1.29884,6.95622],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.029"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.030",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.030",
+	"translation":[-4.54644,0.0987973,7.9064],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.030"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.031",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.031",
+	"translation":[-4.49064,-1.81374,8.42307],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.031"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.032",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.032",
+	"translation":[-8.39708,-5.90667,7.6394],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.032"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.033",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.033",
+	"translation":[-8.45289,-3.99413,7.12273],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.033"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.034",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.034",
+	"translation":[-7.13816,-2.79409,6.17255],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.034"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.035",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.035",
+	"translation":[-7.08236,-4.70663,6.68922],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.035"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.036",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.036",
+	"translation":[-7.92131,-4.70952,6.85991],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.036"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.037",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.037",
+	"translation":[-7.97711,-2.79697,6.34325],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.037"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.038",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.038",
+	"translation":[-9.29184,-3.99701,7.29343],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.038"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.039",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.039",
+	"translation":[-9.23603,-5.90956,7.81009],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.039"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.040",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.040",
+	"translation":[-4.8309,-4.51397,6.66078],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.040"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.041",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.041",
+	"translation":[-4.88671,-2.60143,6.14411],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.041"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.042",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.042",
+	"translation":[-6.20144,-3.80147,7.09429],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.042"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.043",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.043",
+	"translation":[-6.14563,-5.71401,7.61096],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.043"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.044",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.044",
+	"translation":[-2.05098,-4.32219,6.51854],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.044"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.045",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.045",
+	"translation":[-2.10679,-2.40965,6.00187],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.045"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.046",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.046",
+	"translation":[-3.42151,-3.60969,6.95205],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.046"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.047",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.047",
+	"translation":[-3.3657,-5.52223,7.46872],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.047"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.048",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.048",
+	"translation":[-3.54642,-0.634612,6.94672],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.048"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.049",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.049",
+	"translation":[-3.60222,1.27793,6.43005],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.049"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.050",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.050",
+	"translation":[-2.2875,2.47797,5.47987],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.050"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.051",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.051",
+	"translation":[-2.23169,0.565429,5.99654],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.051"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.052",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.052",
+	"translation":[-6.32634,-0.826392,7.08896],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.052"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.053",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.053",
+	"translation":[-6.38215,1.08615,6.57229],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.053"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.054",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.054",
+	"translation":[-5.06743,2.28619,5.62211],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.054"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.055",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.055",
+	"translation":[-5.01162,0.373649,6.13878],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.055"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.056",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.056",
+	"translation":[-9.41674,-1.02194,7.28809],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.056"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.057",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.057",
+	"translation":[-9.47255,0.890602,6.77143],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.057"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.058",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.058",
+	"translation":[-8.15783,2.09064,5.82125],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.058"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.059",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.059",
+	"translation":[-8.10202,0.178101,6.33791],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.059"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.060",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.060",
+	"translation":[-7.26307,0.180988,6.16722],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.060"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.061",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.061",
+	"translation":[-7.31888,2.09353,5.65055],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.061"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.062",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.062",
+	"translation":[-8.6336,0.89349,6.60073],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.062"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.063",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.063",
+	"translation":[-8.5778,-1.01905,7.1174],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.063"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.064",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.064",
+	"translation":[-9.04089,-0.500144,9.78219],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.064"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.065",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.065",
+	"translation":[-9.0967,1.4124,9.26552],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.065"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.066",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.066",
+	"translation":[-7.78198,2.61244,8.31534],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.066"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.067",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.067",
+	"translation":[-7.72617,0.699897,8.83201],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.067"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.068",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.068",
+	"translation":[-8.56512,0.697009,9.0027],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.068"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.069",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.069",
+	"translation":[-8.62093,2.60955,8.48603],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.069"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.070",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.070",
+	"translation":[-9.93565,1.40951,9.43621],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.070"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.071",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.071",
+	"translation":[-9.87984,-0.503032,9.95288],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.071"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.072",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.072",
+	"translation":[-5.47472,0.892557,8.80356],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.072"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.073",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.073",
+	"translation":[-5.53053,2.8051,8.2869],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.073"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.074",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.074",
+	"translation":[-6.84525,1.60506,9.23707],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.074"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.075",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.075",
+	"translation":[-6.78944,-0.307484,9.75374],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.075"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.076",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.076",
+	"translation":[-2.69479,1.08434,8.66132],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.076"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.077",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.077",
+	"translation":[-2.7506,2.99688,8.14466],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.077"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.078",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.078",
+	"translation":[-4.06532,1.79684,9.09484],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.078"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.079",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.079",
+	"translation":[-4.00951,-0.115703,9.6115],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.079"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.080",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.080",
+	"translation":[-3.8288,-5.00332,10.1335],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.080"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.081",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.081",
+	"translation":[-3.88461,-3.09078,9.61684],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.081"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.082",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.082",
+	"translation":[-2.56988,-1.89074,8.66666],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.082"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.083",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.083",
+	"translation":[-2.51408,-3.80328,9.18332],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.083"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.084",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.084",
+	"translation":[-6.60872,-5.1951,10.2757],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.084"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.085",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.085",
+	"translation":[-6.66453,-3.28256,9.75908],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.085"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.086",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.086",
+	"translation":[-5.34981,-2.08252,8.8089],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.086"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.087",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.087",
+	"translation":[-5.294,-3.99506,9.32556],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.087"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.088",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.088",
+	"translation":[-9.69913,-5.39065,10.4749],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.088"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.089",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.089",
+	"translation":[-9.75494,-3.47811,9.95821],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.089"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.090",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.090",
+	"translation":[-8.44021,-2.27807,9.00803],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.090"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.091",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.091",
+	"translation":[-8.3844,-4.19061,9.5247],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.091"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.092",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.092",
+	"translation":[-7.54545,-4.18772,9.35401],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.092"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.093",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.093",
+	"translation":[-7.60126,-2.27518,8.83734],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.093"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.094",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.094",
+	"translation":[-8.91599,-3.47522,9.78752],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.094"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.095",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.095",
+	"translation":[-8.86018,-5.38776,10.3042],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.095"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.096",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.096",
+	"translation":[-4.95373,-1.29484,11.0879],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.096"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.097",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.097",
+	"translation":[-5.00954,0.617706,10.5712],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.097"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.098",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.098",
+	"translation":[-3.69482,1.81775,9.62101],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.098"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.099",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.099",
+	"translation":[-3.63901,-0.0947956,10.1377],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.099"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.100",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.100",
+	"translation":[-4.47796,-0.0976833,10.3084],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.100"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.101",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.101",
+	"translation":[-4.53377,1.81486,9.7917],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.101"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.102",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.102",
+	"translation":[-5.84849,0.614818,10.7419],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.102"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.103",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.103",
+	"translation":[-5.79268,-1.29772,11.2585],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.103"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.104",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.104",
+	"translation":[-1.38756,0.0978647,10.1092],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.104"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.105",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.105",
+	"translation":[-1.44337,2.01041,9.59256],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.105"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.106",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.106",
+	"translation":[-2.75809,0.810366,10.5427],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.106"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.107",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.107",
+	"translation":[-2.70228,-1.10218,11.0594],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.107"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.108",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.108",
+	"translation":[1.39237,0.289645,9.96699],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.108"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.109",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.109",
+	"translation":[1.33656,2.20219,9.45033],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.109"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.110",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.110",
+	"translation":[0.0218366,1.00215,10.4005],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.110"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.111",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.111",
+	"translation":[0.0776442,-0.910396,10.9172],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.111"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.112",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.112",
+	"translation":[-0.103071,3.97722,10.3952],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.112"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.113",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.113",
+	"translation":[-0.158879,5.88976,9.8785],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.113"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.114",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.114",
+	"translation":[1.15584,7.0898,8.92832],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.114"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.115",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.115",
+	"translation":[1.21165,5.17726,9.44499],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.115"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.116",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.116",
+	"translation":[-2.883,3.78544,10.5374],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.116"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.117",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.117",
+	"translation":[-2.9388,5.69798,10.0207],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.117"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.118",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.118",
+	"translation":[-1.62408,6.89802,9.07056],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.118"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.119",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.119",
+	"translation":[-1.56827,4.98548,9.58723],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.119"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.120",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.120",
+	"translation":[-5.9734,3.58989,10.7365],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.120"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.121",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.121",
+	"translation":[-6.02921,5.50243,10.2199],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.121"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.122",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.122",
+	"translation":[-4.71448,6.70248,9.2697],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.122"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.123",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.123",
+	"translation":[-4.65868,4.78993,9.78637],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.123"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.124",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.124",
+	"translation":[-3.81973,4.79282,9.61568],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.124"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.125",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.125",
+	"translation":[-3.87553,6.70536,9.09901],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.125"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.126",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.126",
+	"translation":[-5.19026,5.50532,10.0492],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.126"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.127",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.127",
+	"translation":[-5.13445,3.59278,10.5659],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.127"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.128",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.128",
+	"translation":[-9.55886,0.130691,13.008],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.128"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.129",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.129",
+	"translation":[-9.61467,2.04323,12.4913],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.129"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.130",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.130",
+	"translation":[-8.29994,3.24327,11.5411],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.130"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.131",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.131",
+	"translation":[-8.24414,1.33073,12.0578],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.131"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.132",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.132",
+	"translation":[-9.08309,1.32784,12.2285],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.132"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.133",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.133",
+	"translation":[-9.13889,3.24039,11.7118],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.133"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.134",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.134",
+	"translation":[-10.4536,2.04035,12.662],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.134"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.135",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.135",
+	"translation":[-10.3978,0.127803,13.1787],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.135"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.136",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.136",
+	"translation":[-5.99268,1.52339,12.0294],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.136"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.137",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.137",
+	"translation":[-6.04849,3.43593,11.5127],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.137"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.138",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.138",
+	"translation":[-7.36321,2.23589,12.4629],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.138"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.139",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.139",
+	"translation":[-7.30741,0.323351,12.9795],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.139"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.140",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.140",
+	"translation":[-3.21276,1.71517,11.8871],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.140"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.141",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.141",
+	"translation":[-3.26857,3.62771,11.3704],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.141"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.142",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.142",
+	"translation":[-4.58329,2.42767,12.3206],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.142"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.143",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.143",
+	"translation":[-4.52748,0.515131,12.8373],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.143"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.144",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.144",
+	"translation":[-4.34677,-4.37249,13.3593],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.144"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.145",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.145",
+	"translation":[-4.40257,-2.45994,12.8426],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.145"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.146",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.146",
+	"translation":[-3.08785,-1.2599,11.8925],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.146"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.147",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.147",
+	"translation":[-3.03204,-3.17244,12.4091],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.147"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.148",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.148",
+	"translation":[-7.12669,-4.56427,13.5015],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.148"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.149",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.149",
+	"translation":[-7.1825,-2.65172,12.9849],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.149"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.150",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.150",
+	"translation":[-5.86778,-1.45168,12.0347],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.150"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.151",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.151",
+	"translation":[-5.81197,-3.36422,12.5514],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.151"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.152",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.152",
+	"translation":[-10.2171,-4.75981,13.7007],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.152"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.153",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.153",
+	"translation":[-10.2729,-2.84727,13.184],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.153"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.154",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.154",
+	"translation":[-8.95818,-1.64723,12.2338],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.154"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.155",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.155",
+	"translation":[-8.90237,-3.55977,12.7505],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.155"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.156",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.156",
+	"translation":[-8.06342,-3.55689,12.5798],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.156"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.157",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.157",
+	"translation":[-8.11923,-1.64434,12.0631],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.157"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.158",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.158",
+	"translation":[-9.43395,-2.84438,13.0133],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.158"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.159",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.159",
+	"translation":[-9.37814,-4.75693,13.53],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.159"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.160",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.160",
+	"translation":[-5.4717,-0.664002,14.3137],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.160"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.161",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.161",
+	"translation":[-5.52751,1.24854,13.797],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.161"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.162",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.162",
+	"translation":[-4.21279,2.44858,12.8468],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.162"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.163",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.163",
+	"translation":[-4.15698,0.536039,13.3635],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.163"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.164",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.164",
+	"translation":[-4.99593,0.533151,13.5342],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.164"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.165",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.165",
+	"translation":[-5.05174,2.44569,13.0175],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.165"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.166",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.166",
+	"translation":[-6.36646,1.24565,13.9677],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.166"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.167",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.167",
+	"translation":[-6.31065,-0.66689,14.4843],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.167"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.168",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.168",
+	"translation":[-1.90553,0.728699,13.335],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.168"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.169",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.169",
+	"translation":[-1.96133,2.64124,12.8184],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.169"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.170",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.170",
+	"translation":[-3.27606,1.4412,13.7685],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.170"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.171",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.171",
+	"translation":[-3.22025,-0.471342,14.2852],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.171"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.172",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.172",
+	"translation":[0.8744,0.920479,13.1928],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.172"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.173",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.173",
+	"translation":[0.818592,2.83302,12.6761],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.173"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.174",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.174",
+	"translation":[-0.49613,1.63298,13.6263],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.174"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.175",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.175",
+	"translation":[-0.440323,-0.279562,14.143],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.175"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.176",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.176",
+	"translation":[-0.621038,4.60806,13.621],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.176"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.177",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.177",
+	"translation":[-0.676846,6.5206,13.1043],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.177"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.178",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.178",
+	"translation":[0.637877,7.72064,12.1541],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.178"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.179",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.179",
+	"translation":[0.693685,5.8081,12.6708],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.179"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.180",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.180",
+	"translation":[-3.40096,4.41628,13.7632],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.180"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.181",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.181",
+	"translation":[-3.45677,6.32882,13.2465],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.181"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.182",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.182",
+	"translation":[-2.14205,7.52886,12.2964],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.182"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.183",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.183",
+	"translation":[-2.08624,5.61632,12.813],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.183"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.184",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.184",
+	"translation":[-6.49137,4.22073,13.9623],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.184"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.185",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.185",
+	"translation":[-6.54717,6.13327,13.4457],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.185"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.186",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.186",
+	"translation":[-5.23245,7.33331,12.4955],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.186"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.187",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.187",
+	"translation":[-5.17664,5.42077,13.0122],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.187"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.188",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.188",
+	"translation":[-4.33769,5.42366,12.8415],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.188"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.189",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.189",
+	"translation":[-4.3935,7.3362,12.3248],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.189"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.190",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.190",
+	"translation":[-5.70822,6.13616,13.275],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.190"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.191",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.191",
+	"translation":[-5.65242,4.22361,13.7917],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.191"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.192",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.192",
+	"translation":[-9.69089,0.708889,15.8598],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.192"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.193",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.193",
+	"translation":[-9.7467,2.62143,15.3431],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.193"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.194",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.194",
+	"translation":[-8.43198,3.82147,14.3929],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.194"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.195",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.195",
+	"translation":[-8.37617,1.90893,14.9096],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.195"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.196",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.196",
+	"translation":[-9.21512,1.90604,15.0803],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.196"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.197",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.197",
+	"translation":[-9.27093,3.81858,14.5636],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.197"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.198",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.198",
+	"translation":[-10.5856,2.61854,15.5138],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.198"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.199",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.199",
+	"translation":[-10.5298,0.706001,16.0305],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.199"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.200",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.200",
+	"translation":[-6.12472,2.10159,14.8811],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.200"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.201",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.201",
+	"translation":[-6.18052,4.01413,14.3645],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.201"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.202",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.202",
+	"translation":[-7.49525,2.81409,15.3147],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.202"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.203",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.203",
+	"translation":[-7.43944,0.901549,15.8313],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.203"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.204",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.204",
+	"translation":[-3.34479,2.29337,14.7389],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.204"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.205",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.205",
+	"translation":[-3.4006,4.20591,14.2222],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.205"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.206",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.206",
+	"translation":[-4.71532,3.00587,15.1724],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.206"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.207",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.207",
+	"translation":[-4.65951,1.09333,15.6891],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.207"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.208",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.208",
+	"translation":[-4.4788,-3.79429,16.2111],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.208"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.209",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.209",
+	"translation":[-4.53461,-1.88174,15.6944],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.209"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.210",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.210",
+	"translation":[-3.21988,-0.681704,14.7442],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.210"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.211",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.211",
+	"translation":[-3.16408,-2.59425,15.2609],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.211"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.212",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.212",
+	"translation":[-7.25872,-3.98607,16.3533],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.212"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.213",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.213",
+	"translation":[-7.31453,-2.07352,15.8367],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.213"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.214",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.214",
+	"translation":[-5.99981,-0.873484,14.8865],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.214"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.215",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.215",
+	"translation":[-5.944,-2.78603,15.4031],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.215"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.216",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.216",
+	"translation":[-10.3491,-4.18162,16.5525],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.216"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.217",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.217",
+	"translation":[-10.4049,-2.26907,16.0358],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.217"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.218",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.218",
+	"translation":[-9.09021,-1.06903,15.0856],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.218"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.219",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.219",
+	"translation":[-9.0344,-2.98157,15.6023],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.219"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.220",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.220",
+	"translation":[-8.19545,-2.97869,15.4316],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.220"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.221",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.221",
+	"translation":[-8.25126,-1.06614,14.9149],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.221"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.222",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.222",
+	"translation":[-9.56598,-2.26619,15.8651],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.222"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.223",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.223",
+	"translation":[-9.51018,-4.17873,16.3818],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.223"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.224",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.224",
+	"translation":[-5.60373,-0.0858032,17.1654],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.224"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.225",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.225",
+	"translation":[-5.65954,1.82674,16.6488],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.225"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.226",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.226",
+	"translation":[-4.34482,3.02678,15.6986],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.226"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.227",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.227",
+	"translation":[-4.28901,1.11424,16.2153],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.227"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.228",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.228",
+	"translation":[-5.12796,1.11135,16.386],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.228"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.229",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.229",
+	"translation":[-5.18377,3.02389,15.8693],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.229"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.230",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.230",
+	"translation":[-6.49849,1.82385,16.8195],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.230"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.231",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.231",
+	"translation":[-6.44268,-0.0886911,17.3361],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.231"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.232",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.232",
+	"translation":[-2.03756,1.3069,16.1868],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.232"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.233",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.233",
+	"translation":[-2.09337,3.21944,15.6701],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.233"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.234",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.234",
+	"translation":[-3.40809,2.0194,16.6203],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.234"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.235",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.235",
+	"translation":[-3.35228,0.106857,17.137],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.235"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.236",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.236",
+	"translation":[0.742368,1.49868,16.0446],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.236"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.237",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.237",
+	"translation":[0.68656,3.41122,15.5279],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.237"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.238",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.238",
+	"translation":[-0.628163,2.21118,16.4781],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.238"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.239",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.239",
+	"translation":[-0.572355,0.298637,16.9948],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.239"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.240",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.240",
+	"translation":[-0.753071,5.18625,16.4728],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.240"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.241",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.241",
+	"translation":[-0.808878,7.0988,15.9561],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.241"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.242",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.242",
+	"translation":[0.505844,8.29884,15.0059],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.242"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.243",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.243",
+	"translation":[0.561652,6.38629,15.5226],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.243"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.244",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.244",
+	"translation":[-3.533,4.99447,16.615],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.244"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.245",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.245",
+	"translation":[-3.5888,6.90702,16.0983],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.245"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.246",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.246",
+	"translation":[-2.27408,8.10706,15.1481],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.246"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.247",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.247",
+	"translation":[-2.21827,6.19451,15.6648],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.247"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.248",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.248",
+	"translation":[-6.6234,4.79893,16.8141],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.248"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.249",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.249",
+	"translation":[-6.67921,6.71147,16.2975],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.249"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.250",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.250",
+	"translation":[-5.36448,7.91151,15.3473],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.250"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.251",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.251",
+	"translation":[-5.30868,5.99897,15.864],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.251"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.252",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.252",
+	"translation":[-4.46973,6.00185,15.6933],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.252"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.253",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.253",
+	"translation":[-4.52553,7.9144,15.1766],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.253"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.254",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.254",
+	"translation":[-5.84026,6.71436,16.1268],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.254"
+},
+{
+
+	"type":"LIGHT",
+	"name":"Light.255",
+	"tint":[1, 1, 1],
+	"sphere":{
+		"radius":0.162901,
+		"power":1500
+	}
+},
+{
+	"type":"NODE",
+	"name":"Light.255",
+	"translation":[-5.78445,4.80181,16.6434],
+	"rotation":[0.169076,0.272171,0.75588,0.570948],
+	"scale":[1,1,1],
+	"light":"Light.255"
+},
+{
+	"type":"SCENE",
+	"name":"/Users/tunger/Downloads/lights_stress_256.blend",
+	"roots":["Light", "Camera", "Sphere", "Sphere.001", "Sphere.002", "Plane", "Light.001", "Light.002", "Light.003", "Light.004", "Light.005", "Light.006", "Light.007", "Light.008", "Light.009", "Light.010", "Light.011", "Light.012", "Light.013", "Light.014", "Light.015", "Light.016", "Light.017", "Light.018", "Light.019", "Light.020", "Light.021", "Light.022", "Light.023", "Light.024", "Light.025", "Light.026", "Light.027", "Light.028", "Light.029", "Light.030", "Light.031", "Light.032", "Light.033", "Light.034", "Light.035", "Light.036", "Light.037", "Light.038", "Light.039", "Light.040", "Light.041", "Light.042", "Light.043", "Light.044", "Light.045", "Light.046", "Light.047", "Light.048", "Light.049", "Light.050", "Light.051", "Light.052", "Light.053", "Light.054", "Light.055", "Light.056", "Light.057", "Light.058", "Light.059", "Light.060", "Light.061", "Light.062", "Light.063", "Light.064", "Light.065", "Light.066", "Light.067", "Light.068", "Light.069", "Light.070", "Light.071", "Light.072", "Light.073", "Light.074", "Light.075", "Light.076", "Light.077", "Light.078", "Light.079", "Light.080", "Light.081", "Light.082", "Light.083", "Light.084", "Light.085", "Light.086", "Light.087", "Light.088", "Light.089", "Light.090", "Light.091", "Light.092", "Light.093", "Light.094", "Light.095", "Light.096", "Light.097", "Light.098", "Light.099", "Light.100", "Light.101", "Light.102", "Light.103", "Light.104", "Light.105", "Light.106", "Light.107", "Light.108", "Light.109", "Light.110", "Light.111", "Light.112", "Light.113", "Light.114", "Light.115", "Light.116", "Light.117", "Light.118", "Light.119", "Light.120", "Light.121", "Light.122", "Light.123", "Light.124", "Light.125", "Light.126", "Light.127", "Light.128", "Light.129", "Light.130", "Light.131", "Light.132", "Light.133", "Light.134", "Light.135", "Light.136", "Light.137", "Light.138", "Light.139", "Light.140", "Light.141", "Light.142", "Light.143", "Light.144", "Light.145", "Light.146", "Light.147", "Light.148", "Light.149", "Light.150", "Light.151", "Light.152", "Light.153", "Light.154", "Light.155", "Light.156", "Light.157", "Light.158", "Light.159", "Light.160", "Light.161", "Light.162", "Light.163", "Light.164", "Light.165", "Light.166", "Light.167", "Light.168", "Light.169", "Light.170", "Light.171", "Light.172", "Light.173", "Light.174", "Light.175", "Light.176", "Light.177", "Light.178", "Light.179", "Light.180", "Light.181", "Light.182", "Light.183", "Light.184", "Light.185", "Light.186", "Light.187", "Light.188", "Light.189", "Light.190", "Light.191", "Light.192", "Light.193", "Light.194", "Light.195", "Light.196", "Light.197", "Light.198", "Light.199", "Light.200", "Light.201", "Light.202", "Light.203", "Light.204", "Light.205", "Light.206", "Light.207", "Light.208", "Light.209", "Light.210", "Light.211", "Light.212", "Light.213", "Light.214", "Light.215", "Light.216", "Light.217", "Light.218", "Light.219", "Light.220", "Light.221", "Light.222", "Light.223", "Light.224", "Light.225", "Light.226", "Light.227", "Light.228", "Light.229", "Light.230", "Light.231", "Light.232", "Light.233", "Light.234", "Light.235", "Light.236", "Light.237", "Light.238", "Light.239", "Light.240", "Light.241", "Light.242", "Light.243", "Light.244", "Light.245", "Light.246", "Light.247", "Light.248", "Light.249", "Light.250", "Light.251", "Light.252", "Light.253", "Light.254", "Light.255"]
+}
+]
