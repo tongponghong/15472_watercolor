@@ -34,7 +34,7 @@ void main() {
     float speed = 1.0;
     float frequency = 1.0;
     float tremor_amt = 0.0005;
-    float a = 0.5; //???????????????????????????????? no idea what the paper means by this
+    float a = 0.5; // offset weight
 
     // col ordered so op done in A * v 
     //gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);

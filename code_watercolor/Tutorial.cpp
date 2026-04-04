@@ -1518,14 +1518,21 @@ Tutorial::~Tutorial() {
 		}
 
 		if (workspace.Spherelights_src.handle != VK_NULL_HANDLE) {
-			rtg.helpers.destroy_buffer(std::move(workspace.Sunlights_src));
+			rtg.helpers.destroy_buffer(std::move(workspace.Spherelights_src));
 		}
 
 		if (workspace.Spherelights.handle != VK_NULL_HANDLE) {
-			rtg.helpers.destroy_buffer(std::move(workspace.Sunlights));
+			rtg.helpers.destroy_buffer(std::move(workspace.Spherelights));
 		}
 
-		
+		if (workspace.Spotlights_src.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Spotlights_src));
+		}
+
+		if (workspace.Spotlights.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Spotlights));
+		}
+
 		// World descriptors freed when pool destroyed 
 
 		if (workspace.Transforms_src.handle != VK_NULL_HANDLE) {
@@ -1550,6 +1557,27 @@ Tutorial::~Tutorial() {
 	background_pipeline.destroy(rtg);
 	lines_pipeline.destroy(rtg);
 	objects_pipeline.destroy(rtg);
+	shadows_pipeline.destroy(rtg);
+
+	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
+		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
+		shadowmap_framebuffer = VK_NULL_HANDLE; 
+	}
+
+	if (shadow_atlas_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, shadow_atlas_image_view, nullptr);
+		shadow_atlas_image_view = VK_NULL_HANDLE;
+	}
+
+	if (shadow_atlas_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(shadow_atlas_image));
+	}
+
+	if (shadow_render_pass != VK_NULL_HANDLE) {
+		vkDestroyRenderPass(rtg.device, shadow_render_pass, nullptr);
+		shadow_render_pass = VK_NULL_HANDLE;
+	}
+
 
 	// destroy command pool
 	if (command_pool != VK_NULL_HANDLE) {
@@ -2351,7 +2379,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.exposure = rtg.exposure,
 				.time = float(time),
 			};
-			std::cout << "time: " << time << std::endl;
+			//std::cout << "time: " << time << std::endl;
 
 			// camera descriptor still bound but unused
 
