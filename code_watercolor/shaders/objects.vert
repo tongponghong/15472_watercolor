@@ -18,17 +18,41 @@ struct Transform {
     mat4 WORLD_FROM_LOCAL_NORMAL;
 };
 
+layout(push_constant) uniform Push {
+    vec3 EYE;
+    int tex_type;
+    // kept as a push constant to change exposure while debugging 
+    float exposure; 
+    float time;
+}; // add instance name here
+
 layout (set = 1, binding = 0, std140) readonly buffer Transforms {
     Transform TRANSFORMS[];
 };
 
 void main() {
+    float speed = 1.0;
+    float frequency = 1.0;
+    float tremor_amt = 0.0005;
+    float a = 0.5; //???????????????????????????????? no idea what the paper means by this
+
     // col ordered so op done in A * v 
-    gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
+    //gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
     position = mat4x3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL) * vec4(Position, 1.0);
-    
+
+    // position in clip space
+    vec4 og_clip_position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
+
+    vec3 v_offset = sin(time * speed + og_clip_position.xyz * frequency) * tremor_amt * og_clip_position.w;
+
+   
     // grab from normal map 
     normal = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Normal);
+
+    // tremored position
+    og_clip_position.xyz = og_clip_position.xyz + v_offset * (1 - a * dot(normalize(EYE - position), normal));
+
+    gl_Position = og_clip_position;
    
     new_tangent = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Tangent.xyz);
     // bitangent sign in last comp of tangent 

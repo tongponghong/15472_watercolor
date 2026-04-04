@@ -131,6 +131,7 @@ struct Tutorial : RTG::Application {
 			vec3 EYE_vec; // to get the incident camera vector 
 			int tex_type; // 1 is env, 2 is mirror, 0 is any else
 			float exposure;
+			float time;
 		};
 
 		struct spec_consts {

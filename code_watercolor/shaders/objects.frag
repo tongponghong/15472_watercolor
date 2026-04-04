@@ -42,7 +42,9 @@ layout(push_constant) uniform Push {
     int tex_type;
     // kept as a push constant to change exposure while debugging 
     float exposure; 
+    float time;
 }; // add instance name here
+
 
 layout (constant_id = 0) const int sunNum = 0;
 layout (constant_id = 1) const int sphereNum = 0;
@@ -275,6 +277,7 @@ void main() {
 
         //outColor = vec4(texture(TEXTURE, texCoord).rgb / PI * e, 1.0);
         outColor = vec4(tonemapped_albedo, 1.0);
+        //outColor = vec4(time, time, time, time);
         //outColor = vec4(texture(LAMB_SAMPLER, out_normal).rgb, 1.0);
         //SphereLight currSphere = SPHERE_LIGHTS[0];
         //outColor = vec4(vec3(dot(out_normal, currSun.SUN_DIRECTION), 0.0, 0.0), 1.0);

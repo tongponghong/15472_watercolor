@@ -151,7 +151,7 @@ void Tutorial::ObjectsPipeline::create(RTG &rtg,
 
         VkPushConstantRange range {
             // specifically accessible by fragment shader 
-            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
             .offset = 0,
             .size = sizeof(Push),
         };

@@ -115,7 +115,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 
 	{ // create shadow render pass
 		// attachments:
-		std::array< VkAttachmentDescription, 1 > attachments{
+		std::array< VkAttachmentDescription, 1 > shadow_attachments{
 			// only should be a depth attachment
 			// maybe change loadop eventually for optimization purposes
 			VkAttachmentDescription{
@@ -173,8 +173,8 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 
 		VkRenderPassCreateInfo create_info {
 			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-			.attachmentCount = uint32_t(attachments.size()),
-			.pAttachments = attachments.data(),
+			.attachmentCount = uint32_t(shadow_attachments.size()),
+			.pAttachments = shadow_attachments.data(),
 			.subpassCount = 1,
 			.pSubpasses = &subpass,
 			.dependencyCount = uint32_t(dependencies.size()),
@@ -2349,7 +2349,9 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.EYE_vec = vec3{0.0f, 0.0f, 0.0f},
 				.tex_type = 0,
 				.exposure = rtg.exposure,
+				.time = float(time),
 			};
+			std::cout << "time: " << time << std::endl;
 
 			// camera descriptor still bound but unused
 
@@ -2379,7 +2381,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 					// switch out the textype based on which texture it is
 					vkCmdPushConstants(workspace.command_buffer, 
 									objects_pipeline.layout, 
-									VK_SHADER_STAGE_FRAGMENT_BIT, 
+									VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 
 									0, sizeof(push), &push);
 				}
 
@@ -2403,7 +2405,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 					// switch out the textype based on which texture it is
 					vkCmdPushConstants(workspace.command_buffer, 
 									objects_pipeline.layout, 
-									VK_SHADER_STAGE_FRAGMENT_BIT, 
+									VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,  
 									0, sizeof(push), &push);
 				}
 
@@ -2434,7 +2436,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 					// switch out the textype based on which texture it is
 					vkCmdPushConstants(workspace.command_buffer, 
 									objects_pipeline.layout, 
-									VK_SHADER_STAGE_FRAGMENT_BIT, 
+									VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 
 									0, sizeof(push), &push);
 				}
 
@@ -2492,6 +2494,10 @@ void Tutorial::update(float dt) {
 			longest_cycle = animation_cycle_length;
 		}
 	} 
+
+	if (rtg.scene.drivers.empty()) {
+		longest_cycle = FLT_MAX;
+	}
 
 	time = std::fmod(time + dt, longest_cycle);
 	//std::cout << "camera_mode: " << int(camera_mode) << std::endl;
