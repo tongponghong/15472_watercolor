@@ -32,9 +32,9 @@ layout (set = 1, binding = 0, std140) readonly buffer Transforms {
 
 void main() {
     float speed = 1.0;
-    float frequency = 1.0;
-    float tremor_amt = 0.0005;
-    float a = 0.5; // offset weight
+    float frequency = 10.0;
+    float tremor_amt = 0.001;
+    float a = 0.1; // offset weight
 
     // col ordered so op done in A * v 
     //gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
@@ -43,14 +43,13 @@ void main() {
     // position in clip space
     vec4 og_clip_position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
 
-    vec3 v_offset = sin(time * speed + og_clip_position.xyz * frequency) * tremor_amt * og_clip_position.w;
+    vec3 v_offset = sin(time * speed + position * frequency) * tremor_amt * (og_clip_position.w);
 
-   
     // grab from normal map 
     normal = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Normal);
 
     // tremored position
-    og_clip_position.xyz = og_clip_position.xyz + v_offset * (1 - a * dot(normalize(EYE - position), normal));
+    og_clip_position.xyz = og_clip_position.xyz + v_offset * (1 - a * dot(normalize(EYE - Position), normal));
 
     gl_Position = og_clip_position;
    
