@@ -44,16 +44,15 @@ void main() {
     vec4 og_clip_position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
 
     vec3 v_offset = sin(time * speed + og_clip_position.xyz * frequency) * tremor_amt * og_clip_position.w;
-
    
     // grab from normal map 
     normal = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Normal);
 
     // tremored position
-    og_clip_position.xyz = og_clip_position.xyz + v_offset * (1 - a * dot(normalize(EYE - position), normal));
+    float facing = dot(normalize(EYE - Position), normal); 
+    og_clip_position.xyz += v_offset * (1.0 - a * facing);
 
-    gl_Position = og_clip_position;
-   
+    gl_Position = og_clip_position;    
     new_tangent = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Tangent.xyz);
     // bitangent sign in last comp of tangent 
     bitangent = cross(normal, new_tangent) * Tangent.w;
@@ -63,4 +62,3 @@ void main() {
     texCoord = vec2(TexCoord[0], 1 - TexCoord[1]);
     // need to get a tangent and bitangent 
 }
-
