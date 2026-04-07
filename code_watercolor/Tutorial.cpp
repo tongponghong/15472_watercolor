@@ -3102,6 +3102,7 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
                         // take inverse bc not orthonormal
                         .WORLD_FROM_LOCAL_NORMAL = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currNode).nodeTransform))),
                  },
+				//TODO: investigate why this crashes :( (probably bc some meshes do not have materials, make sure to use default if so)
                 .material = strings_to_material_idxs[currMesh->material->name],
 				//.material = strings_to_material_idxs[textureSource],
 				.cubeTexture = strings_to_cube_texture_idxs[cubeTextureSource],

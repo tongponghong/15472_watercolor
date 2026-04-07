@@ -37,7 +37,7 @@ void main() {
     float a = 0.1; // offset weight
 
     // col ordered so op done in A * v 
-    //gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
+    gl_Position = TRANSFORMS[gl_InstanceIndex].CLIP_FROM_LOCAL * vec4(Position, 1.0);
     position = mat4x3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL) * vec4(Position, 1.0);
 
     // position in clip space
@@ -52,7 +52,7 @@ void main() {
     float facing = dot(normalize(EYE - Position), normal); 
     og_clip_position.xyz += v_offset * (1.0 - a * facing);
 
-    gl_Position = og_clip_position;    
+    //gl_Position = og_clip_position;    
     new_tangent = normalize(mat3(TRANSFORMS[gl_InstanceIndex].WORLD_FROM_LOCAL_NORMAL) * Tangent.xyz);
     // bitangent sign in last comp of tangent 
     bitangent = cross(normal, new_tangent) * Tangent.w;
