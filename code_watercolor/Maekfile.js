@@ -72,6 +72,18 @@ const shadow_shaders = [
 gen_objs.push( maek.CPP('ShadowPipeline.cpp', undefined, { depends:[...shadow_shaders] } ) );
 
 
+const compute_shaders = [
+	maek.GLSLC('shaders/gaussian.comp'),
+];
+gen_objs.push( maek.CPP('ComputePipeline.cpp', undefined, { depends:[...compute_shaders] } ) );
+
+const display_shaders = [
+	// maek.GLSLC('shaders/objects.vert'),
+	// maek.GLSLC('shaders/objects.frag'),
+];
+gen_objs.push( maek.CPP('DisplayPipeline.cpp', undefined, { depends:[...display_shaders] } ) );
+
+
 const main_objs = [
 	maek.CPP('RTG.cpp'),
 	maek.CPP('main.cpp'),

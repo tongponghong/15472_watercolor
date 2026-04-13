@@ -1,0 +1,18 @@
+# version 450
+//* source https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
+
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(binding=0, rgba16f) readonly uniform image2D inputImage;
+layout(binding=1, rgba16f) writeonly uniform image2D outputImage;
+
+void main(){
+    vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    value.x = float(texelCoord.x)/(gl_NumWorkGroups.x);
+    value.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
+
+    vec4 c = imageLoad(inputImage, texelCoord);
+    imageStore(outputImage, texelCoord, c);
+
+    //imageStore(imgOutput, texelCoord, value);
+}

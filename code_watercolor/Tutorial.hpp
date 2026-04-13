@@ -28,6 +28,8 @@ struct Tutorial : RTG::Application {
 	VkRenderPass render_pass = VK_NULL_HANDLE;
 	VkRenderPass shadow_render_pass = VK_NULL_HANDLE;
 
+	
+
 	//Pipelines:
 
 	struct BackgroundPipeline {
@@ -174,6 +176,26 @@ struct Tutorial : RTG::Application {
 	
 	//STEPX: Add descriptor pool here.
 
+	struct ComputePipeline {
+		// no descriptor set layouts
+		VkDescriptorSetLayout set0_image;
+
+		// push constants
+		struct Push {
+			float time;
+		};
+
+		VkPipelineLayout layout = VK_NULL_HANDLE;
+
+		// no vertex bindings
+		
+		VkPipeline handle = VK_NULL_HANDLE;
+
+		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
+		void destroy (RTG &);
+	} compute_pipeline;
+
+
 
 	//workspaces hold per-render resources:
 	struct Workspace {
@@ -209,8 +231,19 @@ struct Tutorial : RTG::Application {
 		Helpers::AllocatedBuffer Spotlights_src; // host coherent; mapped
 		Helpers::AllocatedBuffer Spotlights; // device-local
 		VkDescriptorSet Spotlights_descriptors; // references Transforms
+
+		Helpers::AllocatedBuffer Compute_src; // host coherent; mapped
+		Helpers::AllocatedBuffer Computes; // device-local
+		VkDescriptorSet Compute_descriptors; // references Transforms
+
+		
+		
 	};
 	std::vector< Workspace > workspaces;
+
+	Helpers::AllocatedImage compute_image;
+	VkImageView compute_image_view = VK_NULL_HANDLE;
+	
 
 	//-------------------------------------------------------------------
 	//static scene resources:
@@ -303,6 +336,7 @@ struct Tutorial : RTG::Application {
 	Helpers::AllocatedImage swapchain_depth_image;
 	VkImageView swapchain_depth_image_view = VK_NULL_HANDLE;
 	std::vector< VkFramebuffer > swapchain_framebuffers;
+	VkFramebuffer offscreen_framebuffer;
 	//used from on_swapchain and the destructor: (framebuffers are created in on_swapchain)
 	void destroy_framebuffers();
 

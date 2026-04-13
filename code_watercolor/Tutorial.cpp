@@ -248,10 +248,13 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	background_pipeline.create(rtg, render_pass, 0);
 	lines_pipeline.create(rtg, render_pass, 0);
 	objects_pipeline.create(rtg, render_pass, 0);
+	compute_pipeline.create(rtg, render_pass, 0);
+
+	workspaces.resize(rtg.swapchain_images.size());
 	
 	{ // create descriptor pool
-		uint32_t per_workspace = uint32_t(rtg.workspaces.size());
-		std::array< VkDescriptorPoolSize, 2 > pool_sizes {
+		uint32_t per_workspace = uint32_t(workspaces.size());
+		std::array< VkDescriptorPoolSize, 3 > pool_sizes {
 			VkDescriptorPoolSize {
 				// one desciptor per set, two set per workspace
 				.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -261,6 +264,10 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				// one descriptor per set, one set per workspace 
 				.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				.descriptorCount = 4 * per_workspace,
+			},
+			VkDescriptorPoolSize{
+				.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.descriptorCount = 2 * per_workspace,
 			}
 		};
 
@@ -268,7 +275,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			//because CREATE_FREE_DESCRIPTOR_SET_BIT isn't included, *can't* free individual descriptors allocated from this pool
 			.flags = 0,
-			.maxSets = 5 * per_workspace,  // five sets per workspace 
+			.maxSets = 6 * per_workspace,  // five sets per workspace 
 			.poolSizeCount = uint32_t(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data(),
 		};
@@ -277,7 +284,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK(vkCreateDescriptorPool(rtg.device, &create_info, nullptr, &descriptor_pool))
 	}
 	
-	workspaces.resize(rtg.workspaces.size());
+	//workspaces.resize(rtg.workspaces.size());
 	for (Workspace &workspace : workspaces) {
 		{ // allocate command buffer:
 			VkCommandBufferAllocateInfo alloc_info {
@@ -358,6 +365,18 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			};
 
 			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Transforms_descriptors));
+
+		}
+
+		{ // allocate descriptor set for compute descriptor
+			VkDescriptorSetAllocateInfo alloc_info{
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+				.descriptorPool = descriptor_pool,
+				.descriptorSetCount = 1,
+				.pSetLayouts = &compute_pipeline.set0_image,
+			};
+
+			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Compute_descriptors));
 
 		}
 
@@ -1543,6 +1562,14 @@ Tutorial::~Tutorial() {
 			rtg.helpers.destroy_buffer(std::move(workspace.Transforms));
 		}
 
+		if (workspace.Compute_src.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Compute_src));
+		}
+
+		if (workspace.Computes.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Computes));
+		}
+
 		// transforms_descriptors free when pool is destroyed
 	}
 	workspaces.clear();
@@ -1558,6 +1585,7 @@ Tutorial::~Tutorial() {
 	lines_pipeline.destroy(rtg);
 	objects_pipeline.destroy(rtg);
 	shadows_pipeline.destroy(rtg);
+	compute_pipeline.destroy(rtg);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -1627,6 +1655,23 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &swapchain_depth_image_view) );
 	}
 
+	//TODO std::array< VkImageView, 2 > offscreen_attachments{
+	// 		swapchain.image_views[0]
+	// 	};
+
+	// VkFramebufferCreateInfo create_info {
+	// 	.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+	// 	.renderPass = render_pass,
+	// 	.attachmentCount = uint32_t(offscreen_attachments.size()),
+	// 	.pAttachments = offscreen_attachments.data(),
+	// 	.width = swapchain.extent.width,
+	// 	.height = swapchain.extent.height,
+	// 	.layers = 1,
+	// };
+
+	// VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &offscreen_framebuffer) );
+
+
 	// create framebufers pointing to each swapchain image view and the shared depth image view
 	swapchain_framebuffers.assign(swapchain.image_views.size(), VK_NULL_HANDLE);
 	for (size_t i = 0; i < swapchain.image_views.size(); ++i) {
@@ -1662,6 +1707,10 @@ void Tutorial::destroy_framebuffers() {
 	swapchain_depth_image_view = VK_NULL_HANDLE;
 
 	rtg.helpers.destroy_image(std::move(swapchain_depth_image));
+
+	// vkDestroyFramebuffer(rtg.device, offscreen_framebuffer, nullptr);
+	// offscreen_framebuffer = VK_NULL_HANDLE;
+
 }
 
 
@@ -1682,6 +1731,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	//get more convenient names for the current workspace and target framebuffer:
 	Workspace &workspace = workspaces[render_params.workspace_index];
 	VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
+	//TODO VkFramebuffer framebuffer = offscreen_framebuffer;
+	
 
 	VK( vkResetCommandBuffer(workspace.command_buffer, 0) );
 
@@ -2337,8 +2388,26 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 			// actually draw the line vertices 
 			vkCmdDraw(workspace.command_buffer, uint32_t(lines_vertices.size()), 1, 0, 0);
-
 		}
+
+		//TODO { //* bind compute descriptor set
+		// 	{ // bind Compute descriptor set
+		// 		std::array< VkDescriptorSet, 1 > descriptor_sets {
+		// 			workspace.Compute_descriptors, // 0: Camera
+		// 		};
+
+		// 		vkCmdBindDescriptorSets(
+		// 			workspace.command_buffer, // command buffer
+		// 			VK_PIPELINE_BIND_POINT_GRAPHICS, // pipeline bind point
+		// 			compute_pipeline.layout, // pipeline layout
+		// 			0,  // first set
+		// 			// descriptor sets count,         ptr
+		// 			uint32_t(descriptor_sets.size()), descriptor_sets.data(), 
+		// 			// dynamic sets count,         ptr
+		// 			0,                             nullptr
+		// 		);
+		// 	}
+		// }
 
 		if (!object_instances.empty()) { // draw with objects pipeline
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, objects_pipeline.handle);
@@ -2477,9 +2546,94 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 		}
 		vkCmdEndRenderPass (workspace.command_buffer);
-	}
+	
+
+		//{
+		// VkImageMemoryBarrier barrier{
+		// 	.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		// 	.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+		// 	.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		// 	.newLayout = VK_IMAGE_LAYOUT_GENERAL,
+		// 	.image = compute_image,
+		// 	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
+		// };
+
+		// vkCmdPipelineBarrier(
+		// 	workspace.command_buffer,
+		// 	VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		// 	0,
+		// 	0, nullptr,
+		// 	0, nullptr,
+		// 	1, &barrier
+		// 	);
+		}
+
+		{ //* compute shader
+			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.handle);
+			vkCmdBindDescriptorSets(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.layout, 0, 1, &workspace.Compute_descriptors, 0, 0);
+			vkCmdDispatch(
+				workspace.command_buffer,
+				(rtg.configuration.surface_extent.width+7)/8,
+				(rtg.configuration.surface_extent.height+7)/8,
+				1
+			);
+		}
+
+
+		//vkCmdEndRenderPass (workspace.command_buffer);
+
+		// {
+		// 	VkImageMemoryBarrier barrier{
+		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+		// 		.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+
+		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+		// 		.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		// 	};
+		// 	vkCmdPipelineBarrier(
+		// 		workspace.command_buffer,
+		// 		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		// 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		// 		0,
+		// 		0,nullptr,
+		// 		0,nullptr,
+		// 		1,&barrier
+		// 	);
+		// }
+
+	// 	}
+	// }
+
+	// //* start new fragment shader
+	// std::array< VkClearValue, 2 > clear_values {
+	// 	VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
+	// 	VkClearValue{ .depthStencil { .depth = 1.0f, .stencil = 0}},
+	// };
+
+	// VkFramebuffer framebuffer_visible = swapchain_framebuffers[render_params.image_index];
+
+	// VkRenderPassBeginInfo begin_info {
+	// 	.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+	// 	.renderPass = render_pass,
+	// 	// references the attachments used in a render pass 
+	// 	.framebuffer = framebuffer_visible,
+	// 	// tells the pixel area that is being rendered to
+	// 	.renderArea {
+	// 		.offset = {.x = 0, .y = 0},
+	// 		.extent = rtg.swapchain_extent,
+	// 	},
+	// 	.clearValueCount = uint32_t(clear_values.size()),
+	// 	// color buffer and depth buffer loaded by begin cleared to the below vals
+	// 	.pClearValues = clear_values.data(),
+	// };
+
+	// vkCmdBeginRenderPass (workspace.command_buffer, 
+	// 						&begin_info, 
+	// 						VK_SUBPASS_CONTENTS_INLINE);
 
 	// end recording
+
 	VK( vkEndCommandBuffer(workspace.command_buffer) );
 
 	{ //submit `workspace.command buffer` for the GPU to run:
