@@ -100,8 +100,8 @@ void main() {
 
     // outColor = vec4(fract(position.x + time), fract(position.y + time), 0.0, 1.0);
     // outColor = vec4(0.0, fract(position.y), fract(position.x), 0.5);
-
-    outColor = vec4(0.0, 0.0, 0.0, 1.0);
+    
+    outColor = vec4(246.0/255.0, 238.0/255.0, 227.0/255.0, 1.0);
     // outColor = vec4(
 
     // )

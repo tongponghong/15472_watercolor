@@ -79,6 +79,38 @@ float get_luminance(vec3 rgb) {
     return dot(rgb, vec3(0.2126, 0.7152, 0.0722));
 }
 
+//https://www.ryanjuckett.com/rgb-color-space-conversion/
+vec3 linear_to_srgb(vec3 linear_col) {
+    vec3 outCol = vec3(0.0);
+
+    for (int i = 0; i < 3; i++) {
+        if (linear_col[i] <= 0.0031308) {
+            outCol[i] = linear_col[i] * 12.92;
+        } 
+        else {
+            outCol[i] = 1.055 * pow(linear_col[i], 1.0 / 2.4) - 0.055;
+        }
+    }
+
+    return outCol;
+}
+
+vec3 srgb_to_linear(vec3 srgb_col) {
+    vec3 outCol = vec3(0.0);
+
+    for (int i = 0; i < 3; i++) {
+        if (srgb_col[i] <= 0.04045) {
+            outCol[i] = srgb_col[i] / 12.92;
+        } 
+        else {
+            outCol[i] = pow((srgb_col[i] + 0.055) / 1.055, 2.4);
+        }
+    }
+
+    return outCol;
+}
+
+
 // technically should be based on max luminance but need to figure out how to find that without 193048394 cpu calcs 
 vec3 reinhard(vec3 rgb, float white_point) {
     float l_prev = get_luminance(rgb);
@@ -239,59 +271,97 @@ vec3 get_spot_contribution_lamb(vec3 norm) {
 }
 
 
-vec3 get_dilution_aoe(float dA_var, vec3 normal) {
+float get_dilution_aoe(float dA_var, vec3 normal) {
     // TODO: figure out if position or direction later 
     vec3 light_dir;
     float ndotl = dot(normal, light_dir);
-    vec3 dilute_area_total = vec3(0.0);
+    //vec3 dilute_area_total = vec3(0.0);
+    float dilute_area_total = (0.0);
 
     for (int i = 0; i < sunNum; ++i) {
         Sun currSun = SUN_LIGHTS[i];
-        vec3 ndotl_sun = currSun.SUN_ENERGY * 
-                         max(0.0, dot(normal, normalize(currSun.SUN_DIRECTION)));
+        // vec3 ndotl_sun = currSun.SUN_ENERGY * 
+        //                  max(0.0, dot(normal, normalize(currSun.SUN_DIRECTION)));
 
-        // vec3 ndotl_sun = max(0.0, dot(normal, normalize(currSun.SUN_DIRECTION)));
+        float ndotl_sun = max(0.0, dot(normal, normalize(currSun.SUN_DIRECTION)));
 
-        dilute_area_total += max(vec3(0.0), (ndotl_sun + (dA_var - 1)) / dA_var);
+        //dilute_area_total += max(vec3(0.0), (ndotl_sun + (dA_var - 1)) / dA_var);
+
+        dilute_area_total += ((ndotl_sun + (dA_var - 1)) / dA_var);
     }
 
     for (int i = 0; i < sphereNum; ++i) {
         SphereLight currSphere = SPHERE_LIGHTS[i];
         vec3 d_vec = currSphere.SPHERE_POSITION_RADIUS.xyz - position;
-        vec3 ndotl_sphere = currSphere.SPHERE_POWER_LIMIT.rgb * 
-                            max(0.0, dot(normal, normalize(d_vec)));
+        // vec3 ndotl_sphere = currSphere.SPHERE_POWER_LIMIT.rgb * 
+        //                     max(0.0, dot(normal, normalize(d_vec)));
 
-        // vec3 ndotl_sphere = max(0.0, dot(normal, normalize(d_vec)));
+        float ndotl_sphere = max(0.0, dot(normal, normalize(d_vec)));
 
 
-        dilute_area_total += max(vec3(0.0), (ndotl_sphere + (dA_var - 1)) / dA_var);
+        //dilute_area_total += max(vec3(0.0), (ndotl_sphere + (dA_var - 1)) / dA_var);
+        dilute_area_total += ((ndotl_sphere + (dA_var - 1)) / dA_var);
     }
 
     for (int i = 0; i < spotNum; ++i) {
         SpotLight currSpot = SPOT_LIGHTS[i];
-        vec3 ndotl_spot = currSpot.SPOT_POWER_LIMIT.rgb * 
-                          max(0.0, dot(normal, currSpot.SPOT_DIRECTION));
+        // vec3 ndotl_spot = currSpot.SPOT_POWER_LIMIT.rgb * 
+        //                   max(0.0, dot(normal, currSpot.SPOT_DIRECTION));
 
-        // vec3 ndotl_spot = max(0.0, dot(normal, currSpot.SPOT_DIRECTION));
+        float ndotl_spot = max(0.0, dot(normal, currSpot.SPOT_DIRECTION));
 
-        dilute_area_total += max(vec3(0.0), (ndotl_spot + (dA_var - 1)) / dA_var);
+        //dilute_area_total += max(vec3(0.0), (ndotl_spot + (dA_var - 1)) / dA_var);
+
+        dilute_area_total += ((ndotl_spot + (dA_var - 1)) / dA_var);
     }
 
     return dilute_area_total;
 }
 
-vec3 get_cangiante_color(float cangiante, vec3 dilute_aoe, vec3 color) {
-    return color + (dilute_aoe * cangiante);
+
+// float get_dilution_aoe(float dA_var, vec3 normal) {
+//     // TODO: figure out if position or direction later 
+//     //vec3 light_dir;
+//     //float ndotl = dot(normal, light_dir);
+//     //vec3 dilute_area_total = vec3(0.0);
+//     //float dilute_area_total = (0.0);
+
+//     vec3 c_sun = get_sun_contribution_lamb(normal);
+//     vec3 c_sphere = get_sphere_contribution_lamb(normal);
+//     vec3 c_spot = get_spot_contribution_lamb(normal);
+
+//     return (c_sun + c_sphere + c_spot).x;
+// }
+
+vec3 get_cangiante_color(float cangiante, float dilute_aoe, vec3 color) {
+    //return color + (dilute_aoe * cangiante);
+    if (dilute_aoe < 0.0) {
+        return vec3(1.0, 0.0, 0.0);
+    }
+    // since we are working in linear space
+    vec3 rgb_color = linear_to_srgb(color);
+    vec3 offset = linear_to_srgb(vec3(dilute_aoe * cangiante));
+    
+    //return color + (dilute_aoe * cangiante);
+    //return vec3(1.0, 243.0/255.0, 148.0/255.0);
+
+    return srgb_to_linear(min(vec3(1.0), rgb_color + offset));
 }
 
-vec3 get_dilute_color(vec3 dilute_aoe, vec3 paper_color, vec3 color, 
+vec3 get_dilute_color(float dilute_aoe, vec3 paper_color, vec3 color, 
                       float cangiante, float dilute) {
     
-    vec3 Cc = get_cangiante_color(cangiante, dilute_aoe, color);
+    vec3 Cc_linear = get_cangiante_color(cangiante, dilute_aoe, color);
 
-    vec3 dilute_offset = dilute_aoe * (paper_color - Cc);
+    vec3 Cc_srgb = linear_to_srgb(Cc_linear);
 
-    return dilute * dilute_offset + Cc;
+    vec3 dilute_offset = dilute_aoe * max(vec3(0.0), paper_color - Cc_linear);
+
+    vec3 dilute_srgb = min(vec3(1.0), linear_to_srgb(dilute * dilute_offset) + Cc_srgb);
+
+    return srgb_to_linear(dilute_srgb);
+    //return dilute_srgb;
+    //return vec3(1000.0, 1000.0, 1000.0);
     //return Cc;
 }
 
@@ -311,11 +381,11 @@ void main() {
     vec3 scaled_albedo;
     vec3 tonemapped_albedo;
 
-    float dilute = 0.0;
-    float cangiante = 0.6;
+    float dilute = 0.3;
+    float cangiante = 0.3;
     float dilution_area_var = 1.0;
-    vec3 paper_color = vec3(1.0);
-
+    vec3 paper_color = vec3(246.0/255.0, 238.0/255.0, 227.0/255.0);
+    //vec3 paper_color = vec3(255.0/255.0, 255.0/255.0, 255.0/255.0);
 
     //vec3 e = vec3(0.0);
 
@@ -327,14 +397,16 @@ void main() {
         albedo = texture(TEXTURE, texCoord).rgb;
         //texture(LAMB_SAMPLER, out_normal).rgb
         lit_albedo = albedo * (c_sun + c_sphere + c_spot);
-       
+        
         scaled_albedo = exposure_scale(lit_albedo, exposure);
         tonemapped_albedo = tonemapper(scaled_albedo, tonemap_type);
 
-        vec3 dilution_aoe = get_dilution_aoe(dilution_area_var, out_normal);
+        float dilution_aoe = get_dilution_aoe(dilution_area_var, out_normal);
 
         vec3 dilute_color = get_dilute_color(dilution_aoe, paper_color, albedo, 
                                              cangiante, dilute);
+
+        //dilute_color = tonemapper(dilute_color, tonemap_type);
         //outColor = vec4(1.0, 0.0, 0.0, 1.0);
        
         //outColor = vec4(texture(TEXTURE, texCoord).rgb / PI * e, 1.0);

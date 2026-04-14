@@ -31,7 +31,7 @@
 	"type":"MATERIAL",
 	"name":"lambertian:yellowOrange",
 	"lambertian":{
-		"albedo":[ 0.8004, 0.551886, 0.0178982 ]
+		"albedo":[ 0.539, 0.112, 0.0 ]
 	}
 },
 {
