@@ -1,18 +1,71 @@
 # version 450
-//* source https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
+//* resources:
+//* https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
+//* https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+//* https://graphics.cs.cmu.edu/courses/15473/f25/assets/lectures/VCS_Lecture_12.pdf
 
 layout(local_size_x = 8, local_size_y = 8) in;
 layout(binding=0, rgba16f) readonly uniform image2D inputImage;
 layout(binding=1, rgba16f) writeonly uniform image2D outputImage;
 
+
+const float PI = 3.1415926535897932384626433832795;
+const int kernelSize = 5;
+const int halfSize = kernelSize / 2;
+const float stdev = 10.0f;
+
+//* this will be precomputed on CPU later (or set as constants)
+float G(float x, float y, float stdev){
+    float coors = x*x + y*y;
+    float stdevSq = stdev*stdev;
+    float frac = (-1.0f * coors)/(stdevSq*2.0f);
+    float g = (1.0f / (2.0f * PI * stdevSq)) * exp(frac);
+    return g;
+}
+
+//* can be split into horizontal/vertical as needed
+vec3 gaussianBlur(int x, int y){
+    //* create kernel
+    float kernel[kernelSize * kernelSize]; 
+    float sum = 0.0f;
+    for (int i = 0; i < kernelSize; i++){
+        for (int j = 0; j < kernelSize; j++){
+            float g = G(i - halfSize, j - halfSize, stdev);
+            kernel[i * kernelSize + j] = g;
+            sum += g;
+        }
+    }
+
+    //* normalize
+    for (int i = 0; i < kernelSize; i++){
+        for (int j = 0; j < kernelSize; j++){
+            kernel[i * kernelSize + j] /= sum;
+        }
+    }
+
+    // convolve
+    ivec2 size = imageSize(inputImage);
+    vec4 total = vec4(0.0);
+    for (int i = 0; i < kernelSize; i++){
+        for (int j = 0; j < kernelSize; j++){
+            float weight = kernel[i * kernelSize + j];
+            ivec2 pos = clamp(
+                ivec2(x + i - halfSize, y + j - halfSize),
+                ivec2(0),
+                size - 1
+            );
+            vec4 value = imageLoad(inputImage, pos);
+            total += value * weight;
+        }
+    }
+
+    return total.xyz;
+}
+
 void main(){
     vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    value.x = float(texelCoord.x)/(gl_NumWorkGroups.x);
-    value.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
-    vec4 c = imageLoad(inputImage, texelCoord);
+    vec4 c = vec4(gaussianBlur(texelCoord.x, texelCoord.y), 1.0f);
     imageStore(outputImage, texelCoord, c);
-
-    //imageStore(imgOutput, texelCoord, value);
 }
