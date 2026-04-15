@@ -249,6 +249,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	lines_pipeline.create(rtg, render_pass, 0);
 	objects_pipeline.create(rtg, render_pass, 0);
 	compute_pipeline.create(rtg, render_pass, 0);
+	display_pipeline.create(rtg, render_pass, 0);
 
 	workspaces.resize(rtg.swapchain_images.size());
 	
@@ -1586,6 +1587,7 @@ Tutorial::~Tutorial() {
 	objects_pipeline.destroy(rtg);
 	shadows_pipeline.destroy(rtg);
 	compute_pipeline.destroy(rtg);
+	display_pipeline.create(rtg, render_pass, 0);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -2540,7 +2542,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				vkCmdDraw(workspace.command_buffer, 
 					      inst.vertices.count, 
 						  1, 
-						  inst.vertices.first, 
+						  inst.vertices.first,
 						  index);
 			}
 
@@ -2569,6 +2571,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		// 	);
 		}
 
+		//! NEED BARRIERS HERE
+
 		{ //* compute shader
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.handle);
 			vkCmdBindDescriptorSets(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.layout, 0, 1, &workspace.Compute_descriptors, 0, 0);
@@ -2578,6 +2582,25 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				(rtg.configuration.surface_extent.height+7)/8,
 				1
 			);
+		}
+
+		//! NEED BARRIERS HERE
+		
+		{ //* draw with the display pipeline :
+			vkCmdBindPipeline(workspace.command_buffer, 
+				              VK_PIPELINE_BIND_POINT_GRAPHICS, 
+							  display_pipeline.handle);
+			{ // push time
+				DisplayPipeline::Push push {
+					.time = float(time),
+				};
+				vkCmdPushConstants(workspace.command_buffer, 
+								   display_pipeline.layout, 
+								   VK_SHADER_STAGE_FRAGMENT_BIT, 
+								   0, sizeof(push), &push);
+			}
+
+			vkCmdDraw(workspace.command_buffer, 3, 1, 0, 0);
 		}
 
 
