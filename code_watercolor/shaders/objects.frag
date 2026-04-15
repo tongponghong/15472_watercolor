@@ -63,10 +63,6 @@ layout (location = 3) in vec3 bitangent;
 layout (location = 4) in vec2 texCoord;
 layout (location = 5) in mat3 TBN_basis;
 
-
-
-
-
 layout (location = 0) out vec4 outColor;
 
 //https://64.github.io/tonemapping/
@@ -109,6 +105,85 @@ vec3 srgb_to_linear(vec3 srgb_col) {
 
     return outCol;
 }
+
+float random2(vec2 coord) {
+    return fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float random3(vec3 coord) {
+    float r1 = random2(coord.xy);
+    float r2 = random2(coord.yz);
+    float r3 = random2(coord.xz);
+
+    return r1 + r2 + r3;
+}
+
+//https://iquilezles.org/articles/morenoise/
+float noiseGen (in vec3 coord) {
+    vec3 i = floor(coord);
+    vec3 f = fract(coord);
+    
+    float r0 = random3(i + vec3(0.0, 0.0, 0.0));
+    float r1 = random3(i + vec3(0.0, 0.0, 1.0));
+    float r2 = random3(i + vec3(0.0, 1.0, 0.0));
+    float r3 = random3(i + vec3(0.0, 1.0, 1.0));
+    float r4 = random3(i + vec3(1.0, 0.0, 0.0));
+    float r5 = random3(i + vec3(1.0, 0.0, 1.0));
+    float r6 = random3(i + vec3(1.0, 1.0, 0.0));
+    float r7 = random3(i + vec3(1.0, 1.0, 1.0));
+
+    // quintic interpolation
+    vec3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+
+    float c0 = r0;
+    float c1 = r1 - r0;
+    float c2 = r2 - r0;
+    float c3 = r5 - r0;
+    float c4 = r0 - r1 - r2 + r3;
+    float c5 = r0 - r2 - r4 + r6;
+    float c6 = r0 - r1 - r4 + r5;
+    float c7 = -r0 + r1 + r2 -r3 + r4 - r5 - r6 + r7;
+
+    // return mix(c1, c2, u.x) + 
+    //        (c3 - c1) * u.y * (1.0 - u.x) + 
+    //        (c4 - c2) * u.x * u.y;
+
+    return c0 + c1 * u.x + c2 * u.y + c3 * u.z + 
+                c4 * u.x * u.y +
+                c5 * u.y * u.z + 
+                c6 * u.z * u.x +
+                c7 * u.x * u.y * u.z;
+}
+
+float gen_fBrownNoise(in vec3 coord) {
+    float v = 0.0;
+    float a = 0.5;
+    int OCTAVES = 3;
+    // mat2 rot = mat2(cos(0.75), -sin(0.75),
+    //                 sin(0.75),  cos(0.75));
+
+    // mat2 rot = mat2(cos(0.33), -sin(0.33),
+    //                 sin(0.33),  cos(0.33));
+
+    // mat2 rot = mat2(cos(0.5), -sin(0.5),
+    //                 sin(0.5),  cos(0.5));
+
+    // interesting graininess... like water
+    // mat2 rot = mat2(exp(0.5), -sin(0.75),
+    //                 sin(0.75),  exp(0.5));
+
+    // mat2 rot = mat2(exp(0.75), -exp(0.75),
+    //                 exp(0.75),  exp(0.75));
+
+    for (int i = 0; i < OCTAVES; ++i) {
+        v += a * noiseGen(coord);
+        coord = coord * 1.2;
+        a *= 0.5;
+    }
+
+    return v;
+}
+
 
 
 // technically should be based on max luminance but need to figure out how to find that without 193048394 cpu calcs 
@@ -357,7 +432,7 @@ vec3 get_dilute_color(float dilute_aoe, vec3 paper_color, vec3 color,
 
     vec3 dilute_offset = dilute_aoe * max(vec3(0.0), paper_color - Cc_linear);
 
-    vec3 dilute_srgb = min(vec3(1.0), linear_to_srgb(dilute * dilute_offset) + Cc_srgb);
+    vec3 dilute_srgb = min(paper_color, linear_to_srgb(dilute * dilute_offset) + Cc_srgb);
 
     return srgb_to_linear(dilute_srgb);
     //return dilute_srgb;
@@ -381,13 +456,14 @@ void main() {
     vec3 scaled_albedo;
     vec3 tonemapped_albedo;
 
-    float dilute = 0.3;
-    float cangiante = 0.3;
+    float dilute = 0.1;
+    float cangiante = 0.6;
     float dilution_area_var = 1.0;
     vec3 paper_color = vec3(246.0/255.0, 238.0/255.0, 227.0/255.0);
     //vec3 paper_color = vec3(255.0/255.0, 255.0/255.0, 255.0/255.0);
 
     //vec3 e = vec3(0.0);
+    float ctrl = gen_fBrownNoise(position);
 
     if (tex_type == 0) {
         vec3 c_sun = get_sun_contribution_lamb(out_normal);
@@ -406,12 +482,19 @@ void main() {
         vec3 dilute_color = get_dilute_color(dilution_aoe, paper_color, albedo, 
                                              cangiante, dilute);
 
-        //dilute_color = tonemapper(dilute_color, tonemap_type);
+        if (ctrl < 0.5) {
+            dilute_color = pow(dilute_color, vec3(3.0 - (ctrl * 4.0)));
+        }
+        else {
+            dilute_color = (ctrl - 0.5) * 2 * (paper_color - dilute_color) + dilute_color;
+        }
+
+        
         //outColor = vec4(1.0, 0.0, 0.0, 1.0);
        
         //outColor = vec4(texture(TEXTURE, texCoord).rgb / PI * e, 1.0);
         // outColor = vec4(tonemapped_albedo, 1.0);
-        outColor = vec4(dilute_color, 1.0);
+        outColor = vec4(vec3(ctrl), 1.0);
         //outColor = vec4(time, time, time, time);
 
     }

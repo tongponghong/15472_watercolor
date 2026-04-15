@@ -102,50 +102,47 @@ void main() {
     // outColor = vec4(0.0, fract(position.y), fract(position.x), 0.5);
     
     outColor = vec4(246.0/255.0, 238.0/255.0, 227.0/255.0, 1.0);
-    // outColor = vec4(
-
-    // )
 
 
     //how zoomed in you are into the noise
-    // vec2 coord = gl_FragCoord.xy / vec2(1600.0, 800.0) * 3.0;
-    // vec3 color = vec3(0.0);
+    vec2 coord = gl_FragCoord.xy / vec2(1600.0, 800.0) * 3.0;
+    vec3 color = vec3(0.0);
 
-    // vec2 q;
-    // q.x = gen_fBrownNoise(coord + 0.0 * time);
-    // q.y = gen_fBrownNoise(coord + vec2(1.0));
+    vec2 q;
+    q.x = gen_fBrownNoise(coord + 0.0 * time);
+    q.y = gen_fBrownNoise(coord + vec2(1.0));
 
-    // vec2 r;
-    // r.x = gen_fBrownNoise(coord + 1.0 * q + vec2(1.7, 9.2) + 0.15 * time);
-    // r.y = gen_fBrownNoise(coord + 1.0 * q + vec2(8.3, 2.8) + 0.126 * time);
+    vec2 r;
+    r.x = gen_fBrownNoise(coord + 1.0 * q + vec2(1.7, 9.2) + 0.15 * time);
+    r.y = gen_fBrownNoise(coord + 1.0 * q + vec2(8.3, 2.8) + 0.126 * time);
 
-    // vec2 s;
-    // s.x = gen_fBrownNoise(coord + 1.0 * r + vec2(2.5, 8.2) + 0.2 * time);
-    // s.y = gen_fBrownNoise(coord + 1.0 * r + vec2(9.6, 3.0) + 0.14 * time);
+    vec2 s;
+    s.x = gen_fBrownNoise(coord + 1.0 * r + vec2(2.5, 8.2) + 0.2 * time);
+    s.y = gen_fBrownNoise(coord + 1.0 * r + vec2(9.6, 3.0) + 0.14 * time);
 
-    // float f = gen_fBrownNoise(coord + r + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + r + gen_fBrownNoise(coord + s))));
+    float f = gen_fBrownNoise(coord + r + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + r + gen_fBrownNoise(coord + s))));
 
-    // //float f = gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s))))))))))));
+    //float f = gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s + gen_fBrownNoise(coord + s))))))))))));
 
-    // color = mix(vec3(0.101961, 0.619608, 0.666667),
-    //             vec3(0.666667, 0.666667, 0.498039),
-    //             clamp((f * f) * 4.0, 0.0, 1.0));
+    color = mix(vec3(0.101961, 0.619608, 0.666667),
+                vec3(0.666667, 0.666667, 0.498039),
+                clamp((f * f) * 4.0, 0.0, 1.0));
 
-    // color = mix(color, 
-    //             vec3(0, 0.6, 0.164706), 
-    //             clamp(length(q), 0.0, 1.0));
+    color = mix(color, 
+                vec3(0, 0.6, 0.164706), 
+                clamp(length(q), 0.0, 1.0));
 
-    // color = mix(color, 
-    //             vec3(0.666667, 1, 1), 
-    //             clamp(length(r.x), 0.0, 1.0));
+    color = mix(color, 
+                vec3(0.666667, 1, 1), 
+                clamp(length(r.x), 0.0, 1.0));
     
-    // color = mix(color, 
-    //             vec3(0.666667, 0.494290, 0.1138), 
-    //             clamp(length(q), 0.0, 1.0));
+    color = mix(color, 
+                vec3(0.666667, 0.494290, 0.1138), 
+                clamp(length(q), 0.0, 1.0));
 
-    // color = mix(color, 
-    //             vec3(0.01, 0.0, 0.5555), 
-    //             clamp(length(r.x) / 2, 0.0, 1.0));
+    color = mix(color, 
+                vec3(0.01, 0.0, 0.5555), 
+                clamp(length(r.x) / 2, 0.0, 1.0));
     
     // outColor = vec4((pow(f, 3) + 0.6 * pow(f, 2) + 0.5 * pow(f, 1)) * color * sin(color) / cos(color),
     //                 1.0);
