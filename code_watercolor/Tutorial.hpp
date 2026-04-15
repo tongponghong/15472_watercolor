@@ -50,6 +50,24 @@ struct Tutorial : RTG::Application {
 		void destroy (RTG &);
 	} background_pipeline;
 
+	struct DisplayPipeline {
+		// no descriptor set layouts
+
+		// push constants
+		struct Push {
+			float time;
+		};
+
+		VkPipelineLayout layout = VK_NULL_HANDLE;
+
+		// no vertex bindings
+		
+		VkPipeline handle = VK_NULL_HANDLE;
+
+		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
+		void destroy (RTG &);
+	} display_pipeline;
+
 	struct LinesPipeline {
 		// descriptor set layouts
 		// a descriptor is pointer to resource in GPU memory with a specific type
