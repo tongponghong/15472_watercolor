@@ -352,9 +352,15 @@ struct Tutorial : RTG::Application {
 	virtual void on_swapchain(RTG &, RTG::SwapchainEvent const &) override;
 
 	Helpers::AllocatedImage swapchain_depth_image;
+	Helpers::AllocatedImage offscreen_input_image;   // compute input
+	Helpers::AllocatedImage blurred_offscreen_image; // compute output
+
 	VkImageView swapchain_depth_image_view = VK_NULL_HANDLE;
+	VkImageView offscreen_input_image_view = VK_NULL_HANDLE; // image view for compute input
+	VkImageView blurred_offscreen_image_view = VK_NULL_HANDLE; 
+
 	std::vector< VkFramebuffer > swapchain_framebuffers;
-	VkFramebuffer offscreen_framebuffer;
+	VkFramebuffer offscreen_image_framebuffer = VK_NULL_HANDLE;
 	//used from on_swapchain and the destructor: (framebuffers are created in on_swapchain)
 	void destroy_framebuffers();
 
