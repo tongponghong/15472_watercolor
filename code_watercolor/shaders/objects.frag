@@ -110,13 +110,29 @@ float random2(vec2 coord) {
     return fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
+vec2 random22(vec2 p){
+   return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))))*43758.5453);
+}
+
+
 float random3(vec3 coord) {
     float r1 = random2(coord.xy);
     float r2 = random2(coord.yz);
     float r3 = random2(coord.xz);
-
-    return r1 + r2 + r3;
+    return (r1 + r2 + r3).x;
 }
+
+vec3 random33(vec3 p){
+    p = fract(p * 0.1031);
+    p += dot(p, p.yzx + 33.33);
+    return fract((p.xxy + p.yzz) * p.zyx);
+}
+
+float random0(float x) {
+   return fract(sin(x * 12.9898 + 78.233) * 43758.5453);
+}
+
+
 
 //https://iquilezles.org/articles/morenoise/
 float noiseGen (in vec3 coord) {
@@ -283,7 +299,7 @@ vec3 get_spot_contribution_lamb(vec3 norm) {
         float half_sin = currSpot.SPOT_POSITION_RADIUS.w / dist;
 
         //float ndotl = dot(norm, normalize(p_vec));
-        float ndotl = dot(norm, currSpot.SPOT_DIRECTION);
+        float ndotl = dot(norm, normalize(p_vec));
 
         float lim_atten = max(0.0, 1.0 - pow((dist / currSpot.SPOT_POWER_LIMIT.a), 4));
         float lim_falloff = lim_atten * lim_atten / (dist * dist + 1.0);
@@ -348,8 +364,8 @@ vec3 get_spot_contribution_lamb(vec3 norm) {
 
 float get_dilution_aoe(float dA_var, vec3 normal) {
     // TODO: figure out if position or direction later 
-    vec3 light_dir;
-    float ndotl = dot(normal, light_dir);
+    // vec3 light_dir;
+    // float ndotl = dot(normal, light_dir);
     //vec3 dilute_area_total = vec3(0.0);
     float dilute_area_total = (0.0);
 
@@ -364,6 +380,8 @@ float get_dilution_aoe(float dA_var, vec3 normal) {
 
         dilute_area_total += ((ndotl_sun + (dA_var - 1)) / dA_var);
     }
+
+
 
     for (int i = 0; i < sphereNum; ++i) {
         SphereLight currSphere = SPHERE_LIGHTS[i];
@@ -390,57 +408,93 @@ float get_dilution_aoe(float dA_var, vec3 normal) {
         dilute_area_total += ((ndotl_spot + (dA_var - 1)) / dA_var);
     }
 
-    return dilute_area_total;
+    return clamp(dilute_area_total, 0.0, 1.0);
 }
 
 
-// float get_dilution_aoe(float dA_var, vec3 normal) {
-//     // TODO: figure out if position or direction later 
-//     //vec3 light_dir;
-//     //float ndotl = dot(normal, light_dir);
-//     //vec3 dilute_area_total = vec3(0.0);
-//     //float dilute_area_total = (0.0);
+//* Function directly from https://thebookofshaders.com/11/
+vec2 simplex(vec2 st){
+   vec2 fst = floor(st);
+   vec2 a = random22(fst);
+   vec2 b = random22(fst + vec2(1.0, 0.0));
+   vec2 c = random22(fst + vec2(0.0, 1.0));
+   vec2 d = random22(fst + vec2(1.0, 1.0));
+   vec2 fr = fract(st);
+   vec2 u = fr*fr*(3.0-2.0*fr);
+   return mix(a, b, u.x) + (c-a)*u.y *(1.0-u.x) + (d-b)*u.x*u.y;
+}
 
-//     vec3 c_sun = get_sun_contribution_lamb(normal);
-//     vec3 c_sphere = get_sphere_contribution_lamb(normal);
-//     vec3 c_spot = get_spot_contribution_lamb(normal);
+//* Function directly from https://thebookofshaders.com/11/
+vec3 simplex(vec3 st){
+    vec3 fst = floor(st);
 
-//     return (c_sun + c_sphere + c_spot).x;
-// }
+    vec3 a = random33(fst);
+    vec3 b = random33(fst + vec3(1.0, 0.0, 0.0));
+    vec3 c = random33(fst + vec3(0.0, 1.0, 0.0));
+    vec3 d = random33(fst + vec3(1.0, 1.0, 0.0));
 
-vec3 get_cangiante_color(float cangiante, float dilute_aoe, vec3 color) {
-    //return color + (dilute_aoe * cangiante);
-    if (dilute_aoe < 0.0) {
-        return vec3(1.0, 0.0, 0.0);
+    vec3 e = random33(fst + vec3(0.0, 0.0, 1.0));
+    vec3 f = random33(fst + vec3(1.0, 0.0, 1.0));
+    vec3 g = random33(fst + vec3(0.0, 1.0, 1.0));
+    vec3 h = random33(fst + vec3(1.0, 1.0, 1.0));
+
+    vec3 fr = fract(st);
+    vec3 u = fr * fr * (3.0 - 2.0 * fr);
+
+    return 
+        mix(
+            mix(mix(a, b, u.x), mix(c, d, u.x), u.y),
+            mix(mix(e, f, u.x), mix(g, h, u.x), u.y),
+            u.z
+        );
+}
+
+//* Function directly from https://thebookofshaders.com/13/
+float fbm(vec2 st){
+   float v = 0.0;
+   float a = 2.5;
+   vec2 shift = vec2(100.0);
+   mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+   for (int i = 0; i < 3; i++){
+       v += a * simplex(st).x;
+       st = rot * st * 2.0 + shift;
+       a *= 0.6;
+   }
+   return v;
+}
+
+float fbm(vec3 st){
+    float v = 0.0;
+    float a = 2.5;
+    vec3 shift = vec3(100.0);
+
+    float angle = 0.5;
+    mat3 rot = mat3(
+        cos(angle),sin(angle),0.0,
+        -sin(angle),cos(angle),0.0,
+        0.0,0.0,1.0
+    );
+
+    for (int i = 0; i < 3; i++){
+        v += a * simplex(st).x;
+        st = rot * st * 2.0 + shift;
+        a *= 0.5;
     }
-    // since we are working in linear space
-    vec3 rgb_color = linear_to_srgb(color);
-    vec3 offset = linear_to_srgb(vec3(dilute_aoe * cangiante));
-    
-    //return color + (dilute_aoe * cangiante);
-    //return vec3(1.0, 243.0/255.0, 148.0/255.0);
-
-    return srgb_to_linear(min(vec3(1.0), rgb_color + offset));
-}
-
-vec3 get_dilute_color(float dilute_aoe, vec3 paper_color, vec3 color, 
-                      float cangiante, float dilute) {
-    
-    vec3 Cc_linear = get_cangiante_color(cangiante, dilute_aoe, color);
-
-    vec3 Cc_srgb = linear_to_srgb(Cc_linear);
-
-    vec3 dilute_offset = dilute_aoe * max(vec3(0.0), paper_color - Cc_linear);
-
-    vec3 dilute_srgb = min(paper_color, linear_to_srgb(dilute * dilute_offset) + Cc_srgb);
-
-    return srgb_to_linear(dilute_srgb);
-    //return dilute_srgb;
-    //return vec3(1000.0, 1000.0, 1000.0);
-    //return Cc;
+    return v;
 }
 
 
+//* background, background opacity, forground, forground opacity
+//* yes, background is A and forground is B
+vec4 alphaOver(vec4 background, vec4 foreground){
+    vec3 A = background.xyz;
+    vec3 B = foreground.xyz;
+    float alphaA = background.w;
+    float alphaB = foreground.w;
+    vec3 C = alphaB*B + (1-alphaB)*alphaA*A;
+    float alphaC = alphaB + (1-alphaB)*alphaA;
+    return vec4(C, alphaC);
+}
 
 // To help with normal mapping: https://vulkanppp.wordpress.com/2017/07/06/week-6-normal-mapping-specular-mapping-pipeline-refactoring/
 
@@ -449,21 +503,28 @@ void main() {
     vec3 n = normal;
     vec3 new_normal = texture(NORMAL_SAMPLER, texCoord).rgb;
     new_normal = new_normal * 2.0 - 1.0;
-    vec3 out_normal = TBN_basis * new_normal;
+    vec3 out_normal = normalize(TBN_basis * new_normal);
     
     vec3 albedo;
     vec3 lit_albedo;
     vec3 scaled_albedo;
     vec3 tonemapped_albedo;
 
-    float dilute = 0.1;
-    float cangiante = 0.6;
+    //* cangiante weight
+    float c = 0.8;
+    //* dilution weight
+    float d = 0.4;
+    //* cangiante color
+    vec3 C = vec3(40/255.0, 30/255.0, 60/255.0);
     float dilution_area_var = 1.0;
-    vec3 paper_color = vec3(246.0/255.0, 238.0/255.0, 227.0/255.0);
-    //vec3 paper_color = vec3(255.0/255.0, 255.0/255.0, 255.0/255.0);
 
-    //vec3 e = vec3(0.0);
-    float ctrl = gen_fBrownNoise(position);
+    // paper color
+    vec3 Cp = vec3(246.0/255.0, 238.0/255.0, 227.0/255.0);
+
+    float scale = 0.1;
+    vec3 noiseInput = position*scale;
+    float ctrl = clamp(fbm(noiseInput)/5,0.0, 1.0);
+
 
     if (tex_type == 0) {
         vec3 c_sun = get_sun_contribution_lamb(out_normal);
@@ -473,30 +534,53 @@ void main() {
         albedo = texture(TEXTURE, texCoord).rgb;
         //texture(LAMB_SAMPLER, out_normal).rgb
         lit_albedo = albedo * (c_sun + c_sphere + c_spot);
+
+        //* 1. dilution area
+        float Da = get_dilution_aoe(dilution_area_var, out_normal);
+
+        //* 2. cangiante
+        // my version:
+        // treat the cangiante color as if it is a color wash that occurs under
+        // existing paint (like how watercolor artists often start with a layer 
+        // of light blue paint to do the shadows)
+
+        // background
+        vec4 background = vec4(C + Da * c, c);
+        // foreground
+        vec4 foreground = vec4(albedo, Da);
+        vec4 both = alphaOver(background,foreground);
+
+        vec3 Cc = both.xyz;
+        float alphaC = both.w;
         
-        scaled_albedo = exposure_scale(lit_albedo, exposure);
-        tonemapped_albedo = tonemapper(scaled_albedo, tonemap_type);
+        Cc = mix(albedo, Cc, alphaC);
 
-        float dilution_aoe = get_dilution_aoe(dilution_area_var, out_normal);
+        // their version:
+        bool accurateToPaper = false;
+        if (accurateToPaper){
+            Cc = (albedo + Da * c);
+        }
 
-        vec3 dilute_color = get_dilute_color(dilution_aoe, paper_color, albedo, 
-                                             cangiante, dilute);
+        //* 3. dilution
+        vec3 Cd = d * Da * (Cp - Cc) + Cc;
 
+        //* 4. turbulence
+        vec3 Ct;
         if (ctrl < 0.5) {
-            dilute_color = pow(dilute_color, vec3(3.0 - (ctrl * 4.0)));
-        }
-        else {
-            dilute_color = (ctrl - 0.5) * 2 * (paper_color - dilute_color) + dilute_color;
+            float expv = max(1.0, 3.0 - ctrl * 4.0);
+            Ct = pow(Cd, vec3(expv));
+        } else {
+            Ct = (ctrl - 0.5) * 2.0 * (Cp - Cd) + Cd;
         }
 
-        
-        //outColor = vec4(1.0, 0.0, 0.0, 1.0);
-       
-        //outColor = vec4(texture(TEXTURE, texCoord).rgb / PI * e, 1.0);
-        // outColor = vec4(tonemapped_albedo, 1.0);
-        outColor = vec4(vec3(ctrl), 1.0);
-        //outColor = vec4(time, time, time, time);
+        bool doExposureTone = false;
+        if (doExposureTone){
+            vec3 exposed = exposure_scale(Ct, exposure);
+            vec3 tonemapped = tonemapper(exposed, tonemap_type);
+            Ct = min(Ct, Cp);
+        }
 
+        outColor = vec4(Ct, 1.0);
     }
 
     else if (tex_type == 1) {
