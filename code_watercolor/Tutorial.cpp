@@ -30,7 +30,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	{ // create render pass
 		// attachments:
 		std::array< VkAttachmentDescription, 2 > attachments{
-			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)ßß
+			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)
 				.format = rtg.surface_format.format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				// how to load data before rendering
@@ -42,7 +42,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				// what layout th imag will be transitioned to before load
 				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				// what layout the image will be transitioned to after store 
-				.finalLayout = rtg.present_layout,
+				.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			},
 			VkAttachmentDescription{
 				.format = depth_format,
@@ -1732,7 +1732,6 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	Workspace &workspace = workspaces[render_params.workspace_index];
 	VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
 	//TODO VkFramebuffer framebuffer = offscreen_framebuffer;
-	
 
 	VK( vkResetCommandBuffer(workspace.command_buffer, 0) );
 
@@ -2133,6 +2132,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			std::cout << "Re-allocated object transforms buffers to" << new_bytes << " bytes." << std::endl;
 		}
 
+
+
 		assert(workspace.Spotlights_src.size == workspace.Spotlights.size);
 		assert(workspace.Spotlights_src.size >= needed_bytes);
 
@@ -2184,22 +2185,50 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 						&copy_region);
 	}
 
-	// { // upload world info:
-	// 	assert(workspace.Camera_src.size == sizeof(world));
+	{ // update compute pipeline
+		VkDescriptorImageInfo input_info {
+			.sampler = VK_NULL_HANDLE,
+			.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
 
-	// 	// host-side copy into world_src:
-	// 	memcpy(workspace.World_src.allocation.data(), &world, sizeof(world));
+		VkDescriptorImageInfo output_info {
+			.sampler = VK_NULL_HANDLE,
+			.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
 
-	// 	// add device-side copy from World_src -> World:
-	// 	assert(workspace.World_src.size == workspace.World.size);
-	// 	VkBufferCopy copy_region{
-	// 		.srcOffset = 0,
-	// 		.dstOffset = 0,
-	// 		.size = workspace.World_src.size,
-	// 	};
+		std::array< VkWriteDescriptorSet, 2 > writes{
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Compute_descriptors,
+				.dstBinding = 0, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &input_info,
+			},
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Compute_descriptors,
+				.dstBinding = 1, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &output_info,
+			},
+		};
 
-	// 	vkCmdCopyBuffer(workspace.command_buffer, workspace.World_src.handle, workspace.World.handle, 1, &copy_region);
-	// }
+		vkUpdateDescriptorSets(
+			rtg.device,
+			// descriptorWrites count, data
+			uint32_t(writes.size()), writes.data(),
+			// descriptorCopies count, data
+			0, nullptr
+		);
+	}
+
+
 
 	{ // make sure copies complete before rendering
 		VkMemoryBarrier memory_barrier {
@@ -2391,23 +2420,23 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		}
 
 		//TODO { //* bind compute descriptor set
-		// 	{ // bind Compute descriptor set
-		// 		std::array< VkDescriptorSet, 1 > descriptor_sets {
-		// 			workspace.Compute_descriptors, // 0: Camera
-		// 		};
+		{ // bind Compute descriptor set
+			std::array< VkDescriptorSet, 1 > descriptor_sets {
+				workspace.Compute_descriptors, // 0: Camera
+			};
 
-		// 		vkCmdBindDescriptorSets(
-		// 			workspace.command_buffer, // command buffer
-		// 			VK_PIPELINE_BIND_POINT_GRAPHICS, // pipeline bind point
-		// 			compute_pipeline.layout, // pipeline layout
-		// 			0,  // first set
-		// 			// descriptor sets count,         ptr
-		// 			uint32_t(descriptor_sets.size()), descriptor_sets.data(), 
-		// 			// dynamic sets count,         ptr
-		// 			0,                             nullptr
-		// 		);
-		// 	}
-		// }
+			vkCmdBindDescriptorSets(
+				workspace.command_buffer, // command buffer
+				VK_PIPELINE_BIND_POINT_GRAPHICS, // pipeline bind point
+				compute_pipeline.layout, // pipeline layout
+				0,  // first set
+				// descriptor sets count,         ptr
+				uint32_t(descriptor_sets.size()), descriptor_sets.data(), 
+				// dynamic sets count,         ptr
+				0,                             nullptr
+			);
+		}
+		
 
 		if (!object_instances.empty()) { // draw with objects pipeline
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, objects_pipeline.handle);
@@ -2546,61 +2575,84 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 		}
 		vkCmdEndRenderPass (workspace.command_buffer);
+	}
+
+	{
+		VkImageMemoryBarrier before_blur_barrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+			.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			.newLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.image = rtg.swapchain_images[render_params.image_index],
+			.subresourceRange {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1,
+			}
+		};
+
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &before_blur_barrier
+		);
+	}
 	
+	{ //* compute shader
 
-		//{
-		// VkImageMemoryBarrier barrier{
-		// 	.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-		// 	.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
-		// 	.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		// 	.newLayout = VK_IMAGE_LAYOUT_GENERAL,
-		// 	.image = compute_image,
-		// 	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
-		// };
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  compute_pipeline.handle);
 
-		// vkCmdPipelineBarrier(
-		// 	workspace.command_buffer,
-		// 	VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		// 	0,
-		// 	0, nullptr,
-		// 	0, nullptr,
-		// 	1, &barrier
-		// 	);
-		}
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								compute_pipeline.layout, 
+								0, 1, 
+								&workspace.Compute_descriptors, 
+								0, nullptr);
 
-		{ //* compute shader
-			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.handle);
-			vkCmdBindDescriptorSets(workspace.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline.layout, 0, 1, &workspace.Compute_descriptors, 0, 0);
-			vkCmdDispatch(
-				workspace.command_buffer,
-				(rtg.configuration.surface_extent.width+7)/8,
-				(rtg.configuration.surface_extent.height+7)/8,
-				1
-			);
-		}
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
+	}
 
+	{ // second barrier to make sure it goes back to graphics correctly
+		VkImageMemoryBarrier post_blur_barrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+			.dstAccessMask = 0,
+			.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.newLayout = rtg.present_layout,
+			.image = rtg.swapchain_images[render_params.image_index],
+			.subresourceRange {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1,
+			}
+		};
 
-		//vkCmdEndRenderPass (workspace.command_buffer);
-
-		// {
-		// 	VkImageMemoryBarrier barrier{
-		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-		// 		.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-
-		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
-		// 		.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		// 	};
-		// 	vkCmdPipelineBarrier(
-		// 		workspace.command_buffer,
-		// 		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		// 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		// 		0,
-		// 		0,nullptr,
-		// 		0,nullptr,
-		// 		1,&barrier
-		// 	);
-		// }
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			0,
+			0,nullptr,
+			0,nullptr,
+			1,&post_blur_barrier
+		);
+	}
 
 	// 	}
 	// }

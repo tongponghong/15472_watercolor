@@ -5,8 +5,8 @@
 //* https://graphics.cs.cmu.edu/courses/15473/f25/assets/lectures/VCS_Lecture_12.pdf
 
 layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding=0, rgba16f) readonly uniform image2D inputImage;
-layout(binding=1, rgba16f) writeonly uniform image2D outputImage;
+layout(binding=0, rgba8) readonly uniform image2D inputImage;
+layout(binding=1, rgba8) writeonly uniform image2D outputImage;
 
 
 const float PI = 3.1415926535897932384626433832795;
