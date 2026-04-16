@@ -249,6 +249,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	lines_pipeline.create(rtg, render_pass, 0);
 	objects_pipeline.create(rtg, render_pass, 0);
 	compute_pipeline.create(rtg, render_pass, 0);
+	display_pipeline.create(rtg, render_pass, 0);
 
 	workspaces.resize(rtg.swapchain_images.size());
 	
@@ -1586,6 +1587,7 @@ Tutorial::~Tutorial() {
 	objects_pipeline.destroy(rtg);
 	shadows_pipeline.destroy(rtg);
 	compute_pipeline.destroy(rtg);
+	display_pipeline.create(rtg, render_pass, 0);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -2569,7 +2571,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				vkCmdDraw(workspace.command_buffer, 
 					      inst.vertices.count, 
 						  1, 
-						  inst.vertices.first, 
+						  inst.vertices.first,
 						  index);
 			}
 
