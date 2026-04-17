@@ -30,7 +30,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	{ // create render pass
 		// attachments:
 		std::array< VkAttachmentDescription, 2 > attachments{
-			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)ßß
+			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)
 				.format = rtg.surface_format.format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				// how to load data before rendering
@@ -42,7 +42,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				// what layout th imag will be transitioned to before load
 				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				// what layout the image will be transitioned to after store 
-				.finalLayout = rtg.present_layout,
+				.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			},
 			VkAttachmentDescription{
 				.format = depth_format,
@@ -248,10 +248,14 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	background_pipeline.create(rtg, render_pass, 0);
 	lines_pipeline.create(rtg, render_pass, 0);
 	objects_pipeline.create(rtg, render_pass, 0);
+	compute_pipeline.create(rtg, render_pass, 0);
+	display_pipeline.create(rtg, render_pass, 0);
+
+	workspaces.resize(rtg.swapchain_images.size());
 	
 	{ // create descriptor pool
-		uint32_t per_workspace = uint32_t(rtg.workspaces.size());
-		std::array< VkDescriptorPoolSize, 2 > pool_sizes {
+		uint32_t per_workspace = uint32_t(workspaces.size());
+		std::array< VkDescriptorPoolSize, 3 > pool_sizes {
 			VkDescriptorPoolSize {
 				// one desciptor per set, two set per workspace
 				.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -261,6 +265,10 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				// one descriptor per set, one set per workspace 
 				.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				.descriptorCount = 4 * per_workspace,
+			},
+			VkDescriptorPoolSize{
+				.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.descriptorCount = 2 * per_workspace,
 			}
 		};
 
@@ -268,7 +276,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			//because CREATE_FREE_DESCRIPTOR_SET_BIT isn't included, *can't* free individual descriptors allocated from this pool
 			.flags = 0,
-			.maxSets = 5 * per_workspace,  // five sets per workspace 
+			.maxSets = 6 * per_workspace,  // five sets per workspace 
 			.poolSizeCount = uint32_t(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data(),
 		};
@@ -277,7 +285,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK(vkCreateDescriptorPool(rtg.device, &create_info, nullptr, &descriptor_pool))
 	}
 	
-	workspaces.resize(rtg.workspaces.size());
+	//workspaces.resize(rtg.workspaces.size());
 	for (Workspace &workspace : workspaces) {
 		{ // allocate command buffer:
 			VkCommandBufferAllocateInfo alloc_info {
@@ -358,6 +366,18 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			};
 
 			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Transforms_descriptors));
+
+		}
+
+		{ // allocate descriptor set for compute descriptor
+			VkDescriptorSetAllocateInfo alloc_info{
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+				.descriptorPool = descriptor_pool,
+				.descriptorSetCount = 1,
+				.pSetLayouts = &compute_pipeline.set0_image,
+			};
+
+			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Compute_descriptors));
 
 		}
 
@@ -1390,6 +1410,8 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		std::cout << "number of object instances after: " << object_instances.size() << std::endl;
 		total_cameras = rtg.scene.cameras.size();
 		std::cout << "number of scene cameras after: " << total_cameras << std::endl;
+
+		// TODO add this to the drivers as well just to be sure 
 	}
 
 	{ // map all the cameras:
@@ -1543,6 +1565,14 @@ Tutorial::~Tutorial() {
 			rtg.helpers.destroy_buffer(std::move(workspace.Transforms));
 		}
 
+		if (workspace.Compute_src.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Compute_src));
+		}
+
+		if (workspace.Computes.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Computes));
+		}
+
 		// transforms_descriptors free when pool is destroyed
 	}
 	workspaces.clear();
@@ -1558,6 +1588,8 @@ Tutorial::~Tutorial() {
 	lines_pipeline.destroy(rtg);
 	objects_pipeline.destroy(rtg);
 	shadows_pipeline.destroy(rtg);
+	compute_pipeline.destroy(rtg);
+	display_pipeline.destroy(rtg);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -1608,6 +1640,28 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		Helpers::Unmapped
 	);
+	
+	// this is where the image first goes to get blurred
+	offscreen_input_image = rtg.helpers.create_image(
+		swapchain.extent,
+		rtg.surface_format.format,
+		VK_IMAGE_TILING_OPTIMAL,
+		// render pass | compute pass
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		Helpers::Unmapped
+	);
+
+	// output of the blur 
+	blurred_offscreen_image = rtg.helpers.create_image(
+		swapchain.extent,
+		rtg.surface_format.format,
+		VK_IMAGE_TILING_OPTIMAL,
+		// compute pass | back to graphics 
+		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		Helpers::Unmapped
+	);
 
 	{ // create an image view of the depth image
 		VkImageViewCreateInfo create_info{
@@ -1625,6 +1679,62 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		};
 
 		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &swapchain_depth_image_view) );
+	}
+
+	{ // make an image view of the input image 
+		VkImageViewCreateInfo create_info{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = offscreen_input_image.handle,
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = rtg.surface_format.format,
+			.subresourceRange{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+		};
+
+		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &offscreen_input_image_view) );
+	}
+
+	{ // create an image view of the blurred offscreen image (gaussians)
+		VkImageViewCreateInfo create_info{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = blurred_offscreen_image.handle,
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = rtg.surface_format.format,
+			.subresourceRange{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+		};
+
+		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &blurred_offscreen_image_view) );
+	}
+
+	{ // create a framebuffer for the offscreen image 
+		std::array< VkImageView, 2 > offscreen_attachments{
+			offscreen_input_image_view, 
+			swapchain_depth_image_view,
+		};
+
+		VkFramebufferCreateInfo create_info {
+			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.renderPass = render_pass,
+			.attachmentCount = uint32_t(offscreen_attachments.size()),
+			.pAttachments = offscreen_attachments.data(),
+			.width = swapchain.extent.width,
+			.height = swapchain.extent.height,
+			.layers = 1,
+		};
+
+		VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &offscreen_image_framebuffer) );
+
 	}
 
 	// create framebufers pointing to each swapchain image view and the shared depth image view
@@ -1662,6 +1772,34 @@ void Tutorial::destroy_framebuffers() {
 	swapchain_depth_image_view = VK_NULL_HANDLE;
 
 	rtg.helpers.destroy_image(std::move(swapchain_depth_image));
+
+	// vkDestroyFramebuffer(rtg.device, offscreen_framebuffer, nullptr);
+	// offscreen_framebuffer = VK_NULL_HANDLE;
+
+	if (offscreen_image_framebuffer != VK_NULL_HANDLE) {
+		vkDestroyFramebuffer(rtg.device, offscreen_image_framebuffer, nullptr);
+		offscreen_image_framebuffer = VK_NULL_HANDLE;
+	}
+	
+	if (offscreen_input_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, offscreen_input_image_view, nullptr);
+		offscreen_input_image_view = VK_NULL_HANDLE;
+	}
+
+	if (offscreen_input_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(offscreen_input_image));
+	}
+
+	if (blurred_offscreen_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, blurred_offscreen_image_view, nullptr);
+		blurred_offscreen_image_view = VK_NULL_HANDLE;
+	}
+
+	if (blurred_offscreen_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(blurred_offscreen_image));
+	}
+
+
 }
 
 
@@ -1681,7 +1819,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 	//get more convenient names for the current workspace and target framebuffer:
 	Workspace &workspace = workspaces[render_params.workspace_index];
-	VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
+	//VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
+	VkFramebuffer framebuffer = offscreen_image_framebuffer;
 
 	VK( vkResetCommandBuffer(workspace.command_buffer, 0) );
 
@@ -2082,6 +2221,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			std::cout << "Re-allocated object transforms buffers to" << new_bytes << " bytes." << std::endl;
 		}
 
+
+
 		assert(workspace.Spotlights_src.size == workspace.Spotlights.size);
 		assert(workspace.Spotlights_src.size >= needed_bytes);
 
@@ -2133,22 +2274,52 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 						&copy_region);
 	}
 
-	// { // upload world info:
-	// 	assert(workspace.Camera_src.size == sizeof(world));
+	{ // update compute pipeline
+		VkDescriptorImageInfo input_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = offscreen_input_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
 
-	// 	// host-side copy into world_src:
-	// 	memcpy(workspace.World_src.allocation.data(), &world, sizeof(world));
+		VkDescriptorImageInfo output_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = blurred_offscreen_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
 
-	// 	// add device-side copy from World_src -> World:
-	// 	assert(workspace.World_src.size == workspace.World.size);
-	// 	VkBufferCopy copy_region{
-	// 		.srcOffset = 0,
-	// 		.dstOffset = 0,
-	// 		.size = workspace.World_src.size,
-	// 	};
+		std::array< VkWriteDescriptorSet, 2 > writes{
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Compute_descriptors,
+				.dstBinding = 0, 
+				//.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &input_info,
+			},
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Compute_descriptors,
+				.dstBinding = 1, 
+				//.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &output_info,
+			},
+		};
 
-	// 	vkCmdCopyBuffer(workspace.command_buffer, workspace.World_src.handle, workspace.World.handle, 1, &copy_region);
-	// }
+		vkUpdateDescriptorSets(
+			rtg.device,
+			// descriptorWrites count, data
+			uint32_t(writes.size()), writes.data(),
+			// descriptorCopies count, data
+			0, nullptr
+		);
+	}
+
+
 
 	{ // make sure copies complete before rendering
 		VkMemoryBarrier memory_barrier {
@@ -2337,8 +2508,26 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 			// actually draw the line vertices 
 			vkCmdDraw(workspace.command_buffer, uint32_t(lines_vertices.size()), 1, 0, 0);
-
 		}
+
+		//TODO { //* bind compute descriptor set
+		{ // bind Compute descriptor set
+			std::array< VkDescriptorSet, 1 > descriptor_sets {
+				workspace.Compute_descriptors, // 0: Camera
+			};
+
+			vkCmdBindDescriptorSets(
+				workspace.command_buffer, // command buffer
+				VK_PIPELINE_BIND_POINT_GRAPHICS, // pipeline bind point
+				compute_pipeline.layout, // pipeline layout
+				0,  // first set
+				// descriptor sets count,         ptr
+				uint32_t(descriptor_sets.size()), descriptor_sets.data(), 
+				// dynamic sets count,         ptr
+				0,                             nullptr
+			);
+		}
+		
 
 		if (!object_instances.empty()) { // draw with objects pipeline
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, objects_pipeline.handle);
@@ -2471,7 +2660,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				vkCmdDraw(workspace.command_buffer, 
 					      inst.vertices.count, 
 						  1, 
-						  inst.vertices.first, 
+						  inst.vertices.first,
 						  index);
 			}
 
@@ -2479,7 +2668,189 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdEndRenderPass (workspace.command_buffer);
 	}
 
-	// end recording
+	{ //* first barriers to ensure it's ready for compute pipeline
+		std::array< VkImageMemoryBarrier, 2 > barriers_before_blur {
+			// barrier for the input (turns from color attachment to general for storage)
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
+				.image = offscreen_input_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+			// takes care of output (dont care how it starts, but must be general for storage)
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = 0,
+				.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
+				.image = blurred_offscreen_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+		};
+
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			0,
+			0, nullptr,
+			0, nullptr,
+			uint32_t(barriers_before_blur.size()), barriers_before_blur.data()
+		);
+	}
+	
+	{ //* compute shader!!
+
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  compute_pipeline.handle);
+
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								compute_pipeline.layout, 
+								0, 1, 
+								&workspace.Compute_descriptors, 
+								0, nullptr);
+
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
+	}
+
+	{ //* second barrier to make sure it goes back to intermediate image correctly
+		std::array< VkImageMemoryBarrier, 2 > barriers_after_blur {
+			// barrier for the input (the blurred offscreen image from the compute)
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+				.image = blurred_offscreen_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+			// takes care of output (swapchain in this case)
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = 0,
+				.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+				.image = rtg.swapchain_images[render_params.image_index],
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+		};
+
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, // just did compute
+			VK_PIPELINE_STAGE_TRANSFER_BIT,       // copy back to swapchain
+			0,
+			0, nullptr,
+			0, nullptr,
+			uint32_t(barriers_after_blur.size()), barriers_after_blur.data()
+		);
+	}
+
+	{ //* copy to swapchain!
+		VkImageCopy region{
+			.srcSubresource{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1,
+			},
+			.srcOffset{
+				.x = 0,
+				.y = 0,
+				.z = 0
+			},
+			.dstSubresource{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1,
+			},
+			.dstOffset{
+				.x = 0,
+				.y = 0,
+				.z = 0,
+			},
+			.extent = {rtg.swapchain_extent.width, rtg.swapchain_extent.height, 1},
+		};
+
+		vkCmdCopyImage(
+			workspace.command_buffer,
+			// srcImage                     srcImageLayout
+			blurred_offscreen_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			// dstImage                     dstImageLayout    
+			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
+			1, &region    
+		);
+	}
+
+	{ // barrier from intermediate to swapchain and present on screen
+		
+		// barrier for the input (the blurred offscreen image from the compute)
+		VkImageMemoryBarrier barrier_after_copy{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+			.dstAccessMask = 0,
+			.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
+			.image = rtg.swapchain_images[render_params.image_index],
+			.subresourceRange {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1,
+			}
+		};
+		
+
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, // just did copy
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,       // copy back to swapchain to presentation
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier_after_copy
+		);
+	}
+
 	VK( vkEndCommandBuffer(workspace.command_buffer) );
 
 	{ //submit `workspace.command buffer` for the GPU to run:
@@ -2820,6 +3191,68 @@ void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance 
     for (S72::Node *root : scene.scene.roots) {
         traverse_root(root, scene_objects);
     }
+
+	if (sunlight_insts.empty()) {
+			sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
+				.angle_w_pad{
+					.angle = 0.0f,
+				},
+				.SUN_DIRECTION{	
+					.x = 0.0,
+					.y = 0.0,
+					.z = 0.0,
+				},
+				.SUN_ENERGY{
+					.r = 0.0,
+					.g = 0.0,
+					.b = 0.0,
+				}
+			});
+		}
+
+		if (spherelight_insts.empty()) {
+			spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
+					.SPHERE_POSITION_AND_RADIUS{
+						.x = 0.0,
+						.y = 0.0,
+						.z = 0.0,
+						.radius = 0.0,
+					},
+					.SPHERE_POWER_AND_LIMIT{
+						.r = 0.0,
+						.g = 0.0,
+						.b = 0.0,
+						.limit = 0.0,
+					}
+					
+				});
+			}
+
+		if (spotlight_insts.empty()) {
+			spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
+				.SPOT_POSITION_AND_RADIUS{
+					.x = 0.0,
+					.y = 0.0,
+					.z = 0.0,
+					.radius = 0.0,
+				},
+				.SPOT_DIRECTION{
+					.x = 0.0,
+					.y = 0.0,
+					.z = 1.0,
+				},
+				.SPOT_POWER_AND_LIMIT{
+					.r = 0.0,
+					.g = 0.0,
+					.b = 0.0,
+					.limit = 0.0,
+				},
+				.SPOT_OUTER_AND_INNER_LIM{
+					.outer = 0.0,
+					.inner = 0.0,
+				}
+			});
+		}
 }
 
 void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 box_min, vec3 box_max, mat4 curr_xform, bool isFrustum) {
@@ -3248,6 +3681,10 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
     }
 }
 
+// void cursorPositionCallback(GLFWwindow *window, double xpos, double ypos) {
+	
+// 		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+// }
 
 void Tutorial::on_input(InputEvent const &evt) {
 	// maybe add a button press to add shapes to the scene?
@@ -3257,6 +3694,16 @@ void Tutorial::on_input(InputEvent const &evt) {
 		action(evt);
 		return;
 	}
+	
+	GLFWwindow *window = rtg.window;
+
+	if (evt.type == InputEvent::MouseMotion){
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+		return;
+	}
+	// glfwSetCursorPosCallback(window, cursorPositionCallback);
 
 	// change exposure 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_RIGHT_BRACKET) {

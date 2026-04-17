@@ -209,14 +209,12 @@ void Tutorial::ObjectsPipeline::create(RTG &rtg,
         std::cout << "number of suns: " << specials.num_sun << std::endl;
         std::cout << "number of spots: " << specials.num_spot << std::endl;
 
-
         VkSpecializationInfo spec_frag_info {
             .mapEntryCount = 4,
             .pMapEntries = &spec_frag_entry[0],
             .dataSize = sizeof(spec_consts),
             .pData = &specials,
         };
-    
 
         std::array< VkPipelineShaderStageCreateInfo, 2 > stages 
         {
@@ -280,7 +278,7 @@ void Tutorial::ObjectsPipeline::create(RTG &rtg,
             .sampleShadingEnable = VK_FALSE,
         };
 
-        // no depth or stencil test
+        
         VkPipelineDepthStencilStateCreateInfo depth_stencil_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
             .depthTestEnable = VK_TRUE,
