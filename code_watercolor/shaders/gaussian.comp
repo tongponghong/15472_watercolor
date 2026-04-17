@@ -3,13 +3,17 @@
 //* https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
 //* https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 //* https://graphics.cs.cmu.edu/courses/15473/f25/assets/lectures/VCS_Lecture_12.pdf
+//* https://www.reddit.com/r/vulkan/comments/1cb033d/how_can_omit_the_image_format_qualifier_for/
+
+#extension GL_EXT_shader_image_load_formatted : require
 
 layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding=0, rgba8) readonly uniform image2D inputImage;
-layout(binding=1, rgba8) writeonly uniform image2D outputImage;
+layout(binding=0) readonly uniform image2D inputImage;
+layout(binding=1) writeonly uniform image2D outputImage;
 
 
 const float PI = 3.1415926535897932384626433832795;
+const int kernelSize = 20;
 const int kernelSize = 20;
 const int halfSize = kernelSize / 2;
 const float stdev = 100.0f;

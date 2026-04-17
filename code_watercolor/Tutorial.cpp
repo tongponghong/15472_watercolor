@@ -1589,7 +1589,7 @@ Tutorial::~Tutorial() {
 	objects_pipeline.destroy(rtg);
 	shadows_pipeline.destroy(rtg);
 	compute_pipeline.destroy(rtg);
-	display_pipeline.create(rtg, render_pass, 0);
+	display_pipeline.destroy(rtg);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -1775,6 +1775,30 @@ void Tutorial::destroy_framebuffers() {
 
 	// vkDestroyFramebuffer(rtg.device, offscreen_framebuffer, nullptr);
 	// offscreen_framebuffer = VK_NULL_HANDLE;
+
+	if (offscreen_image_framebuffer != VK_NULL_HANDLE) {
+		vkDestroyFramebuffer(rtg.device, offscreen_image_framebuffer, nullptr);
+		offscreen_image_framebuffer = VK_NULL_HANDLE;
+	}
+	
+	if (offscreen_input_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, offscreen_input_image_view, nullptr);
+		offscreen_input_image_view = VK_NULL_HANDLE;
+	}
+
+	if (offscreen_input_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(offscreen_input_image));
+	}
+
+	if (blurred_offscreen_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, blurred_offscreen_image_view, nullptr);
+		blurred_offscreen_image_view = VK_NULL_HANDLE;
+	}
+
+	if (blurred_offscreen_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(blurred_offscreen_image));
+	}
+
 
 }
 
@@ -2818,8 +2842,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 		vkCmdPipelineBarrier(
 			workspace.command_buffer,
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, // just did compute
-			VK_PIPELINE_STAGE_TRANSFER_BIT,       // copy back to swapchain
+			VK_PIPELINE_STAGE_TRANSFER_BIT, // just did copy
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,       // copy back to swapchain to presentation
 			0,
 			0, nullptr,
 			0, nullptr,
