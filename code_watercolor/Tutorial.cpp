@@ -3680,6 +3680,10 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
     }
 }
 
+// void cursorPositionCallback(GLFWwindow *window, double xpos, double ypos) {
+	
+// 		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+// }
 
 void Tutorial::on_input(InputEvent const &evt) {
 	// maybe add a button press to add shapes to the scene?
@@ -3689,6 +3693,16 @@ void Tutorial::on_input(InputEvent const &evt) {
 		action(evt);
 		return;
 	}
+	
+	GLFWwindow *window = rtg.window;
+
+	if (evt.type == InputEvent::MouseMotion){
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+		return;
+	}
+	// glfwSetCursorPosCallback(window, cursorPositionCallback);
 
 	// change exposure 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_RIGHT_BRACKET) {
