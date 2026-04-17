@@ -547,7 +547,7 @@ void main() {
         // background
         vec4 background = vec4(C + Da * c, c);
         // foreground
-        vec4 foreground = vec4(albedo, Da);
+        vec4 foreground = vec4(albedo, 0.5);
         vec4 both = alphaOver(background,foreground);
 
         vec3 Cc = both.xyz;
