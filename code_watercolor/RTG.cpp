@@ -460,6 +460,7 @@ RTG::RTG(Configuration const &configuration_) : helpers(*this) {
 
 			VkPhysicalDeviceFeatures device_features {
 				.multiViewport = VK_TRUE,
+				.shaderStorageImageWriteWithoutFormat = VK_TRUE,
 			};
 
 			VkDeviceCreateInfo create_info{
@@ -709,7 +710,7 @@ void RTG::recreate_swapchain() {
 				.imageColorSpace = surface_format.colorSpace, 
 				.imageExtent = swapchain_extent,
 				.imageArrayLayers = 1,
-				.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+				.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
 				.preTransform = capabilities.currentTransform,
 				.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 				.presentMode = present_mode,
