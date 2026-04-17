@@ -1,0 +1,75 @@
+# version 450
+//* resources:
+
+
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(binding=0, rgba8) readonly uniform image2D Ii; // color image
+layout(binding=1, rgba8) readonly uniform image2D Zi; // depth image
+layout(binding=2, rgba8) uniform image2D Ci; // control image
+
+layout(binding=3, rgba8) uniform image2D Bi; // bleed image
+
+
+//* paper uses kernel size 21 with stdev 20
+float kernel[] = float[](0.043958, 0.045015, 0.045981, 0.046852, 0.047619, 0.048279, 0.048825, 0.049254, 0.049563, 0.049749, 0.049811, 0.049749, 0.049563, 0.049254, 0.048825, 0.048279, 0.047619, 0.046852, 0.045981, 0.045015, 0.043958);
+
+
+float C(ivec2 p){
+    return imageLoad(Ci, p).b;
+}
+
+float Z(ivec2 p){
+    return imageLoad(Zi, p).b;
+}
+
+vec4 B(ivec2 p){
+    return imageLoad(Bi, p);
+}
+
+vec4 I(ivec2 p){
+    return imageLoad(Ii, p);
+}
+
+float W(int i){
+    return kernel[i];
+}
+
+//* color image I
+//* depth image Z
+//* control image mask C
+//* depth threshold T
+//* matches pseudo code from page 7/13
+void bleedBlur(ivec2 p){
+    float T = 0.02;
+    vec4 result = vec4(0.0);
+    ivec2 size = imageSize(Ii);
+
+    for (int i = -10; i <= 10; i++){
+        ivec2 p_i = p + ivec2(i, 0);
+        if (p_i.x < 0 || p_i.x >= size.x) continue;
+        
+        if (C(p) > 0 || C(p_i) > 0){
+            //* perform bleed and depth queries
+            bool bleed = false;
+            bool sourceBehind = Z(p) - T > Z(p_i);
+            
+            if (C(p_i) > 0 && sourceBehind){
+                bleed = true;
+            } else if (C(p) > 0 && !sourceBehind){
+                bleed = true;
+            }
+            
+            if (bleed){
+                result += I(p_i) * W(i+10);
+            } else {
+                result += I(p) * W(i+10);
+            }
+
+        } else {
+            //* add weighted source color
+            result += I(p) * W(i+10);
+        }
+        
+    }
+    imageStore(Bi, p, result);
+}
