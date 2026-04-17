@@ -14,7 +14,6 @@ layout(binding=1) writeonly uniform image2D outputImage;
 
 const float PI = 3.1415926535897932384626433832795;
 const int kernelSize = 20;
-const int kernelSize = 20;
 const int halfSize = kernelSize / 2;
 const float stdev = 100.0f;
 
@@ -93,5 +92,5 @@ void main(){
 
     vec4 Ied = mix(I,darken, edge);
 
-    imageStore(outputImage, texelCoord, Ied);
+    imageStore(outputImage, texelCoord, I);
 }
