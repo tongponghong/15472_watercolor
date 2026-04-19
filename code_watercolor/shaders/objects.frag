@@ -486,13 +486,9 @@ float fbm(vec3 st){
 
 //* background, background opacity, forground, forground opacity
 //* yes, background is A and forground is B
-vec4 alphaOver(vec4 background, vec4 foreground){
-    vec3 A = background.xyz;
-    vec3 B = foreground.xyz;
-    float alphaA = background.w;
-    float alphaB = foreground.w;
-    vec3 C = alphaB*B + (1-alphaB)*alphaA*A;
-    float alphaC = alphaB + (1-alphaB)*alphaA;
+vec4 alphaOver(vec4 A, vec4 B){
+    vec3 C = B.xyz + (1.0 - B.w) * A.xyz;
+    float alphaC = B.w + (1.0 - B.w) * A.w;
     return vec4(C, alphaC);
 }
 
@@ -511,11 +507,11 @@ void main() {
     vec3 tonemapped_albedo;
 
     //* cangiante weight
-    float c = 0.8;
+    float c = 0.9;
     //* dilution weight
     float d = 0.4;
     //* cangiante color
-    vec3 C = vec3(40/255.0, 30/255.0, 60/255.0);
+    vec3 C = vec3(40/255.0, 30/255.0, 255/255.0);
     float dilution_area_var = 1.0;
 
     // paper color
@@ -547,7 +543,7 @@ void main() {
         // background
         vec4 background = vec4(C + Da * c, c);
         // foreground
-        vec4 foreground = vec4(albedo, Da);
+        vec4 foreground = vec4(albedo, max(0.8, Da));
         vec4 both = alphaOver(background,foreground);
 
         vec3 Cc = both.xyz;

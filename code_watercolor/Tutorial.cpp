@@ -250,12 +250,13 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	objects_pipeline.create(rtg, render_pass, 0);
 	compute_pipeline.create(rtg, render_pass, 0);
 	display_pipeline.create(rtg, render_pass, 0);
+	bleed_pipeline.create(rtg, render_pass, 0);
 
 	workspaces.resize(rtg.swapchain_images.size());
 	
 	{ // create descriptor pool
 		uint32_t per_workspace = uint32_t(workspaces.size());
-		std::array< VkDescriptorPoolSize, 3 > pool_sizes {
+		std::array< VkDescriptorPoolSize, 4 > pool_sizes {
 			VkDescriptorPoolSize {
 				// one desciptor per set, two set per workspace
 				.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -268,7 +269,11 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			},
 			VkDescriptorPoolSize{
 				.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-				.descriptorCount = 2 * per_workspace,
+				.descriptorCount = 5 * per_workspace, // gauss = 2, bleed = 3
+			},
+			VkDescriptorPoolSize{
+				.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, // depth in bleed 
+				.descriptorCount = 1 * per_workspace,
 			}
 		};
 
@@ -276,7 +281,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			//because CREATE_FREE_DESCRIPTOR_SET_BIT isn't included, *can't* free individual descriptors allocated from this pool
 			.flags = 0,
-			.maxSets = 6 * per_workspace,  // five sets per workspace 
+			.maxSets = 7 * per_workspace,  // five sets per workspace 
 			.poolSizeCount = uint32_t(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data(),
 		};
@@ -378,7 +383,17 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			};
 
 			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Compute_descriptors));
+		}
 
+		{ // allocate descriptor set for bleed descriptor
+			VkDescriptorSetAllocateInfo alloc_info{
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+				.descriptorPool = descriptor_pool,
+				.descriptorSetCount = 1,
+				.pSetLayouts = &bleed_pipeline.set0_image,
+			};
+
+			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Bleed_descriptors));
 		}
 
 		// descriptor write
@@ -1056,6 +1071,32 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK( vkCreateSampler(rtg.device, &create_info_cube_sampler, nullptr, &cube_texture_sampler) );
 	}
 
+	{ // create a sampler for the depth image (used for watercolor)
+		VkSamplerCreateInfo create_info_depth_sampler{
+			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+			.flags = 0,
+			// change back to nearest eventually
+			.magFilter = VK_FILTER_NEAREST,
+			.minFilter = VK_FILTER_NEAREST,
+			// change back to nearest eventually
+			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+			// control how texture repeats or doesn't
+			.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT, // maybe change to clamp_to_edge?
+			.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.mipLodBias = 0.0f,
+			.anisotropyEnable = VK_FALSE,
+			.maxAnisotropy = 0.0f, // doesnt matter bc anisotropy isn't enabled
+			.compareEnable = VK_FALSE,
+			.compareOp = VK_COMPARE_OP_ALWAYS, // doesn't matter as well bc compare not enabled
+			.minLod = 0.0f,
+			.maxLod = 0.0f,
+			.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
+			.unnormalizedCoordinates = VK_FALSE,
+		};
+		VK( vkCreateSampler(rtg.device, &create_info_depth_sampler, nullptr, &depth_sampler) );
+	}
+
 	{ // create texture descriptor pool
 		// add the cube texture descriptor as well
 		uint32_t per_texture = uint32_t(obj_materials.size());
@@ -1464,6 +1505,11 @@ Tutorial::~Tutorial() {
 		material_sampler = VK_NULL_HANDLE;
 	}	
 
+	if (depth_sampler) {
+		vkDestroySampler(rtg.device, depth_sampler, nullptr);
+		depth_sampler = VK_NULL_HANDLE;
+	}
+
 	if (cube_texture_sampler) {
 		vkDestroySampler(rtg.device, cube_texture_sampler, nullptr);
 		cube_texture_sampler = VK_NULL_HANDLE;
@@ -1573,6 +1619,14 @@ Tutorial::~Tutorial() {
 			rtg.helpers.destroy_buffer(std::move(workspace.Computes));
 		}
 
+		if (workspace.Bleed_src.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Bleed_src));
+		}
+
+		if (workspace.Bleeds.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Bleeds));
+		}
+
 		// transforms_descriptors free when pool is destroyed
 	}
 	workspaces.clear();
@@ -1590,6 +1644,7 @@ Tutorial::~Tutorial() {
 	shadows_pipeline.destroy(rtg);
 	compute_pipeline.destroy(rtg);
 	display_pipeline.destroy(rtg);
+	bleed_pipeline.destroy(rtg);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -1636,7 +1691,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		swapchain.extent,
 		depth_format,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		Helpers::Unmapped
 	);
@@ -1652,8 +1707,29 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		Helpers::Unmapped
 	);
 
-	// output of the blur 
+	// output of the blur shader 
 	blurred_offscreen_image = rtg.helpers.create_image(
+		swapchain.extent,
+		rtg.surface_format.format,
+		VK_IMAGE_TILING_OPTIMAL,
+		// compute pass | back to graphics 
+		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		Helpers::Unmapped
+	);
+
+	// output of the bleed shader 
+	bleeded_offscreen_image = rtg.helpers.create_image(
+		swapchain.extent,
+		rtg.surface_format.format,
+		VK_IMAGE_TILING_OPTIMAL,
+		// compute pass | back to graphics 
+		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		Helpers::Unmapped
+	);
+
+	ctrl_image = rtg.helpers.create_image(
 		swapchain.extent,
 		rtg.surface_format.format,
 		VK_IMAGE_TILING_OPTIMAL,
@@ -1693,7 +1769,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 				.levelCount = 1,
 				.baseArrayLayer = 0,
 				.layerCount = 1
-			},
+			}
 		};
 
 		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &offscreen_input_image_view) );
@@ -1715,6 +1791,42 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		};
 
 		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &blurred_offscreen_image_view) );
+	}
+
+	{ // create an image view of the bleeded offscreen image (bilateral blur)
+		VkImageViewCreateInfo create_info{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = bleeded_offscreen_image.handle,
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = rtg.surface_format.format,
+			.subresourceRange{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+		};
+
+		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &bleeded_offscreen_image_view) );
+	}
+
+	{ // create an image view of the control image (to control paper and blur)
+		VkImageViewCreateInfo create_info{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = ctrl_image.handle,
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = rtg.surface_format.format,
+			.subresourceRange{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+		};
+
+		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &ctrl_image_view) );
 	}
 
 	{ // create a framebuffer for the offscreen image 
@@ -1799,7 +1911,23 @@ void Tutorial::destroy_framebuffers() {
 		rtg.helpers.destroy_image(std::move(blurred_offscreen_image));
 	}
 
+	if (bleeded_offscreen_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, bleeded_offscreen_image_view, nullptr);
+		bleeded_offscreen_image_view = VK_NULL_HANDLE;
+	}
 
+	if (bleeded_offscreen_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(bleeded_offscreen_image));
+	}
+
+	if (ctrl_image_view != VK_NULL_HANDLE) {
+		vkDestroyImageView(rtg.device, ctrl_image_view, nullptr);
+		ctrl_image_view = VK_NULL_HANDLE;
+	}
+
+	if (ctrl_image.handle != VK_NULL_HANDLE) {
+		rtg.helpers.destroy_image(std::move(ctrl_image));
+	}
 }
 
 
@@ -2274,7 +2402,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 						&copy_region);
 	}
 
-	{ // update compute pipeline
+	{ // update blur (compute) pipeline
 		VkDescriptorImageInfo input_info {
 			.sampler = VK_NULL_HANDLE,
 			//.imageView = rtg.swapchain_image_views[render_params.image_index],
@@ -2294,7 +2422,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.dstSet = workspace.Compute_descriptors,
 				.dstBinding = 0, 
-				//.dstArrayElement = 0,
+				.dstArrayElement = 0,
 				.descriptorCount = 1,
 				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
 				.pImageInfo = &input_info,
@@ -2303,7 +2431,89 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.dstSet = workspace.Compute_descriptors,
 				.dstBinding = 1, 
-				//.dstArrayElement = 0,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &output_info,
+			},
+		};
+
+		vkUpdateDescriptorSets(
+			rtg.device,
+			// descriptorWrites count, data
+			uint32_t(writes.size()), writes.data(),
+			// descriptorCopies count, data
+			0, nullptr
+		);
+	}
+
+	{ // update bleed pipeline
+		VkDescriptorImageInfo input_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = offscreen_input_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
+
+		//TODO fill in for control image
+		VkDescriptorImageInfo control_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = ctrl_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
+
+		//TODO fill in for depth image 
+		VkDescriptorImageInfo depth_info {
+			.sampler = depth_sampler,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = swapchain_depth_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+		};
+
+		VkDescriptorImageInfo output_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = bleeded_offscreen_image_view,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		};
+
+		//* there are 3 input images, and 1 output image 
+		std::array< VkWriteDescriptorSet, 4 > writes{
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Bleed_descriptors,
+				.dstBinding = 0, 
+			    .dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &input_info,
+			},
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Bleed_descriptors,
+				.dstBinding = 1, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &control_info,
+			},
+
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Bleed_descriptors,
+				.dstBinding = 2, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.pImageInfo = &depth_info,
+			},
+
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Bleed_descriptors,
+				.dstBinding = 3, 
+				.dstArrayElement = 0,
 				.descriptorCount = 1,
 				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
 				.pImageInfo = &output_info,
@@ -2510,25 +2720,6 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			vkCmdDraw(workspace.command_buffer, uint32_t(lines_vertices.size()), 1, 0, 0);
 		}
 
-		//TODO { //* bind compute descriptor set
-		{ // bind Compute descriptor set
-			std::array< VkDescriptorSet, 1 > descriptor_sets {
-				workspace.Compute_descriptors, // 0: Camera
-			};
-
-			vkCmdBindDescriptorSets(
-				workspace.command_buffer, // command buffer
-				VK_PIPELINE_BIND_POINT_GRAPHICS, // pipeline bind point
-				compute_pipeline.layout, // pipeline layout
-				0,  // first set
-				// descriptor sets count,         ptr
-				uint32_t(descriptor_sets.size()), descriptor_sets.data(), 
-				// dynamic sets count,         ptr
-				0,                             nullptr
-			);
-		}
-		
-
 		if (!object_instances.empty()) { // draw with objects pipeline
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, objects_pipeline.handle);
 			
@@ -2669,7 +2860,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	}
 
 	{ //* first barriers to ensure it's ready for compute pipeline
-		std::array< VkImageMemoryBarrier, 2 > barriers_before_blur {
+		std::array< VkImageMemoryBarrier, 4 > barriers_before_blur {
 			// barrier for the input (turns from color attachment to general for storage)
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -2702,11 +2893,44 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 					.layerCount = 1,
 				}
 			},
+			// for the bleeded image
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = 0,
+				.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
+				.image = bleeded_offscreen_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+			// for the depth image
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 
+				.image = swapchain_depth_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
 		};
 
 		vkCmdPipelineBarrier(
 			workspace.command_buffer,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | 
+			                                                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 			0,
 			0, nullptr,
@@ -2716,7 +2940,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	}
 	
 	{ //* compute shader!!
-
+		// blur
 		vkCmdBindPipeline(workspace.command_buffer, 
 			              VK_PIPELINE_BIND_POINT_COMPUTE, 
 						  compute_pipeline.handle);
@@ -2734,10 +2958,29 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			(rtg.swapchain_extent.height+7)/8,
 			1
 		);
+		
+		// bleed
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  bleed_pipeline.handle);
+
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								bleed_pipeline.layout, 
+								0, 1, 
+								&workspace.Bleed_descriptors, 
+								0, nullptr);
+
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
 	}
 
 	{ //* second barrier to make sure it goes back to intermediate image correctly
-		std::array< VkImageMemoryBarrier, 2 > barriers_after_blur {
+		std::array< VkImageMemoryBarrier, 3 > barriers_after_blur {
 			// barrier for the input (the blurred offscreen image from the compute)
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -2746,6 +2989,23 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
 				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
 				.image = blurred_offscreen_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+
+			// bleed image input 
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+				.image = bleeded_offscreen_image.handle,
 				.subresourceRange {
 					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 					.baseMipLevel = 0,
@@ -2813,7 +3073,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdCopyImage(
 			workspace.command_buffer,
 			// srcImage                     srcImageLayout
-			blurred_offscreen_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			bleeded_offscreen_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			// dstImage                     dstImageLayout    
 			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
 			1, &region    
@@ -2826,7 +3086,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		VkImageMemoryBarrier barrier_after_copy{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-			.dstAccessMask = 0,
+			.dstAccessMask = 0, // no conditions on later commands bc image is expected to be ready 
 			.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
 			.image = rtg.swapchain_images[render_params.image_index],

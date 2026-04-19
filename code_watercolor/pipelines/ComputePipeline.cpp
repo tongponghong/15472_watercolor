@@ -1,11 +1,10 @@
-#include "Tutorial.hpp"
+#include "../Tutorial.hpp"
 
-#include "Helpers.hpp"
-#include "refsol.hpp"
-#include "VK.hpp"
+#include "../Helpers.hpp"
+#include "../VK.hpp"
 
 static uint32_t comp_code[] = 
-#include "spv/shaders/gaussian.comp.inl"
+#include "../spv/shaders/gaussian.comp.inl"
 ;
 
 void Tutorial::ComputePipeline::create(RTG &rtg, VkRenderPass render_pass, uint32_t subpass) 
@@ -56,7 +55,6 @@ void Tutorial::ComputePipeline::create(RTG &rtg, VkRenderPass render_pass, uint3
         };
 
         VK( vkCreatePipelineLayout(rtg.device, &create_info, nullptr, &layout) );
-
     }
 
     {

@@ -49,39 +49,44 @@ const background_shaders = [
 	maek.GLSLC('shaders/background.vert'),
 	maek.GLSLC('shaders/background.frag'),
 ];
-gen_objs.push( maek.CPP('Tutorial-BackgroundPipeline.cpp', undefined, { depends:[...background_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/Tutorial-BackgroundPipeline.cpp', undefined, { depends:[...background_shaders] } ) );
 
 //uncomment to build lines shaders and pipeline:
 const lines_shaders = [
 	maek.GLSLC('shaders/lines.vert'),
 	maek.GLSLC('shaders/lines.frag'),
 ];
-gen_objs.push( maek.CPP('Tutorial-LinesPipeline.cpp', undefined, { depends:[...lines_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/Tutorial-LinesPipeline.cpp', undefined, { depends:[...lines_shaders] } ) );
 
 //uncomment to build objects shaders and pipeline:
 const objects_shaders = [
 	maek.GLSLC('shaders/objects.vert'),
 	maek.GLSLC('shaders/objects.frag'),
 ];
-gen_objs.push( maek.CPP('Tutorial-ObjectsPipeline.cpp', undefined, { depends:[...objects_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/Tutorial-ObjectsPipeline.cpp', undefined, { depends:[...objects_shaders] } ) );
 
 const shadow_shaders = [
 	maek.GLSLC('shaders/shadows.vert'),
 	maek.GLSLC('shaders/shadows.frag'),
 ];
-gen_objs.push( maek.CPP('ShadowPipeline.cpp', undefined, { depends:[...shadow_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/ShadowPipeline.cpp', undefined, { depends:[...shadow_shaders] } ) );
 
 
 const compute_shaders = [
 	maek.GLSLC('shaders/gaussian.comp'),
 ];
-gen_objs.push( maek.CPP('ComputePipeline.cpp', undefined, { depends:[...compute_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/ComputePipeline.cpp', undefined, { depends:[...compute_shaders] } ) );
+
+const bleed_shaders = [
+	maek.GLSLC('shaders/bilateral.comp'),
+];
+gen_objs.push( maek.CPP('pipelines/BleedPipeline.cpp', undefined, { depends:[...bleed_shaders] } ) );
 
 const display_shaders = [
 	// maek.GLSLC('shaders/objects.vert'),
 	// maek.GLSLC('shaders/objects.frag'),
 ];
-gen_objs.push( maek.CPP('DisplayPipeline.cpp', undefined, { depends:[...display_shaders] } ) );
+gen_objs.push( maek.CPP('pipelines/DisplayPipeline.cpp', undefined, { depends:[...display_shaders] } ) );
 
 
 const main_objs = [

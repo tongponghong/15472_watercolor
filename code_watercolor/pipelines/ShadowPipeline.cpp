@@ -1,33 +1,30 @@
-#include "Tutorial.hpp"
+#include "../Tutorial.hpp"
 
-#include "Helpers.hpp"
-#include "refsol.hpp"
-#include "VK.hpp"
+#include "../Helpers.hpp"
+#include "../VK.hpp"
 
 static uint32_t vert_code[] = 
-#include "spv/shaders/lines.vert.inl"
+#include "../spv/shaders/shadows.vert.inl"
 ;
 
 static uint32_t frag_code[] = 
-#include "spv/shaders/lines.frag.inl"
+#include "../spv/shaders/shadows.frag.inl"
 ;
 
 
-void Tutorial::LinesPipeline::create(RTG &rtg, 
+void Tutorial::ShadowsPipeline::create(RTG &rtg, 
                                           VkRenderPass render_pass,
                                           uint32_t subpass) 
 {
     VkShaderModule vert_module = rtg.helpers.create_shader_module(vert_code);
     VkShaderModule frag_module = rtg.helpers.create_shader_module(frag_code);
 
-
-    // the set0_Camera layout holds a Camera structure in a 
-    // uniform buffer used in the vertex shader
-    {
+ 
+    {        
         std::array< VkDescriptorSetLayoutBinding, 1 > bindings {
-            VkDescriptorSetLayoutBinding {
+            VkDescriptorSetLayoutBinding{
                 .binding = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                 .descriptorCount = 1,
                 .stageFlags = VK_SHADER_STAGE_VERTEX_BIT
             },
@@ -39,24 +36,31 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
             .pBindings = bindings.data(),
         };
 
-        // actually created descriptor set layout 
-        VK( vkCreateDescriptorSetLayout(rtg.device, &create_info, nullptr, &set0_Camera) );
-
+        VK ( vkCreateDescriptorSetLayout(rtg.device, &create_info, nullptr, &set0_SHADOWS) );
     }
+
 
     { // create pipeline layout : 
 
+        // needs to be defined since then it matches the descriptor set layout to lines pipeline
         std::array< VkDescriptorSetLayout, 1 > layouts{
-            set0_Camera,
+           set0_SHADOWS,
+        };
+
+        VkPushConstantRange range {
+            // specifically accessible by vertex shader 
+            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+            .offset = 0,
+            .size = sizeof(Push),
         };
 
         VkPipelineLayoutCreateInfo create_info {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .setLayoutCount = uint32_t(layouts.size()),
             .pSetLayouts = layouts.data(), 
-            .pushConstantRangeCount = 0,
+            .pushConstantRangeCount = 1,
             // what shaders will use what portions of the push_constant struct (above)
-            .pPushConstantRanges = nullptr,
+            .pPushConstantRanges = &range,
         };
 
 
@@ -65,7 +69,7 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
     }
 
     { // create the actual pipeline
-        // shader code for vertex and frag pipline stages
+        // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/SpecializationConstants.6pp.pdf
         std::array< VkPipelineShaderStageCreateInfo, 2 > stages 
         {
             VkPipelineShaderStageCreateInfo {
@@ -79,7 +83,7 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
                 .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
                 .module = frag_module,
                 .pName = "main"
-            },
+            }
         };
 
         // viewport and scissor state set here (instead of being fixed)
@@ -97,7 +101,7 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
         // we want triangles 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-            .topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
             .primitiveRestartEnable = VK_FALSE
         };
 
@@ -108,13 +112,13 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
             .scissorCount = 1,
         };
 
-        // rasterizer culls back faces (CCW front) and fill polygons
+        // shadow rasterizer culls front faces (CCW front) and fill polygons
         VkPipelineRasterizationStateCreateInfo rasterization_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             .depthClampEnable = VK_FALSE,
             .rasterizerDiscardEnable = VK_FALSE,
             .polygonMode = VK_POLYGON_MODE_FILL,
-            .cullMode = VK_CULL_MODE_BACK_BIT,
+            .cullMode = VK_CULL_MODE_FRONT_BIT,
             .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             .depthBiasEnable = VK_FALSE,
             .lineWidth = 1.0f,
@@ -127,7 +131,7 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
             .sampleShadingEnable = VK_FALSE,
         };
 
-        // no depth or stencil test
+        
         VkPipelineDepthStencilStateCreateInfo depth_stencil_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
             .depthTestEnable = VK_TRUE,
@@ -138,15 +142,9 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
         };
 
         // one color attachment w/ blending disabled
-        std::array< VkPipelineColorBlendAttachmentState, 1 > attachment_states {
-            VkPipelineColorBlendAttachmentState {
-                .blendEnable = VK_FALSE,
-                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-                                VK_COLOR_COMPONENT_G_BIT |
-                                VK_COLOR_COMPONENT_B_BIT |
-                                VK_COLOR_COMPONENT_A_BIT,
-            },
+        std::array< VkPipelineColorBlendAttachmentState, 0 > attachment_states {
         };
+
         VkPipelineColorBlendStateCreateInfo color_blend_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .logicOpEnable = VK_FALSE,
@@ -182,12 +180,11 @@ void Tutorial::LinesPipeline::create(RTG &rtg,
     }
 }                                
 
-void Tutorial::LinesPipeline::destroy(RTG &rtg)
+void Tutorial::ShadowsPipeline::destroy(RTG &rtg)
 {
-
-    if (set0_Camera != VK_NULL_HANDLE) {
-        vkDestroyDescriptorSetLayout(rtg.device, set0_Camera, nullptr);
-        set0_Camera = VK_NULL_HANDLE;
+    if (set0_SHADOWS != VK_NULL_HANDLE) {
+        vkDestroyDescriptorSetLayout(rtg.device, set0_SHADOWS, nullptr);
+        set0_SHADOWS = VK_NULL_HANDLE;
     }
 
     if (layout != VK_NULL_HANDLE) {
@@ -199,6 +196,4 @@ void Tutorial::LinesPipeline::destroy(RTG &rtg)
         vkDestroyPipeline(rtg.device, handle, nullptr);
         handle = VK_NULL_HANDLE;
     }
-
-
 }

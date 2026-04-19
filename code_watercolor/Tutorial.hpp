@@ -213,7 +213,24 @@ struct Tutorial : RTG::Application {
 		void destroy (RTG &);
 	} compute_pipeline;
 
+	struct BleedPipeline {
+		// no descriptor set layouts
+		VkDescriptorSetLayout set0_image;
 
+		// push constants
+		struct Push {
+			float time;
+		};
+
+		VkPipelineLayout layout = VK_NULL_HANDLE;
+
+		// no vertex bindings
+		
+		VkPipeline handle = VK_NULL_HANDLE;
+
+		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
+		void destroy (RTG &);
+	} bleed_pipeline;
 
 	//workspaces hold per-render resources:
 	struct Workspace {
@@ -254,8 +271,10 @@ struct Tutorial : RTG::Application {
 		Helpers::AllocatedBuffer Computes; // device-local
 		VkDescriptorSet Compute_descriptors; // references Transforms
 
-		
-		
+		Helpers::AllocatedBuffer Bleed_src; // host coherent; mapped
+		Helpers::AllocatedBuffer Bleeds; // device-local
+		VkDescriptorSet Bleed_descriptors; // references Transforms
+
 	};
 	std::vector< Workspace > workspaces;
 
@@ -354,10 +373,17 @@ struct Tutorial : RTG::Application {
 	Helpers::AllocatedImage swapchain_depth_image;
 	Helpers::AllocatedImage offscreen_input_image;   // compute input
 	Helpers::AllocatedImage blurred_offscreen_image; // compute output
+	Helpers::AllocatedImage bleeded_offscreen_image;
+	Helpers::AllocatedImage ctrl_image;
 
 	VkImageView swapchain_depth_image_view = VK_NULL_HANDLE;
 	VkImageView offscreen_input_image_view = VK_NULL_HANDLE; // image view for compute input
 	VkImageView blurred_offscreen_image_view = VK_NULL_HANDLE; 
+	VkImageView bleeded_offscreen_image_view = VK_NULL_HANDLE; 
+	VkImageView ctrl_image_view = VK_NULL_HANDLE; 
+
+	// for depth sampling image for watercolor
+	VkSampler depth_sampler = VK_NULL_HANDLE;
 
 	std::vector< VkFramebuffer > swapchain_framebuffers;
 	VkFramebuffer offscreen_image_framebuffer = VK_NULL_HANDLE;

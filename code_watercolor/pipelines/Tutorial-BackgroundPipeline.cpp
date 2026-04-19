@@ -1,15 +1,14 @@
-#include "Tutorial.hpp"
+#include "../Tutorial.hpp"
 
-#include "Helpers.hpp"
-#include "refsol.hpp"
-#include "VK.hpp"
+#include "../Helpers.hpp"
+#include "../VK.hpp"
 
 static uint32_t vert_code[] = 
-#include "spv/shaders/background.vert.inl"
+#include "../spv/shaders/background.vert.inl"
 ;
 
 static uint32_t frag_code[] = 
-#include "spv/shaders/background.frag.inl"
+#include "../spv/shaders/background.frag.inl"
 ;
 
 

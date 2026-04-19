@@ -2,12 +2,14 @@
 //* resources:
 
 
-layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding=0, rgba8) readonly uniform image2D Ii; // color image
-layout(binding=1, rgba8) readonly uniform image2D Zi; // depth image
-layout(binding=2, rgba8) uniform image2D Ci; // control image
+#extension GL_EXT_shader_image_load_formatted : require
 
-layout(binding=3, rgba8) uniform image2D Bi; // bleed image
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(binding=0) readonly uniform image2D Ii; // color image
+layout(binding=1) uniform image2D Ci; // control image
+layout(binding=2) uniform sampler2D Zi; // depth image
+
+layout(binding=3) uniform image2D Bi; // bleed image
 
 
 //* paper uses kernel size 21 with stdev 20
@@ -19,7 +21,8 @@ float C(ivec2 p){
 }
 
 float Z(ivec2 p){
-    return imageLoad(Zi, p).b;
+    //return imageLoad(Zi, p).b;
+    return texelFetch(Zi, p, 0).b;
 }
 
 vec4 B(ivec2 p){
@@ -72,4 +75,11 @@ void bleedBlur(ivec2 p){
         
     }
     imageStore(Bi, p, result);
+}
+
+void main(){
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+
+    // imageStore(Bi, texelCoord, vec4(texelFetch(Zi, texelCoord, 0).r, 0.0, 0.0, 1.0));
+    bleedBlur(texelCoord);
 }
