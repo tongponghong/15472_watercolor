@@ -508,9 +508,9 @@ void main() {
     vec3 tonemapped_albedo;
 
     //* cangiante weight
-    float c = 0.9;
+    float c = 0.4;
     //* dilution weight
-    float d = 0.4;
+    float d = 0.1;
     //* cangiante color
     vec3 C = vec3(40/255.0, 30/255.0, 255/255.0);
     float dilution_area_var = 1.0;
@@ -521,7 +521,6 @@ void main() {
     float scale = 0.1;
     vec3 noiseInput = position*scale;
     float ctrl = clamp(fbm(noiseInput)/5,0.0, 1.0);
-
 
     if (tex_type == 0) {
         vec3 c_sun = get_sun_contribution_lamb(out_normal);

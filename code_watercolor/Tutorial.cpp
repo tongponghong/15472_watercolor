@@ -276,6 +276,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	compute_pipeline.create(rtg, render_pass, 0);
 	display_pipeline.create(rtg, render_pass, 0);
 	bleed_pipeline.create(rtg, render_pass, 0);
+	style_pipeline.create(rtg, render_pass, 0);
 
 	workspaces.resize(rtg.swapchain_images.size());
 	
@@ -306,7 +307,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			//because CREATE_FREE_DESCRIPTOR_SET_BIT isn't included, *can't* free individual descriptors allocated from this pool
 			.flags = 0,
-			.maxSets = 7 * per_workspace,  // five sets per workspace 
+			.maxSets = 8 * per_workspace,  // five sets per workspace 
 			.poolSizeCount = uint32_t(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data(),
 		};
@@ -419,6 +420,17 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			};
 
 			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Bleed_descriptors));
+		}
+
+		{ // allocate descriptor set for bleed descriptor
+			VkDescriptorSetAllocateInfo alloc_info{
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+				.descriptorPool = descriptor_pool,
+				.descriptorSetCount = 1,
+				.pSetLayouts = &style_pipeline.set0_image,
+			};
+
+			VK( vkAllocateDescriptorSets(rtg.device, &alloc_info, &workspace.Style_descriptors));
 		}
 
 		// descriptor write
@@ -826,7 +838,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
                     VkExtent2D{ .width = size, .height = size }, // size of image
                     VK_FORMAT_R8G8B8A8_UNORM, // how to interpret image data
                     VK_IMAGE_TILING_OPTIMAL,
-                    VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
+                    VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT, // will sample and upload
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, // should be device_local
                     Helpers::Unmapped
                 ));
@@ -1674,6 +1686,15 @@ Tutorial::~Tutorial() {
 			rtg.helpers.destroy_buffer(std::move(workspace.Bleeds));
 		}
 
+		if (workspace.Style_src.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Style_src));
+		}
+
+		if (workspace.Style.handle != VK_NULL_HANDLE) {
+			rtg.helpers.destroy_buffer(std::move(workspace.Style));
+		}
+
+
 		// transforms_descriptors free when pool is destroyed
 	}
 	workspaces.clear();
@@ -1692,6 +1713,7 @@ Tutorial::~Tutorial() {
 	compute_pipeline.destroy(rtg);
 	display_pipeline.destroy(rtg);
 	bleed_pipeline.destroy(rtg);
+	style_pipeline.destroy(rtg);
 
 	if (shadowmap_framebuffer != VK_NULL_HANDLE) {
 		vkDestroyFramebuffer(rtg.device, shadowmap_framebuffer, nullptr);
@@ -2518,6 +2540,13 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
 		};
 
+		// VkDescriptorImageInfo input_info {
+		// 	.sampler = VK_NULL_HANDLE,
+		// 	//.imageView = rtg.swapchain_image_views[render_params.image_index],
+		// 	.imageView = offscreen_input_image_view,
+		// 	.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		// };
+
 		VkDescriptorImageInfo output_info {
 			.sampler = VK_NULL_HANDLE,
 			//.imageView = rtg.swapchain_image_views[render_params.image_index],
@@ -2571,6 +2600,65 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			rtg.device,
 			// descriptorWrites count, data
 			uint32_t(writes.size()), writes.data(),
+			// descriptorCopies count, data
+			0, nullptr
+		);
+
+		int idx = strings_to_texture_idxs[rtg.configuration.paper_path];
+		// printf("!!!! %d\n\n\n\n", idx);
+		VkDescriptorImageInfo paper_info {
+			.sampler = VK_NULL_HANDLE,
+			//.imageView = rtg.swapchain_image_views[render_params.image_index],
+			.imageView = material_views[idx],
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		};
+
+
+		//* there are 3 input images, and 1 output image 
+		std::array< VkWriteDescriptorSet, 4 > style_writes{
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Style_descriptors,
+				.dstBinding = 0, 
+			    .dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &input_info,
+			},
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Style_descriptors,
+				.dstBinding = 1, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &paper_info,
+			},
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Style_descriptors,
+				.dstBinding = 2,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.pImageInfo = &depth_info,
+			},
+
+			VkWriteDescriptorSet{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = workspace.Style_descriptors,
+				.dstBinding = 3, 
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+				.pImageInfo = &output_info,
+			},
+		};
+
+		vkUpdateDescriptorSets(
+			rtg.device,
+			// descriptorWrites count, data
+			uint32_t(style_writes.size()), style_writes.data(),
 			// descriptorCopies count, data
 			0, nullptr
 		);
@@ -2907,8 +2995,10 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdEndRenderPass (workspace.command_buffer);
 	}
 
+	int idx = strings_to_texture_idxs[rtg.configuration.paper_path];
+
 	{ //* first barriers to ensure it's ready for compute pipeline
-		std::array< VkImageMemoryBarrier, 5 > barriers_before_blur {
+		std::array< VkImageMemoryBarrier, 6 > barriers_before_blur {
 			// barrier for the input (turns from color attachment to general for storage)
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -2949,6 +3039,21 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
 				.image = blurred_offscreen_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = 0,
+				.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
+				.image = textures_in_use[idx].handle,
 				.subresourceRange {
 					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 					.baseMipLevel = 0,
@@ -3054,73 +3159,21 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			1
 		);
 
-		// std::array< VkImageMemoryBarrier, 3 > barriers_after_blur {
-		// 	// barrier for the input (the blurred offscreen image from the compute)
-		// 	VkImageMemoryBarrier{
-		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-		// 		.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
-		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
-		// 		.image = blurred_offscreen_image.handle,
-		// 		.subresourceRange {
-		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-		// 			.baseMipLevel = 0,
-		// 			.levelCount = 1,
-		// 			.baseArrayLayer = 0,
-		// 			.layerCount = 1,
-		// 		}
-		// 	},
-
-		// 	// bleed image input 
-		// 	VkImageMemoryBarrier{
-		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-		// 		.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
-		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
-		// 		.image = bleeded_offscreen_image.handle,
-		// 		.subresourceRange {
-		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-		// 			.baseMipLevel = 0,
-		// 			.levelCount = 1,
-		// 			.baseArrayLayer = 0,
-		// 			.layerCount = 1,
-		// 		}
-		// 	},
-		// 	// takes care of output (swapchain in this case)
-		// 	VkImageMemoryBarrier{
-		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		// 		.srcAccessMask = 0,
-		// 		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-		// 		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-		// 		.image = rtg.swapchain_images[render_params.image_index],
-		// 		.subresourceRange {
-		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-		// 			.baseMipLevel = 0,
-		// 			.levelCount = 1,
-		// 			.baseArrayLayer = 0,
-		// 			.layerCount = 1,
-		// 		}
-		// 	},
-		// };
-
 		VkMemoryBarrier barrier{
-    .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
-    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-    .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
-};
+			.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+			.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+		};
 
-vkCmdPipelineBarrier(
-    workspace.command_buffer,
-    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-    0,
-    1, &barrier,
-    0, nullptr,
-    0, nullptr
-);
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			0,
+			1, &barrier,
+			0, nullptr,
+			0, nullptr
+		);
 
 		{
 			BleedPipeline::Push push {
@@ -3129,7 +3182,7 @@ vkCmdPipelineBarrier(
 				.far = currCamera.far,
 			};
 			vkCmdPushConstants(workspace.command_buffer, 
-			bleed_pipeline.layout, 
+			bleed_pipeline.layout,
 			VK_SHADER_STAGE_COMPUTE_BIT, 
 			0, sizeof(push), &push);
 		}
@@ -3152,75 +3205,57 @@ vkCmdPipelineBarrier(
 			1
 		);
 
-
 	}
 
-	
-	// VkMemoryBarrier barrier{
-	// 	.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
-	// 	.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-	// 	.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-	// };
+	{
+		VkMemoryBarrier barrier{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+			.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+		};
 
-	// vkCmdPipelineBarrier(
-	// 	cmd,
-	// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-	// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-	// 	0,
-	// 	1, &barrier,
-	// 	0, nullptr,
-	// 	0, nullptr
-	// );
+		vkCmdPipelineBarrier(
+			workspace.command_buffer,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			0,
+			1, &barrier,
+			0, nullptr,
+			0, nullptr
+		);
 
-	// { //* compute shader!!
-	// 	// blur
-	// 	vkCmdBindPipeline(workspace.command_buffer, 
-	// 		              VK_PIPELINE_BIND_POINT_COMPUTE, 
-	// 					  compute_pipeline.handle);
+		{
+			StylePipeline::Push push {
+				.vert = false,
+				.near = currCamera.near,
+				.far = currCamera.far,
+			};
+			vkCmdPushConstants(workspace.command_buffer, 
+			style_pipeline.layout,
+			VK_SHADER_STAGE_COMPUTE_BIT, 
+			0, sizeof(push), &push);
+		}
 
-	// 	vkCmdBindDescriptorSets(workspace.command_buffer, 
-	// 		                    VK_PIPELINE_BIND_POINT_COMPUTE, 
-	// 							compute_pipeline.layout, 
-	// 							0, 1, 
-	// 							&workspace.Compute_descriptors, 
-	// 							0, nullptr);
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  style_pipeline.handle);
 
-	// 	{ // push time
-	// 			BleedPipeline::Push push {
-	// 				.vert = true,
-	// 			};
-	// 			vkCmdPushConstants(workspace.command_buffer, 
-	// 			bleed_pipeline.layout, 
-	// 			VK_SHADER_STAGE_COMPUTE_BIT, 
-	// 			0, sizeof(push), &push);
-	// 		}
-
-	// 	vkCmdDispatch(
-	// 		workspace.command_buffer,
-	// 		(rtg.swapchain_extent.width+7)/8,
-	// 		(rtg.swapchain_extent.height+7)/8,
-	// 		1
-	// 	);
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								style_pipeline.layout, 
+								0, 1, 
+								&workspace.Style_descriptors, 
+								0, nullptr);
 		
-	// 	// bleed
-	// 	vkCmdBindPipeline(workspace.command_buffer, 
-	// 		              VK_PIPELINE_BIND_POINT_COMPUTE, 
-	// 					  bleed_pipeline.handle);
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
+	}
 
-	// 	vkCmdBindDescriptorSets(workspace.command_buffer, 
-	// 		                    VK_PIPELINE_BIND_POINT_COMPUTE, 
-	// 							bleed_pipeline.layout, 
-	// 							0, 1, 
-	// 							&workspace.Bleed_descriptors, 
-	// 							0, nullptr);
 
-	// 	vkCmdDispatch(
-	// 		workspace.command_buffer,
-	// 		(rtg.swapchain_extent.width+7)/8,
-	// 		(rtg.swapchain_extent.height+7)/8,
-	// 		1
-	// 	);
-	// }
 
 
 	{ //* second barrier to make sure it goes back to intermediate image correctly

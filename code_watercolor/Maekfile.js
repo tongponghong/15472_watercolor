@@ -82,6 +82,12 @@ const bleed_shaders = [
 ];
 gen_objs.push( maek.CPP('pipelines/BleedPipeline.cpp', undefined, { depends:[...bleed_shaders] } ) );
 
+const style_shaders = [
+	maek.GLSLC('shaders/style.comp'),
+];
+gen_objs.push( maek.CPP('pipelines/StylePipeline.cpp', undefined, { depends:[...style_shaders] } ) );
+
+
 const display_shaders = [
 	// maek.GLSLC('shaders/objects.vert'),
 	// maek.GLSLC('shaders/objects.frag'),

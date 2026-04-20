@@ -234,6 +234,27 @@ struct Tutorial : RTG::Application {
 		void destroy (RTG &);
 	} bleed_pipeline;
 
+	struct StylePipeline {
+		// no descriptor set layouts
+		VkDescriptorSetLayout set0_image;
+
+		// push constants
+		struct Push {
+			float vert;
+			float near;
+			float far;
+		};
+
+		VkPipelineLayout layout = VK_NULL_HANDLE;
+
+		// no vertex bindings
+		
+		VkPipeline handle = VK_NULL_HANDLE;
+
+		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
+		void destroy (RTG &);
+	} style_pipeline;
+
 	//workspaces hold per-render resources:
 	struct Workspace {
 		VkCommandBuffer command_buffer = VK_NULL_HANDLE; //from the command pool above; reset at the start of every render.
@@ -276,6 +297,10 @@ struct Tutorial : RTG::Application {
 		Helpers::AllocatedBuffer Bleed_src; // host coherent; mapped
 		Helpers::AllocatedBuffer Bleeds; // device-local
 		VkDescriptorSet Bleed_descriptors; // references Transforms
+
+		Helpers::AllocatedBuffer Style_src; // host coherent; mapped
+		Helpers::AllocatedBuffer Style; // device-local
+		VkDescriptorSet Style_descriptors; // references Transforms
 
 	};
 	std::vector< Workspace > workspaces;

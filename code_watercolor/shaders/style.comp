@@ -142,6 +142,8 @@ void main(){
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);
     //* texelFetch(Zi, texelCoord, 0).r
     
-    bleedBlur(p);
-    //imageStore(Bi, p, vec4(Z(p)));
+    //bleedBlur(p);
+    vec4 paperTexture = imageLoad(Ci, p);
+    imageStore(Bi, p, B(p)*paperTexture.x);
+
 }

@@ -113,4 +113,3 @@ void main(){
 
     imageStore(outputImage, texelCoord, vec4(blurred, 1.0));
 }
-
