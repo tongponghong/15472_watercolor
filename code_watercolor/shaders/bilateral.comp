@@ -22,7 +22,7 @@ float C(ivec2 p){
 
 float Z(ivec2 p){
     //return imageLoad(Zi, p).b;
-    return texelFetch(Zi, p, 0).b;
+    return texelFetch(Zi, p, 0).r;
 }
 
 vec4 B(ivec2 p){
@@ -74,7 +74,7 @@ void bleedBlur(ivec2 p){
         }
         
     }
-    imageStore(Bi, p, vec4(C(p), 0.0, 0.0, 1.0));
+    imageStore(Bi, p, vec4(Z(p), 0.0, 0.0, 1.0));
 }
 
 void main(){

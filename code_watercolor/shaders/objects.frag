@@ -578,7 +578,7 @@ void main() {
         }
 
         outColor = vec4(Ct, 1.0);
-        controlColor = vec4(0.0, 1.0, 0.0, 1.0);
+        controlColor = vec4(0.0, 0.0, 1.0, 1.0);
     }
 
     else if (tex_type == 1) {

@@ -65,7 +65,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				.format = depth_format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-				.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 				.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
 				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -1106,9 +1106,13 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			// change back to nearest eventually
 			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
 			// control how texture repeats or doesn't
-			.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT, // maybe change to clamp_to_edge?
-			.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			// .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT, // maybe change to clamp_to_edge?
+			// .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			// .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			//* might need to be clamp to edge 
+			.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, // maybe change to clamp_to_edge?
+			.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
 			.mipLodBias = 0.0f,
 			.anisotropyEnable = VK_FALSE,
 			.maxAnisotropy = 0.0f, // doesnt matter bc anisotropy isn't enabled
@@ -2955,7 +2959,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 				.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-				.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
 				.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 
 				.image = swapchain_depth_image.handle,
