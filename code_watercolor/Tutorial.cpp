@@ -2998,6 +2998,16 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 								&workspace.Compute_descriptors, 
 								0, nullptr);
 
+		{ // push time
+				BleedPipeline::Push push {
+					.vert = false,
+				};
+				vkCmdPushConstants(workspace.command_buffer, 
+				bleed_pipeline.layout, 
+				VK_SHADER_STAGE_COMPUTE_BIT, 
+				0, sizeof(push), &push);
+			}
+
 		vkCmdDispatch(
 			workspace.command_buffer,
 			(rtg.swapchain_extent.width+7)/8,
@@ -3024,6 +3034,57 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			1
 		);
 	}
+
+	{ //* compute shader!!
+		// blur
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  compute_pipeline.handle);
+
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								compute_pipeline.layout, 
+								0, 1, 
+								&workspace.Compute_descriptors, 
+								0, nullptr);
+
+		{ // push time
+				BleedPipeline::Push push {
+					.vert = true,
+				};
+				vkCmdPushConstants(workspace.command_buffer, 
+				bleed_pipeline.layout, 
+				VK_SHADER_STAGE_COMPUTE_BIT, 
+				0, sizeof(push), &push);
+			}
+
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
+		
+		// bleed
+		vkCmdBindPipeline(workspace.command_buffer, 
+			              VK_PIPELINE_BIND_POINT_COMPUTE, 
+						  bleed_pipeline.handle);
+
+		vkCmdBindDescriptorSets(workspace.command_buffer, 
+			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+								bleed_pipeline.layout, 
+								0, 1, 
+								&workspace.Bleed_descriptors, 
+								0, nullptr);
+
+		vkCmdDispatch(
+			workspace.command_buffer,
+			(rtg.swapchain_extent.width+7)/8,
+			(rtg.swapchain_extent.height+7)/8,
+			1
+		);
+	}
+
 
 	{ //* second barrier to make sure it goes back to intermediate image correctly
 		std::array< VkImageMemoryBarrier, 3 > barriers_after_blur {
