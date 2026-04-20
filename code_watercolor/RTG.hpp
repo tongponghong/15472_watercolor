@@ -80,6 +80,7 @@ struct RTG {
 
 		// scene path
 		std::string scene_path;
+		std::string paper_path;
 		std::string lamb_lookup_tex_path;
 
 		// user camera

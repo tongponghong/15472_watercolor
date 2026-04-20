@@ -638,22 +638,22 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		uint32_t currentCubeTexIndex = 1;
 
 		//* add paper texture
-		// S72::Texture paper;
-		// if (rtg.configuration.paper_path == ""){
-		// 	printf("No paper found :( \n");
-		// 	//? could potentially default to another texture path in case?
-		// 	assert(false);
-		// } else {
-		// 	paper.src = rtg.configuration.paper_path;
-		// }
-		// paper.type = S72::Texture::Type::flat;
-		// paper.format = S72::Texture::Format::linear;
-		// // resolve path (same convention as loader)
-		// paper.path = rtg.configuration.paper_path;
-		// rtg.scene.textures.insert({
-		// 	paper.path,
-		// 	paper
-		// });
+		S72::Texture paper;
+		if (rtg.configuration.paper_path == ""){
+			printf("No paper found :( \n");
+			//? could potentially default to another texture path in case?
+			assert(false);
+		} else {
+			paper.src = rtg.configuration.paper_path;
+		}
+		paper.type = S72::Texture::Type::flat;
+		paper.format = S72::Texture::Format::linear;
+		// resolve path (same convention as loader)
+		paper.path = rtg.configuration.paper_path;
+		rtg.scene.textures.insert({
+			paper.path,
+			paper
+		});
 
 		{ // get rest of textures from images:
 			for (auto &texture : rtg.scene.textures) {

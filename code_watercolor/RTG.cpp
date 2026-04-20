@@ -52,6 +52,11 @@ void RTG::Configuration::parse(int argc, char **argv) {
 			argi += 1;
 			scene_path = argv[argi];
 			std::cout << "This is the scene you entered: " << scene_path << std::endl;
+		} else if (arg == "--paper") {
+			argi += 1;
+			paper_path = argv[argi];
+			std::cout << "This is the paper image you entered: " << scene_path << std::endl;
+		
 		} else if (arg == "--camera") {
 			argi += 1;
 			user_entered_camera = argv[argi]; 
