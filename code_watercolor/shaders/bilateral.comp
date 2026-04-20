@@ -10,6 +10,8 @@
 
 layout(push_constant) uniform Push {
     bool vert;
+    float near;
+    float far;
 };
 
 
@@ -42,11 +44,19 @@ vec2 simplex(vec2 st){
 
 float C(ivec2 p){
     //return float(simplex(p/30.0).x > 0.3);
-    return float(imageLoad(Ci, p).b > 0.3);
+    if (vert){
+        return float(imageLoad(Ci, p).b > 0.4);
+    } else {
+       return float(imageLoad(Ci, p).g > 0.4);
+    }
+}
+
+float linearize(float z){
+    return (2.0 * near) / (far + near - z * (far - near));
 }
 
 float Z(ivec2 p){
-    return texelFetch(Zi, p, 0).r;
+    return linearize(texelFetch(Zi, p, 0).r);
 }
 
 vec4 B(ivec2 p){
@@ -65,13 +75,15 @@ float W(int i){
     return kernel[i];
 }
 
+
+
 //* color image I
 //* depth image Z
 //* control image mask C
 //* depth threshold T
 //* matches pseudo code from page 7/13
 void bleedBlur(ivec2 p){
-    float T = 0.0;
+    float T = 0.001;
     vec4 result = vec4(0.0);
     ivec2 size = imageSize(Ii);
 
@@ -82,8 +94,10 @@ void bleedBlur(ivec2 p){
         change = ivec2(0, 1);
     }
 
+    float countBehind = 0.0;
     for (int i = -10; i <= 10; i++){
 
+        
         ivec2 p_i = p + i*change;
         if (p_i.x < 0 || p_i.x >= size.x) continue;
         
@@ -91,12 +105,27 @@ void bleedBlur(ivec2 p){
             //* perform bleed and depth queries
             bool bleed = false;
             bool sourceBehind = Z(p) - T > Z(p_i);
-            
-            if (C(p_i) > 0 && sourceBehind){
-                bleed = true;
-            } else if (C(p) > 0 && !sourceBehind){
-                bleed = true;
+
+            if (sourceBehind){
+                countBehind += 0.1;
             }
+
+            bool accurateToPaper = false;
+            
+            if (accurateToPaper){
+                if (C(p_i) > 0 && sourceBehind){
+                bleed = true;
+                } else if (C(p) > 0 && !sourceBehind){
+                    bleed = true;
+                }
+            } else {
+                if (C(p_i) > 0 && !sourceBehind){
+                    bleed = true;
+                } else if (C(p) > 0 && !sourceBehind){
+                    bleed = true;
+                }
+            }
+            
             
             if (bleed){
                 result += I(p_i) * W(i+10);
@@ -109,7 +138,7 @@ void bleedBlur(ivec2 p){
             result += I(p) * W(i+10);
         }
     }
-    //imageStore(Bi, p, vec4(Z(p), 0.0, 0.0, 1.0));
+    //imageStore(Bi, p, vec4(countBehind, 0.0, 0.0, 1.0));
     imageStore(Bi, p, result);
 }
 
@@ -118,5 +147,5 @@ void main(){
     //* texelFetch(Zi, texelCoord, 0).r
     
     bleedBlur(p);
-    //imageStore(Bi, p, imageLoad(Ci, p));
+    //imageStore(Bi, p, vec4(Z(p)));
 }

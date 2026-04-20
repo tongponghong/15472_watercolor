@@ -3026,6 +3026,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		{
 			BleedPipeline::Push push {
 				.vert = true,
+				.near = currCamera.near,
+				.far = currCamera.far,
 			};
 			vkCmdPushConstants(workspace.command_buffer, 
 			bleed_pipeline.layout, 
@@ -3123,6 +3125,8 @@ vkCmdPipelineBarrier(
 		{
 			BleedPipeline::Push push {
 				.vert = false,
+				.near = currCamera.near,
+				.far = currCamera.far,
 			};
 			vkCmdPushConstants(workspace.command_buffer, 
 			bleed_pipeline.layout, 
