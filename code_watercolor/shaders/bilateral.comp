@@ -54,7 +54,11 @@ vec4 B(ivec2 p){
 }
 
 vec4 I(ivec2 p){
-    return imageLoad(Ii, p);
+    if (vert){
+        return imageLoad(Ii, p);
+    } else {
+        return imageLoad(Bi, p);
+    }
 }
 
 float W(int i){

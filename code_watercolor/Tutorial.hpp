@@ -219,7 +219,7 @@ struct Tutorial : RTG::Application {
 
 		// push constants
 		struct Push {
-			bool vert;
+			float vert;
 		};
 
 		VkPipelineLayout layout = VK_NULL_HANDLE;

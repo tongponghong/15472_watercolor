@@ -637,6 +637,24 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		uint32_t currentIndex = 2;
 		uint32_t currentCubeTexIndex = 1;
 
+		//* add paper texture
+		// S72::Texture paper;
+		// if (rtg.configuration.paper_path == ""){
+		// 	printf("No paper found :( \n");
+		// 	//? could potentially default to another texture path in case?
+		// 	assert(false);
+		// } else {
+		// 	paper.src = rtg.configuration.paper_path;
+		// }
+		// paper.type = S72::Texture::Type::flat;
+		// paper.format = S72::Texture::Format::linear;
+		// // resolve path (same convention as loader)
+		// paper.path = rtg.configuration.paper_path;
+		// rtg.scene.textures.insert({
+		// 	paper.path,
+		// 	paper
+		// });
+
 		{ // get rest of textures from images:
 			for (auto &texture : rtg.scene.textures) {
 				int tex_img_width, tex_img_height, channels;
@@ -2998,24 +3016,24 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 								&workspace.Compute_descriptors, 
 								0, nullptr);
 
-		{ // push time
-				BleedPipeline::Push push {
-					.vert = false,
-				};
-				vkCmdPushConstants(workspace.command_buffer, 
-				bleed_pipeline.layout, 
-				VK_SHADER_STAGE_COMPUTE_BIT, 
-				0, sizeof(push), &push);
-			}
-
 		vkCmdDispatch(
 			workspace.command_buffer,
 			(rtg.swapchain_extent.width+7)/8,
 			(rtg.swapchain_extent.height+7)/8,
 			1
 		);
+
+		{
+			BleedPipeline::Push push {
+				.vert = true,
+			};
+			vkCmdPushConstants(workspace.command_buffer, 
+			bleed_pipeline.layout, 
+			VK_SHADER_STAGE_COMPUTE_BIT, 
+			0, sizeof(push), &push);
+		}
 		
-		// bleed
+		// bleed #1
 		vkCmdBindPipeline(workspace.command_buffer, 
 			              VK_PIPELINE_BIND_POINT_COMPUTE, 
 						  bleed_pipeline.handle);
@@ -3033,39 +3051,85 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			(rtg.swapchain_extent.height+7)/8,
 			1
 		);
-	}
 
-	{ //* compute shader!!
-		// blur
-		vkCmdBindPipeline(workspace.command_buffer, 
-			              VK_PIPELINE_BIND_POINT_COMPUTE, 
-						  compute_pipeline.handle);
+		// std::array< VkImageMemoryBarrier, 3 > barriers_after_blur {
+		// 	// barrier for the input (the blurred offscreen image from the compute)
+		// 	VkImageMemoryBarrier{
+		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+		// 		.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+		// 		.image = blurred_offscreen_image.handle,
+		// 		.subresourceRange {
+		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+		// 			.baseMipLevel = 0,
+		// 			.levelCount = 1,
+		// 			.baseArrayLayer = 0,
+		// 			.layerCount = 1,
+		// 		}
+		// 	},
 
-		vkCmdBindDescriptorSets(workspace.command_buffer, 
-			                    VK_PIPELINE_BIND_POINT_COMPUTE, 
-								compute_pipeline.layout, 
-								0, 1, 
-								&workspace.Compute_descriptors, 
-								0, nullptr);
+		// 	// bleed image input 
+		// 	VkImageMemoryBarrier{
+		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		// 		.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+		// 		.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+		// 		.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+		// 		.image = bleeded_offscreen_image.handle,
+		// 		.subresourceRange {
+		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+		// 			.baseMipLevel = 0,
+		// 			.levelCount = 1,
+		// 			.baseArrayLayer = 0,
+		// 			.layerCount = 1,
+		// 		}
+		// 	},
+		// 	// takes care of output (swapchain in this case)
+		// 	VkImageMemoryBarrier{
+		// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		// 		.srcAccessMask = 0,
+		// 		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+		// 		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		// 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		// 		.image = rtg.swapchain_images[render_params.image_index],
+		// 		.subresourceRange {
+		// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+		// 			.baseMipLevel = 0,
+		// 			.levelCount = 1,
+		// 			.baseArrayLayer = 0,
+		// 			.layerCount = 1,
+		// 		}
+		// 	},
+		// };
 
-		{ // push time
-				BleedPipeline::Push push {
-					.vert = true,
-				};
-				vkCmdPushConstants(workspace.command_buffer, 
-				bleed_pipeline.layout, 
-				VK_SHADER_STAGE_COMPUTE_BIT, 
-				0, sizeof(push), &push);
-			}
+		VkMemoryBarrier barrier{
+    .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+};
 
-		vkCmdDispatch(
-			workspace.command_buffer,
-			(rtg.swapchain_extent.width+7)/8,
-			(rtg.swapchain_extent.height+7)/8,
-			1
-		);
-		
-		// bleed
+vkCmdPipelineBarrier(
+    workspace.command_buffer,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    0,
+    1, &barrier,
+    0, nullptr,
+    0, nullptr
+);
+
+		{
+			BleedPipeline::Push push {
+				.vert = false,
+			};
+			vkCmdPushConstants(workspace.command_buffer, 
+			bleed_pipeline.layout, 
+			VK_SHADER_STAGE_COMPUTE_BIT, 
+			0, sizeof(push), &push);
+		}
+
 		vkCmdBindPipeline(workspace.command_buffer, 
 			              VK_PIPELINE_BIND_POINT_COMPUTE, 
 						  bleed_pipeline.handle);
@@ -3076,14 +3140,83 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 								0, 1, 
 								&workspace.Bleed_descriptors, 
 								0, nullptr);
-
+		
 		vkCmdDispatch(
 			workspace.command_buffer,
 			(rtg.swapchain_extent.width+7)/8,
 			(rtg.swapchain_extent.height+7)/8,
 			1
 		);
+
+
 	}
+
+	
+	// VkMemoryBarrier barrier{
+	// 	.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+	// 	.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+	// 	.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+	// };
+
+	// vkCmdPipelineBarrier(
+	// 	cmd,
+	// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+	// 	VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+	// 	0,
+	// 	1, &barrier,
+	// 	0, nullptr,
+	// 	0, nullptr
+	// );
+
+	// { //* compute shader!!
+	// 	// blur
+	// 	vkCmdBindPipeline(workspace.command_buffer, 
+	// 		              VK_PIPELINE_BIND_POINT_COMPUTE, 
+	// 					  compute_pipeline.handle);
+
+	// 	vkCmdBindDescriptorSets(workspace.command_buffer, 
+	// 		                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+	// 							compute_pipeline.layout, 
+	// 							0, 1, 
+	// 							&workspace.Compute_descriptors, 
+	// 							0, nullptr);
+
+	// 	{ // push time
+	// 			BleedPipeline::Push push {
+	// 				.vert = true,
+	// 			};
+	// 			vkCmdPushConstants(workspace.command_buffer, 
+	// 			bleed_pipeline.layout, 
+	// 			VK_SHADER_STAGE_COMPUTE_BIT, 
+	// 			0, sizeof(push), &push);
+	// 		}
+
+	// 	vkCmdDispatch(
+	// 		workspace.command_buffer,
+	// 		(rtg.swapchain_extent.width+7)/8,
+	// 		(rtg.swapchain_extent.height+7)/8,
+	// 		1
+	// 	);
+		
+	// 	// bleed
+	// 	vkCmdBindPipeline(workspace.command_buffer, 
+	// 		              VK_PIPELINE_BIND_POINT_COMPUTE, 
+	// 					  bleed_pipeline.handle);
+
+	// 	vkCmdBindDescriptorSets(workspace.command_buffer, 
+	// 		                    VK_PIPELINE_BIND_POINT_COMPUTE, 
+	// 							bleed_pipeline.layout, 
+	// 							0, 1, 
+	// 							&workspace.Bleed_descriptors, 
+	// 							0, nullptr);
+
+	// 	vkCmdDispatch(
+	// 		workspace.command_buffer,
+	// 		(rtg.swapchain_extent.width+7)/8,
+	// 		(rtg.swapchain_extent.height+7)/8,
+	// 		1
+	// 	);
+	// }
 
 
 	{ //* second barrier to make sure it goes back to intermediate image correctly
@@ -3111,7 +3244,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
 				.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
 				.oldLayout = VK_IMAGE_LAYOUT_GENERAL,
-				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL,
 				.image = bleeded_offscreen_image.handle,
 				.subresourceRange {
 					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
