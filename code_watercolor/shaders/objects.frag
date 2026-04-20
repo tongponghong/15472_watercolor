@@ -578,7 +578,11 @@ void main() {
         }
 
         outColor = vec4(Ct, 1.0);
-        controlColor = vec4(0.0, 0.0, 1.0, 1.0);
+
+        float scaleLate = 2.0;
+        vec3 noiseInputLate = position*scaleLate;
+        float ctrlLate = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
+        controlColor = vec4(ctrlLate);
     }
 
     else if (tex_type == 1) {

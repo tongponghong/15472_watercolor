@@ -41,8 +41,8 @@ vec2 simplex(vec2 st){
 }
 
 float C(ivec2 p){
-    return simplex(p/100.0).x * simplex(p/100.0).x;
-    //return imageLoad(Ci, p).b;
+    //return float(simplex(p/30.0).x > 0.3);
+    return float(imageLoad(Ci, p).b > 0.3);
 }
 
 float Z(ivec2 p){
@@ -71,7 +71,7 @@ float W(int i){
 //* depth threshold T
 //* matches pseudo code from page 7/13
 void bleedBlur(ivec2 p){
-    float T = 0.02;
+    float T = 0.0;
     vec4 result = vec4(0.0);
     ivec2 size = imageSize(Ii);
 
@@ -108,15 +108,15 @@ void bleedBlur(ivec2 p){
             //* add weighted source color
             result += I(p) * W(i+10);
         }
-        
     }
     //imageStore(Bi, p, vec4(Z(p), 0.0, 0.0, 1.0));
     imageStore(Bi, p, result);
 }
 
 void main(){
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
     //* texelFetch(Zi, texelCoord, 0).r
     
-    bleedBlur(texelCoord);
+    bleedBlur(p);
+    //imageStore(Bi, p, imageLoad(Ci, p));
 }
