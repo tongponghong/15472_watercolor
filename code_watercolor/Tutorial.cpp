@@ -29,7 +29,8 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 
 	{ // create render pass
 		// attachments:
-		std::array< VkAttachmentDescription, 2 > attachments{
+		std::array< VkAttachmentDescription, 3 > attachments{
+			// output 1
 			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)
 				.format = rtg.surface_format.format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -44,7 +45,23 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				// what layout the image will be transitioned to after store 
 				.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			},
-			VkAttachmentDescription{
+			// output 2 (control image)
+			VkAttachmentDescription{ // 1 - color attachment (format determined by output surface)
+				.format = rtg.surface_format.format,
+				.samples = VK_SAMPLE_COUNT_1_BIT,
+				// how to load data before rendering
+				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+				// how to write data back after rendering
+				.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				// what layout th imag will be transitioned to before load
+				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				// what layout the image will be transitioned to after store 
+				.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			},
+			
+			VkAttachmentDescription{ // 2 depth attachment 
 				.format = depth_format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -57,13 +74,21 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		};
 
 		// subpass(es):
-		VkAttachmentReference color_attachment_ref{
-			.attachment = 0,
-			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		std::array< VkAttachmentReference, 2 > color_attachment_refs{
+			// color_attachment_ref
+			VkAttachmentReference{
+				.attachment = 0,
+				.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			},
+			// control_colors_attachment_ref
+			VkAttachmentReference {
+				.attachment = 1,
+				.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			},
 		};
 
 		VkAttachmentReference depth_attachment_ref{
-			.attachment = 1,
+			.attachment = 2,
 			.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		};
 
@@ -71,8 +96,8 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
 			.inputAttachmentCount = 0,
 			.pInputAttachments = nullptr,
-			.colorAttachmentCount = 1,
-			.pColorAttachments = &color_attachment_ref,
+			.colorAttachmentCount = color_attachment_refs.size(),
+			.pColorAttachments = color_attachment_refs.data(),
 			.pDepthStencilAttachment = &depth_attachment_ref,
 		};
 
@@ -1733,8 +1758,8 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		swapchain.extent,
 		rtg.surface_format.format,
 		VK_IMAGE_TILING_OPTIMAL,
-		// compute pass | back to graphics 
-		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		// render pass | compute pass
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		Helpers::Unmapped
 	);
@@ -1830,8 +1855,9 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	}
 
 	{ // create a framebuffer for the offscreen image 
-		std::array< VkImageView, 2 > offscreen_attachments{
+		std::array< VkImageView, 3 > offscreen_attachments{
 			offscreen_input_image_view, 
+			ctrl_image_view,
 			swapchain_depth_image_view,
 		};
 
@@ -1846,38 +1872,37 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		};
 
 		VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &offscreen_image_framebuffer) );
-
 	}
 
 	// create framebufers pointing to each swapchain image view and the shared depth image view
-	swapchain_framebuffers.assign(swapchain.image_views.size(), VK_NULL_HANDLE);
-	for (size_t i = 0; i < swapchain.image_views.size(); ++i) {
-		std::array< VkImageView, 2 > attachments{
-			swapchain.image_views[i],
-			swapchain_depth_image_view,
-		};
+	// swapchain_framebuffers.assign(swapchain.image_views.size(), VK_NULL_HANDLE);
+	// for (size_t i = 0; i < swapchain.image_views.size(); ++i) {
+	// 	std::array< VkImageView, 2 > attachments{
+	// 		swapchain.image_views[i],
+	// 		swapchain_depth_image_view,
+	// 	};
 
-		VkFramebufferCreateInfo create_info {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.renderPass = render_pass,
-			.attachmentCount = uint32_t(attachments.size()),
-			.pAttachments = attachments.data(),
-			.width = swapchain.extent.width,
-			.height = swapchain.extent.height,
-			.layers = 1,
-		};
+	// 	VkFramebufferCreateInfo create_info {
+	// 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+	// 		.renderPass = render_pass,
+	// 		.attachmentCount = uint32_t(attachments.size()),
+	// 		.pAttachments = attachments.data(),
+	// 		.width = swapchain.extent.width,
+	// 		.height = swapchain.extent.height,
+	// 		.layers = 1,
+	// 	};
 
-		VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &swapchain_framebuffers[i]) );
-	}
+	// 	VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &swapchain_framebuffers[i]) );
+	// }
 }
 
 void Tutorial::destroy_framebuffers() {
-	for (VkFramebuffer &framebuffer : swapchain_framebuffers) {
-		assert(framebuffer != VK_NULL_HANDLE);
-		vkDestroyFramebuffer(rtg.device, framebuffer, nullptr);
-		framebuffer = VK_NULL_HANDLE;
-	}
-	swapchain_framebuffers.clear();
+	// for (VkFramebuffer &framebuffer : swapchain_framebuffers) {
+	// 	assert(framebuffer != VK_NULL_HANDLE);
+	// 	vkDestroyFramebuffer(rtg.device, framebuffer, nullptr);
+	// 	framebuffer = VK_NULL_HANDLE;
+	// }
+	// swapchain_framebuffers.clear();
 
 	assert(swapchain_depth_image_view != VK_NULL_HANDLE);
 	vkDestroyImageView(rtg.device, swapchain_depth_image_view, nullptr);
@@ -1943,7 +1968,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	//assert that parameters are valid:
 	assert(&rtg == &rtg_);
 	assert(render_params.workspace_index < workspaces.size());
-	assert(render_params.image_index < swapchain_framebuffers.size());
+	//assert(render_params.image_index < swapchain_framebuffers.size());
 
 	//get more convenient names for the current workspace and target framebuffer:
 	Workspace &workspace = workspaces[render_params.workspace_index];
@@ -2549,7 +2574,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	}
 
 	{ // render pass part 
-		std::array< VkClearValue, 2 > clear_values {
+		std::array< VkClearValue, 3 > clear_values {
+			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
 			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
 			VkClearValue{ .depthStencil { .depth = 1.0f, .stencil = 0}},
 		};
@@ -2860,7 +2886,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	}
 
 	{ //* first barriers to ensure it's ready for compute pipeline
-		std::array< VkImageMemoryBarrier, 4 > barriers_before_blur {
+		std::array< VkImageMemoryBarrier, 5 > barriers_before_blur {
 			// barrier for the input (turns from color attachment to general for storage)
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -2869,6 +2895,22 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
 				.image = offscreen_input_image.handle,
+				.subresourceRange {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.baseMipLevel = 0,
+					.levelCount = 1,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				}
+			},
+			// barrier for control image 
+			VkImageMemoryBarrier{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+				.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+				.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				.newLayout = VK_IMAGE_LAYOUT_GENERAL, 
+				.image = ctrl_image.handle,
 				.subresourceRange {
 					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 					.baseMipLevel = 0,
@@ -3960,7 +4002,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 	if (evt.type == InputEvent::MouseMotion){
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+		//std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
 		return;
 	}
 	// glfwSetCursorPosCallback(window, cursorPositionCallback);

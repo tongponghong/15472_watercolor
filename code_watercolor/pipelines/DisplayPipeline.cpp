@@ -122,7 +122,7 @@ void Tutorial::DisplayPipeline::create(RTG &rtg,
         };
 
         // one color attachment w/ blending disabled
-        std::array< VkPipelineColorBlendAttachmentState, 1 > attachment_states {
+        std::array< VkPipelineColorBlendAttachmentState, 2 > attachment_states {
             VkPipelineColorBlendAttachmentState {
                 .blendEnable = VK_FALSE,
                 .colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
@@ -130,7 +130,14 @@ void Tutorial::DisplayPipeline::create(RTG &rtg,
                                 VK_COLOR_COMPONENT_B_BIT |
                                 VK_COLOR_COMPONENT_A_BIT,
             },
-        };
+            VkPipelineColorBlendAttachmentState {
+                .blendEnable = VK_FALSE,
+                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+                                VK_COLOR_COMPONENT_G_BIT |
+                                VK_COLOR_COMPONENT_B_BIT |
+                                VK_COLOR_COMPONENT_A_BIT,
+            },
+        }; 
         VkPipelineColorBlendStateCreateInfo color_blend_state {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .logicOpEnable = VK_FALSE,

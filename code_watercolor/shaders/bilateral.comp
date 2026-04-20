@@ -74,7 +74,7 @@ void bleedBlur(ivec2 p){
         }
         
     }
-    imageStore(Bi, p, result);
+    imageStore(Bi, p, vec4(C(p), 0.0, 0.0, 1.0));
 }
 
 void main(){

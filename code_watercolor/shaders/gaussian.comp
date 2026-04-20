@@ -111,6 +111,6 @@ void main(){
     vec4 Ied = mix(stuff,vec4(0), edge);
     //vec4(blurred,1)
 
-    imageStore(outputImage, texelCoord, Ied);
+    imageStore(outputImage, texelCoord, vec4(blurred, 1.0));
 }
 

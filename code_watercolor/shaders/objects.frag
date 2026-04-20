@@ -64,6 +64,7 @@ layout (location = 4) in vec2 texCoord;
 layout (location = 5) in mat3 TBN_basis;
 
 layout (location = 0) out vec4 outColor;
+layout (location = 1) out vec4 controlColor;
 
 //https://64.github.io/tonemapping/
 
@@ -577,6 +578,7 @@ void main() {
         }
 
         outColor = vec4(Ct, 1.0);
+        controlColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
 
     else if (tex_type == 1) {
