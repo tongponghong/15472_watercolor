@@ -18,9 +18,11 @@ layout(push_constant) uniform Push {
 layout(local_size_x = 8, local_size_y = 8) in;
 layout(binding=0) readonly uniform image2D Ii; // color image
 layout(binding=1) uniform image2D Ci; // control image
-layout(binding=2) uniform sampler2D Zi; // depth image
-
+layout(binding=2) uniform image2D Bluri; // blurred image
 layout(binding=3) uniform image2D Bi; // bleed image
+layout(binding=4) uniform sampler2D Si; // Surface image
+
+layout(binding=5) uniform image2D Wi;
 
 
 //* paper uses kernel size 21 with stdev 20
@@ -54,9 +56,9 @@ float linearize(float z){
     return (2.0 * near) / (far + near - z * (far - near));
 }
 
-float Z(ivec2 p){
-    return linearize(texelFetch(Zi, p, 0).r);
-}
+// float Z(ivec2 p){
+//     return linearize(texelFetch(Zi, p, 0).r);
+// }
 
 vec4 B(ivec2 p){
     return imageLoad(Bi, p);
@@ -101,27 +103,27 @@ void bleedBlur(ivec2 p){
         if (C(p) > 0 || C(p_i) > 0){
             //* perform bleed and depth queries
             bool bleed = false;
-            bool sourceBehind = Z(p) - T > Z(p_i);
+            // bool sourceBehind = Z(p) - T > Z(p_i);
 
-            if (sourceBehind){
-                countBehind += 0.1;
-            }
+            // if (sourceBehind){
+            //     countBehind += 0.1;
+            // }
 
             bool accurateToPaper = false;
             
-            if (accurateToPaper){
-                if (C(p_i) > 0 && sourceBehind){
-                    bleed = true;
-                } else if (C(p) > 0 && !sourceBehind){
-                    bleed = true;
-                }
-            } else {
-                if (C(p_i) > 0 && !sourceBehind){
-                    bleed = true;
-                } else if (C(p) > 0 && !sourceBehind){
-                    bleed = true;
-                }
-            }
+            // if (accurateToPaper){
+            //     if (C(p_i) > 0 && sourceBehind){
+            //         bleed = true;
+            //     } else if (C(p) > 0 && !sourceBehind){
+            //         bleed = true;
+            //     }
+            // } else {
+            //     if (C(p_i) > 0 && !sourceBehind){
+            //         bleed = true;
+            //     } else if (C(p) > 0 && !sourceBehind){
+            //         bleed = true;
+            //     }
+            // }
             
             if (bleed){
                 result += I(p_i) * W(i+10);
@@ -143,7 +145,6 @@ void main(){
     //* texelFetch(Zi, texelCoord, 0).r
     
     //bleedBlur(p);
-    vec4 paperTexture = imageLoad(Ci, p);
-    imageStore(Bi, p, B(p)*paperTexture.x);
-
+    vec4 paperTexture = texelFetch(Si, p, 0);
+    imageStore(Wi, p, B(p) * paperTexture.x);
 }

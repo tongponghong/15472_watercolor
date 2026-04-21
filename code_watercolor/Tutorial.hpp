@@ -402,12 +402,14 @@ struct Tutorial : RTG::Application {
 	Helpers::AllocatedImage blurred_offscreen_image; // compute output
 	Helpers::AllocatedImage bleeded_offscreen_image;
 	Helpers::AllocatedImage ctrl_image;
+	Helpers::AllocatedImage final_image;
 
 	VkImageView swapchain_depth_image_view = VK_NULL_HANDLE;
 	VkImageView offscreen_input_image_view = VK_NULL_HANDLE; // image view for compute input
 	VkImageView blurred_offscreen_image_view = VK_NULL_HANDLE; 
 	VkImageView bleeded_offscreen_image_view = VK_NULL_HANDLE; 
 	VkImageView ctrl_image_view = VK_NULL_HANDLE; 
+	VkImageView final_image_view = VK_NULL_HANDLE; 
 
 	// for depth sampling image for watercolor
 	VkSampler depth_sampler = VK_NULL_HANDLE;

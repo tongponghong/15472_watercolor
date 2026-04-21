@@ -9,8 +9,16 @@ static uint32_t comp_code[] =
 void Tutorial::StylePipeline::create(RTG &rtg, VkRenderPass render_pass, uint32_t subpass) 
 {
 
+    // layout(binding=0) readonly uniform image2D Ii; // color image
+// layout(binding=1) uniform image2D Ci; // control image
+// layout(binding=2) uniform sampler2D Bluri; // blurred image
+// layout(binding=3) uniform image2D Bi; // bleed image
+// layout(binding=4) uniform image2D Si; // Surface image
+
+// layout(binding=5) uniform image2D Wi;
+
     { // the set4_TEXTURE layout has a single descriptor for a sampler2D used in fragment shader:
-        std::array< VkDescriptorSetLayoutBinding, 4 > bindings {
+        std::array< VkDescriptorSetLayoutBinding, 6 > bindings {
             VkDescriptorSetLayoutBinding{ // input image (from object pipeline)
                 .binding = 0,
                 .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
@@ -26,15 +34,29 @@ void Tutorial::StylePipeline::create(RTG &rtg, VkRenderPass render_pass, uint32_
                 .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
             },
 
-             VkDescriptorSetLayoutBinding{ // depth image
+             VkDescriptorSetLayoutBinding{ // blurred image
                 .binding = 2,
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 
+                .descriptorCount = 1,
+                .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+            },
+
+            VkDescriptorSetLayoutBinding{ // bleeded image 
+                .binding = 3,
+                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                .descriptorCount = 1,
+                .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+            },
+
+            VkDescriptorSetLayoutBinding{ // surface image 
+                .binding = 4,
+                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 .descriptorCount = 1,
                 .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
             },
 
             VkDescriptorSetLayoutBinding{ // output image 
-                .binding = 3,
+                .binding = 5,
                 .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
                 .descriptorCount = 1,
                 .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
