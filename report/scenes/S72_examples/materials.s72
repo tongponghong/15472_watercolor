@@ -2,7 +2,7 @@
 {
 	"type":"ENVIRONMENT",
 	"name":"ox_bridge_morning.png",
-	"radiance":{"src":"ox_bridge_morning.png", "type":"cube", "format":"rgbe"}
+	"radiance":{"src":"watercolor_cube_map.hdr", "type":"cube", "format":"rgbe"}
 },
 {
 	"type":"NODE",
