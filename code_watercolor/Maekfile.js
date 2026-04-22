@@ -38,13 +38,13 @@ const gen_objs = [
 	maek.CPP('helperlibs/sejp_lib/sejp.cpp'),
 	maek.CPP('Helpers.cpp'),
 
-	maek.CPP('helperlibs/imgui/imgui.cpp'),
-	maek.CPP('helperlibs/imgui/imgui_demo.cpp'),
-	maek.CPP('helperlibs/imgui/imgui_draw.cpp'),
-	maek.CPP('helperlibs/imgui/imgui_tables.cpp'),
-	maek.CPP('helperlibs/imgui/imgui_widgets.cpp'),
-	maek.CPP('helperlibs/imgui/backends/imgui_impl_vulkan.cpp'),
-	maek.CPP('helperlibs/imgui/backends/imgui_impl_glfw.cpp')
+	// maek.CPP('helperlibs/imgui/imgui.cpp'),
+	// maek.CPP('helperlibs/imgui/imgui_demo.cpp'),
+	// maek.CPP('helperlibs/imgui/imgui_draw.cpp'),
+	// maek.CPP('helperlibs/imgui/imgui_tables.cpp'),
+	// maek.CPP('helperlibs/imgui/imgui_widgets.cpp'),
+	// maek.CPP('helperlibs/imgui/backends/imgui_impl_vulkan.cpp'),
+	// maek.CPP('helperlibs/imgui/backends/imgui_impl_glfw.cpp')
 ];
 
 
