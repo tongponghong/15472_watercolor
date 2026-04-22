@@ -43,6 +43,8 @@ layout(push_constant) uniform Push {
     // kept as a push constant to change exposure while debugging 
     float exposure; 
     float time;
+    float near;
+    float far;
 }; // add instance name here
 
 layout (constant_id = 0) const int sunNum = 0;
@@ -91,6 +93,11 @@ vec3 linear_to_srgb(vec3 linear_col) {
 
     return outCol;
 }
+
+float linearize(float z){
+    return (2.0 * near) / (far + near - z * (far - near));
+}
+
 
 vec3 srgb_to_linear(vec3 srgb_col) {
     vec3 outCol = vec3(0.0);
@@ -512,7 +519,7 @@ void main() {
     //* dilution weight
     float d = 0.1;
     //* cangiante color
-    vec3 C = vec3(40/255.0, 30/255.0, 255/255.0);
+    vec3 C = vec3(40/255.0, 30/255.0, 150/255.0);
     float dilution_area_var = 1.0;
 
     // paper color
@@ -521,6 +528,10 @@ void main() {
     float scale = 0.1;
     vec3 noiseInput = position*scale;
     float ctrl = clamp(fbm(noiseInput)/5,0.0, 1.0);
+
+    float z = gl_FragCoord.z;
+    float away = clamp(linearize(z)+0.5, 0, 1);
+    ctrl = mix(ctrl, 0.5, away);
 
     if (tex_type == 0) {
         vec3 c_sun = get_sun_contribution_lamb(out_normal);
@@ -578,6 +589,9 @@ void main() {
 
         outColor = vec4(Ct, 1.0);
 
+        
+        //outColor = vec4(vec3(linearize(z)), 1.0);
+    
         float scaleLate = 2.0;
         vec3 noiseInputLate = position*scaleLate;
         float ctrlLate = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
@@ -660,6 +674,79 @@ void main() {
         //outColor = vec4(new_tangent, 1.0);
         //outColor = vec4(texture(NORMAL_SAMPLER, texCoord).rgb, 1.0);
         //outColor = vec4(out_normal, 1.0);
+
+        // vec3 c_sun = get_sun_contribution_lamb(out_normal);
+        // vec3 c_sphere = get_sphere_contribution_lamb(out_normal);
+        // vec3 c_spot = get_spot_contribution_lamb(out_normal);
+
+        // albedo = texture(CUBE_TEXTURE, reflected).rgb;
+        // //texture(LAMB_SAMPLER, out_normal).rgb
+        // //lit_albedo = albedo * (c_sun + c_sphere + c_spot);
+
+        // //* 1. dilution area
+        // float Da = get_dilution_aoe(dilution_area_var, out_normal);
+
+        // //* 2. cangiante
+        // // my version:
+        // // treat the cangiante color as if it is a color wash that occurs under
+        // // existing paint (like how watercolor artists often start with a layer 
+        // // of light blue paint to do the shadows)
+
+        // // background
+        // vec4 background = vec4(C + Da * c, c);
+        // // foreground
+        // vec4 foreground = vec4(albedo, max(0.8, Da));
+        // vec4 both = alphaOver(background,foreground);
+
+        // vec3 Cc = both.xyz;
+        // float alphaC = both.w;
+        
+        // Cc = mix(albedo, Cc, alphaC);
+
+        // // their version:
+        // bool accurateToPaper = false;
+        // if (accurateToPaper){
+        //     Cc = (albedo + Da * c);
+        // }
+
+        // //* 3. dilution
+        // vec3 Cd = d * Da * (Cp - Cc) + Cc;
+
+        // //* 4. turbulence
+        // vec3 Ct;
+        // if (ctrl < 0.5) {
+        //     float expv = max(1.0, 3.0 - ctrl * 4.0);
+        //     Ct = pow(Cd, vec3(expv));
+        // } else {
+        //     Ct = (ctrl - 0.5) * 2.0 * (Cp - Cd) + Cd;
+        // }
+
+        // bool doExposureTone = false;
+        // if (doExposureTone){
+        //     vec3 exposed = exposure_scale(Ct, exposure);
+        //     vec3 tonemapped = tonemapper(exposed, tonemap_type);
+        //     Ct = min(Ct, Cp);
+        // }
+
+        // outColor = vec4(Ct, 1.0);
+
+        
+        // //outColor = vec4(vec3(linearize(z)), 1.0);
+    
+        // float scaleLate = 2.0;
+        // vec3 noiseInputLate = position*scaleLate;
+        // float ctrlLate = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
+        // float ctrlLate2 = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
+        // controlColor = vec4(ctrlLate, ctrlLate2, ctrlLate, ctrlLate);
+
+        // vec3 N = normalize(normal);
+        // vec3 V = normalize(EYE - position);
+        // vec3 R = reflect(-V, N);
+
+        // vec3 color = texture(CUBE_TEXTURE, normalize(R)).rgb;
+
+        // outColor = vec4(1.0, 0.0, 1.0, 1.0);
+        // return;
 
     }
 

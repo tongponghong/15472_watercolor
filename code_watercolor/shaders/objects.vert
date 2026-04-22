@@ -24,6 +24,8 @@ layout(push_constant) uniform Push {
     // kept as a push constant to change exposure while debugging 
     float exposure; 
     float time;
+    float near;
+    float far;
 }; // add instance name here
 
 layout (set = 1, binding = 0, std140) readonly buffer Transforms {

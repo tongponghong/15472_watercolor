@@ -2957,12 +2957,13 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				);
 			}
 
-			
 			ObjectsPipeline::Push push {
 				.EYE_vec = vec3{0.0f, 0.0f, 0.0f},
 				.tex_type = 0,
 				.exposure = rtg.exposure,
 				.time = float(time),
+				.near = currCamera.near,
+				.far = currCamera.far,
 			};
 			//std::cout << "time: " << time << std::endl;
 

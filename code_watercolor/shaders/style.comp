@@ -1,19 +1,13 @@
 # version 450
 //* resources:
 
-
 #extension GL_EXT_shader_image_load_formatted : require
-
-// layout(push_constant) uniform Params {
-//     ivec2 direction;
-// };
 
 layout(push_constant) uniform Push {
     bool vert;
     float near;
     float far;
 };
-
 
 layout(local_size_x = 8, local_size_y = 8) in;
 layout(binding=0) readonly uniform image2D Ii; // color image
@@ -24,125 +18,30 @@ layout(binding=4) uniform sampler2D Si; // Surface image
 
 layout(binding=5) uniform image2D Wi;
 
-
-//* paper uses kernel size 21 with stdev 20
-float kernel[] = float[](0.043958, 0.045015, 0.045981, 0.046852, 0.047619, 0.048279, 0.048825, 0.049254, 0.049563, 0.049749, 0.049811, 0.049749, 0.049563, 0.049254, 0.048825, 0.048279, 0.047619, 0.046852, 0.045981, 0.045015, 0.043958);
-
-// vec2 random22(vec2 p){
-//    return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))))*43758.5453);
-// }
-
-// //* Function directly from https://thebookofshaders.com/11/
-// vec2 simplex(vec2 st){
-//    vec2 fst = floor(st);
-//    vec2 a = random22(fst);
-//    vec2 b = random22(fst + vec2(1.0, 0.0));
-//    vec2 c = random22(fst + vec2(0.0, 1.0));
-//    vec2 d = random22(fst + vec2(1.0, 1.0));
-//    vec2 fr = fract(st);
-//    vec2 u = fr*fr*(3.0-2.0*fr);
-//    return mix(a, b, u.x) + (c-a)*u.y *(1.0-u.x) + (d-b)*u.x*u.y;
-// }
-
-float C(ivec2 p){
-    if (vert){
-        return float(imageLoad(Ci, p).b > 0.4);
-    } else {
-       return float(imageLoad(Ci, p).g > 0.4);
-    }
+vec4 I(ivec2 p){
+    return imageLoad(Ii, p);
 }
 
-float linearize(float z){
-    return (2.0 * near) / (far + near - z * (far - near));
-}
-
-// float Z(ivec2 p){
-//     return linearize(texelFetch(Zi, p, 0).r);
-// }
-
-vec4 B(ivec2 p){
-    return imageLoad(Bi, p);
+vec4 C(ivec2 p){
+    return imageLoad(Ci, p);
 }
 
 vec4 Blur(ivec2 p){
     return imageLoad(Bluri, p);
 }
 
-vec4 I(ivec2 p){
-    if (vert){
-        return imageLoad(Ii, p);
-    } else {
-        return imageLoad(Bi, p);
-    }
+vec4 B(ivec2 p){
+    return imageLoad(Bi, p);
 }
 
-float W(int i){
-    return kernel[i];
+vec4 S(ivec2 p){
+    return texelFetch(Si, p, 0);
 }
 
-//* color image I
-//* depth image Z
-//* control image mask C
-//* depth threshold T
-//* matches pseudo code from page 7/13
-void bleedBlur(ivec2 p){
-    float T = 0.001;
-    vec4 result = vec4(0.0);
-    ivec2 size = imageSize(Ii);
-
-    ivec2 change;
-    if (vert){
-        change = ivec2(1, 0);
-    } else {
-        change = ivec2(0, 1);
-    }
-
-    float countBehind = 0.0;
-    for (int i = -10; i <= 10; i++){
-
-        
-        ivec2 p_i = p + i*change;
-        if (p_i.x < 0 || p_i.x >= size.x) continue;
-        
-        if (C(p) > 0 || C(p_i) > 0){
-            //* perform bleed and depth queries
-            bool bleed = false;
-            // bool sourceBehind = Z(p) - T > Z(p_i);
-
-            // if (sourceBehind){
-            //     countBehind += 0.1;
-            // }
-
-            bool accurateToPaper = false;
-            
-            // if (accurateToPaper){
-            //     if (C(p_i) > 0 && sourceBehind){
-            //         bleed = true;
-            //     } else if (C(p) > 0 && !sourceBehind){
-            //         bleed = true;
-            //     }
-            // } else {
-            //     if (C(p_i) > 0 && !sourceBehind){
-            //         bleed = true;
-            //     } else if (C(p) > 0 && !sourceBehind){
-            //         bleed = true;
-            //     }
-            // }
-            
-            if (bleed){
-                result += I(p_i) * W(i+10);
-            } else {
-                result += I(p) * W(i+10);
-            }
-
-        } else {
-            //* add weighted source color
-            result += I(p) * W(i+10);
-        }
-    }
-    //imageStore(Bi, p, vec4(countBehind, 0.0, 0.0, 1.0));
-    imageStore(Bi, p, result);
-}
+// Red - Controls paper distortion.
+// Green - Controls paper granulation.
+// Blue - Controls edge darkening and color bleeding.
+// Alpha - Controls pigment turbulence and pigment fading.
 
 void main(){
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);
@@ -150,5 +49,22 @@ void main(){
     
     //bleedBlur(p);
     vec4 paperTexture = texelFetch(Si, p, 0);
-    imageStore(Wi, p, B(p) * paperTexture.x);
+    //imageStore(Wi, p, B(p) * paperTexture.x);
+    float ctrl = 1.0;//C(p).b;
+
+    vec4 B = B(p);
+    vec4 I = I(p);
+    vec4 Ib = Blur(p);
+    vec4 Icb = ctrl*(B - I) + I;
+   
+    vec4 diff = Ib-I;
+    float m = max(diff.r, max(diff.g, diff.b));
+    float exp = 1+ctrl*m;
+    vec4 Ied = vec4(pow(Icb.r, exp), pow(Icb.g, exp), pow(Icb.b, exp), 1.0);
+
+
+    //imageStore(Wi, p, B(p) * paperTexture.x);
+    imageStore(Wi, p, Ied);
+
+
 }
