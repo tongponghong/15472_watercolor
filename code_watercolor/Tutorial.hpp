@@ -152,6 +152,8 @@ struct Tutorial : RTG::Application {
 			int tex_type; // 1 is env, 2 is mirror, 0 is any else
 			float exposure;
 			float time;
+			float near;
+    		float far;
 		};
 
 		struct spec_consts {
