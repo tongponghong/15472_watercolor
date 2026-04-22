@@ -741,7 +741,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 						}
 
 						data[i / 4] = rgbe_res;
-						//std::cout << rgbe_res << std::endl;
+						//std::cout << newR << std::endl;
 					}
 					//std::cout << "oops" << std::endl;
 					cube_textures.emplace_back(rtg.helpers.create_image(
@@ -1256,7 +1256,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			infos[4*i+1] = (VkDescriptorImageInfo{
 				.sampler = cube_texture_sampler,
 				// .imageView = cube_texture_views[1],
-				.imageView = default_cubeView,
+				.imageView = cube_texture_views[1],
 				.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			});
 
@@ -1470,22 +1470,6 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 
 	{ // add in default lights 
 		if (rtg.scene.lights.empty()) {
-			// world.SKY_DIRECTION.x = 0.0f;
-			// world.SKY_DIRECTION.y = 0.0f;
-			// world.SKY_DIRECTION.z = 1.0f;
-
-			// world.SKY_ENERGY.r = 0.1f;
-			// world.SKY_ENERGY.g = 0.1f;
-			// world.SKY_ENERGY.b = 0.2f;
-
-			// world.SUN_DIRECTION.x = 6.0f / 23.0f;
-			// world.SUN_DIRECTION.y = 13.0f / 23.0f;
-			// world.SUN_DIRECTION.z = 18.0f / 23.0f;
-
-			// world.SUN_ENERGY.r = 1.0f;
-			// world.SUN_ENERGY.g = 1.0f;
-			// world.SUN_ENERGY.b = 0.9f;
-
 			sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
 				.angle_w_pad{
 					.angle = 0.0f,
@@ -3148,6 +3132,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			// 		.layerCount = 1,
 			// 	}
 			// },
+
 			// for the bleeded image
 			VkImageMemoryBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -3444,7 +3429,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		);
 	}
 
-	{ //* copy to swapchain!
+	{ //* copy to swapchain
 		VkImageCopy region{
 			.srcSubresource{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,

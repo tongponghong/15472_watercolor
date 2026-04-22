@@ -64,6 +64,10 @@ vec4 B(ivec2 p){
     return imageLoad(Bi, p);
 }
 
+vec4 Blur(ivec2 p){
+    return imageLoad(Bluri, p);
+}
+
 vec4 I(ivec2 p){
     if (vert){
         return imageLoad(Ii, p);

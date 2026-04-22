@@ -186,6 +186,8 @@ struct RTG {
 	//^^ this size could probably be hardcoded (it will almost always be 2 unless you want bottlenecks!), but I'm leaving it variable at the moment.
 	uint32_t next_workspace = 0;
 
+
+	VkPipelineCache pipeline_cache = VK_NULL_HANDLE;
 	//------------------------------
 	//Main loop stuff:
 

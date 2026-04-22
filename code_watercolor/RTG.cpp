@@ -12,6 +12,10 @@
 #include <GLFW/glfw3.h>
 #include "helperlibs/S72_loader/S72.hpp"
 
+#include "helperlibs/imgui/imgui.h"
+#include "helperlibs/imgui/backends/imgui_impl_glfw.h"
+#include "helperlibs/imgui/backends/imgui_impl_vulkan.h"
+
 #include <cassert>
 #include <chrono>
 #include <cstring>
@@ -19,6 +23,7 @@
 #include <sstream>
 #include <fstream>
 #include <set>
+
 
 // consider using &argc and &argv so that it comes in as a list of arguments to be removed from
 void RTG::Configuration::parse(int argc, char **argv) {
@@ -242,6 +247,7 @@ RTG::RTG(Configuration const &configuration_) : helpers(*this) {
 
 		VK( glfwCreateWindowSurface(instance, window, nullptr, &surface) );
 	}
+
 
 
 	{ //select the `physical_device` -- the gpu that will be used to draw:
@@ -517,6 +523,28 @@ RTG::RTG(Configuration const &configuration_) : helpers(*this) {
 			VK( vkCreateSemaphore(device, &create_info, nullptr, &workspace.image_available) );
 		}
 	}
+
+	// { // initialize DearImGUI
+	// 	IMGUI_CHECKVERSION();
+	// 	ImGui::CreateContext();
+	// 	ImGuiIO& io = ImGui::GetIO();
+	// 	(void) io;
+
+	// 	ImGui::StyleColorsDark();
+
+	// 	ImGui_ImplGlfw_InitForVulkan(window, true);
+	// 	ImGui_ImplVulkan_InitInfo init_info{
+	// 		.Instance = instance,
+	// 		.PhysicalDevice = physical_device,
+	// 		.Device = device,
+	// 		.QueueFamily = graphics_queue_family.value(),
+	// 		.Queue = graphics_queue,
+	// 		.PipelineCache = pipeline_cache,
+	// 		.DescriptorPool = VK_NULL_HANDLE,
+
+	// 	}
+
+	// }
 }
 
 RTG::~RTG() {

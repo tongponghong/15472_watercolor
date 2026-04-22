@@ -1,0 +1,6 @@
+[submodule "code_watercolor/helperlibs/dear_imgui/imgui"]
+	path = code_watercolor/helperlibs/dear_imgui/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "code_watercolor/helperlibs/imgui"]
+	path = code_watercolor/helperlibs/imgui
+	url = https://github.com/ocornut/imgui.git

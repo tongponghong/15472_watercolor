@@ -606,10 +606,56 @@ void main() {
         vec3 reflected = reflect(eyeDir, out_normal);
 
         albedo = texture(CUBE_TEXTURE, reflected).rgb;
-        scaled_albedo = exposure_scale(albedo, exposure);
-        tonemapped_albedo = tonemapper(scaled_albedo, tonemap_type);
+        // scaled_albedo = exposure_scale(albedo, exposure);
+        // tonemapped_albedo = tonemapper(scaled_albedo, tonemap_type);
         //outColor = vec4(1.0, 0.0, 0.0, 1.0);
-        outColor = vec4(tonemapped_albedo, 1.0);
+        float Da = get_dilution_aoe(dilution_area_var, out_normal);
+
+        //* 2. cangiante
+        // my version:
+        // treat the cangiante color as if it is a color wash that occurs under
+        // existing paint (like how watercolor artists often start with a layer 
+        // of light blue paint to do the shadows)
+
+        // background
+        vec4 background = vec4(C + Da * c, c);
+        // foreground
+        vec4 foreground = vec4(albedo, max(0.8, Da));
+        vec4 both = alphaOver(background,foreground);
+
+        vec3 Cc = both.xyz;
+        float alphaC = both.w;
+        
+        Cc = mix(albedo, Cc, alphaC);
+
+        // their version:
+        bool accurateToPaper = false;
+        if (accurateToPaper){
+            Cc = (albedo + Da * c);
+        }
+
+        //* 3. dilution
+        vec3 Cd = d * Da * (Cp - Cc) + Cc;
+
+        //* 4. turbulence
+        vec3 Ct;
+        if (ctrl < 0.5) {
+            float expv = max(1.0, 3.0 - ctrl * 4.0);
+            Ct = pow(Cd, vec3(expv));
+        } else {
+            Ct = (ctrl - 0.5) * 2.0 * (Cp - Cd) + Cd;
+        }
+
+        bool doExposureTone = false;
+        if (doExposureTone){
+            vec3 exposed = exposure_scale(Ct, exposure);
+            vec3 tonemapped = tonemapper(exposed, tonemap_type);
+            Ct = min(Ct, Cp);
+        }
+
+        outColor = vec4(Ct, 1.0);
+
+        //outColor = vec4(tonemapped_albedo, 1.0);
         //outColor = vec4(normalize(bitangent) * 0.5 + 0.5, 1.0);
         //outColor = vec4(new_tangent, 1.0);
         //outColor = vec4(texture(NORMAL_SAMPLER, texCoord).rgb, 1.0);
