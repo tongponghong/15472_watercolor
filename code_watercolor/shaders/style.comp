@@ -67,6 +67,8 @@ void main(){
     vec3 Cp = vec3(146.0/255.0, 128.0/255.0, 127.0/255.0)*paperTexture.x;
     vec3 final = Ied * paperTexture.x;
     final = vec3(min(Cp.x, final.x),min(Cp.y, final.y),min(Cp.z, final.z));
-    imageStore(Wi, p, vec4(final, 1.0));
+
+
+    imageStore(Wi, p, vec4(final,1));
 
 }

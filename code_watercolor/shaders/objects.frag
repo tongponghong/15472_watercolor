@@ -530,7 +530,14 @@ void main() {
     float ctrl = clamp(fbm(noiseInput)/5,0.0, 1.0);
 
     float z = gl_FragCoord.z;
-    float away = clamp(linearize(z)+0.5, 0, 1);
+
+    bool accountForDepth = false;
+
+    float away = 0.1;
+    if (accountForDepth){
+        float away = clamp(linearize(z)+0.5, 0, 1);
+    }
+    
     ctrl = mix(ctrl, 0.5, away);
 
 
@@ -569,7 +576,7 @@ void main() {
         bool accurateToPaper = false;
         if (accurateToPaper){
             Cc = (albedo + Da * c);
-        }
+        } 
 
         //* 3. dilution
         vec3 Cd = d * Da * (Cp - Cc) + Cc;
@@ -583,6 +590,8 @@ void main() {
             Ct = (ctrl - 0.5) * 2.0 * (Cp - Cd) + Cd;
         }
 
+        
+
         bool doExposureTone = false;
         if (doExposureTone){
             vec3 exposed = exposure_scale(Ct, exposure);
@@ -590,7 +599,7 @@ void main() {
             Ct = min(Ct, Cp);
         }
 
-        outColor = vec4(Ct, 1.0);
+        outColor = vec4(vec3(Ct), 1.0);
         
         //outColor = vec4(vec3(linearize(z)), 1.0);
     
