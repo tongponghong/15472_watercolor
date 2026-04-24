@@ -107,7 +107,7 @@ void bleedBlur(ivec2 p){
                 countBehind += 0.1;
             }
 
-            bool accurateToPaper = true;
+            bool accurateToPaper = false;
             
             if (accurateToPaper){
                 if (C(p_i) > 0 && sourceBehind){
