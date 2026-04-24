@@ -10,7 +10,7 @@ def G(x,y,stdev):
     g = (1.0 / (2.0 * math.pi * stdevSq)) * math.exp(frac)
     return g
 
-kernelSize = 11
+kernelSize = 21
 halfSize = kernelSize // 2
 stdev = 10
 

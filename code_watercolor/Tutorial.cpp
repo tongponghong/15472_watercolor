@@ -725,20 +725,23 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 						stbi_uc G = *(img + i + 1);
 						stbi_uc B = *(img + i + 2);
 						stbi_uc E = *(img + i + 3);
-	
+						
+						(void) E;
 						// float R_prime, G_prime, B_prime;
 						uint32_t rgbe_res;
 
-						if (R == 0 && G == 0 && B == 0 && E == 0) {
-							rgbe_res = 0;
-						}
+						// if (R == 0 && G == 0 && B == 0 && E == 0) {
+						// 	rgbe_res = 0;
+						// }
 
-						else {
-							float newR = powf(2.0f, float(E) - 128.0f) * ((float(R) + 0.5f) / 256.0f);
-							float newG = powf(2.0f, float(E) - 128.0f) * ((float(G) + 0.5f) / 256.0f);
-							float newB = powf(2.0f, float(E) - 128.0f) * ((float(B) + 0.5f) / 256.0f);
-							rgb9_e5_from_rgbe8(newR, newG, newB, &rgbe_res);
-						}
+						// else {
+						// 	float newR = powf(2.0f, float(E) - 128.0f) * ((float(R) + 0.5f) / 256.0f);
+						// 	float newG = powf(2.0f, float(E) - 128.0f) * ((float(G) + 0.5f) / 256.0f);
+						// 	float newB = powf(2.0f, float(E) - 128.0f) * ((float(B) + 0.5f) / 256.0f);
+						// 	rgb9_e5_from_rgbe8(newR, newG, newB, &rgbe_res);
+						// }
+
+						rgb9_e5_from_rgbe8(R, G, B, &rgbe_res);
 
 						data[i / 4] = rgbe_res;
 						//std::cout << newR << std::endl;
@@ -1256,7 +1259,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			infos[4*i+1] = (VkDescriptorImageInfo{
 				.sampler = cube_texture_sampler,
 				// .imageView = cube_texture_views[1],
-				.imageView = cube_texture_views[1],
+				.imageView = default_cubeView,
 				.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			});
 
@@ -2023,14 +2026,14 @@ void Tutorial::destroy_framebuffers() {
 
 
 void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
-	// static std::unique_ptr< Timer > timer;
-	// timer.reset(new Timer([](double dt){
-	// 	//std::cout << "REPORT frame-time " << dt * 1000.0 << "ms" << std::endl;
-	// 	std::ofstream newFile;
-	// 	newFile.open("light_stress_8.txt", std::fstream::app);
-	// 	newFile << dt * 1000.0 << "\n";
-	// 	newFile.close();
-	// }));
+	static std::unique_ptr< Timer > timer;
+	timer.reset(new Timer([](double dt){
+		//std::cout << "REPORT frame-time " << dt * 1000.0 << "ms" << std::endl;
+		std::ofstream newFile;
+		newFile.open("gaussian_3.txt", std::fstream::app);
+		newFile << dt * 1000.0 << "\n";
+		newFile.close();
+	}));
 	//assert that parameters are valid:
 	assert(&rtg == &rtg_);
 	assert(render_params.workspace_index < workspaces.size());
@@ -3469,7 +3472,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 	{ // barrier from intermediate to swapchain and present on screen
 		
-		// barrier for the input (the blurred offscreen image from the compute)
+		// barrier for the input (the final image after the compute)
 		VkImageMemoryBarrier barrier_after_copy{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
