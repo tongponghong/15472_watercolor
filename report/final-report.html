@@ -119,29 +119,32 @@ code var {
 
 <!-- of course, delete these class="placeholder" notes in your report: -->
 
-<p class="placeholder">
-Summarize, in about one paragraph, your approach to the scene graph assignment.
-How did you structure your code?
-What's cool about it? Are there parts you weren't able to complete?
+<p>
+	Our goal for this project was to replicate the watercolor effect, as described in the paper Art-directed watercolor stylization of 3D animations in real-time. 
+
 </p>
 
-<h2>Animation <span class="atag creative">A1-create</span></h2>
-
-<p class="placeholder">
-Describe your animation and include a screen recording showing it running in real-time:
-</p>
+<h2>Animation</h2>
 
 <video>
 	<source src="watercolor.mp4" type="video/mp4" />
 </video>
 
-<p class="placeholder">
-Describe how you created your animation.
+<p>
+We created this animation within Blender. Each texture turned into a lambertian texture, and modifiers were applied. The sky was created using a simple
+sphere with an image texture applied. Sources:
+
+<ul>Statue: https://sketchfab.com/3d-models/estatua-statue-907ae2bb4f23423db76b7ec9cfe6b0e9</ul>
+<ul>Mountain: https://sketchfab.com/3d-models/snowy-mountain-terrain-9fa3c56fd32746bcb0e06cd2c4229ca0</ul>
+<ul>Snow Texture: https://polyhaven.com/a/snow_field_aerial</ul>
+<ul>Castle: https://sketchfab.com/3d-models/hrusov-castle-993f6d456a434490b7ad3b9456b97a19</ul>
+<ul>Sky Texture: https://freestylized.com/all-skybox/</ul>
+<ul>Plant Models: https://polyhaven.com/models/nature</ul>
+
+
 </p>
 
 <h2>Using the Scene Viewer</h2>
-
-<p class="placeholder">Provide a short overview of how to use your viewer.</p>
 
 <h3>Command-line Arguments</h3>
 
@@ -175,6 +178,11 @@ Swapchain image output is now being prepared to be in the correct format (VK_IMA
 <h2>Pipeline Organization</h2>
 
 <h3>ObjectsPipeline</h3>
+The setup of the objects pipeline was mostly kept the same. Within the fragment shader, we aimed to replicate the watercolor reflectance model, as described in the paper Art-directed watercolor stylization of 3D animations in real-time. Rather than interpreting lighting through a physically-based model, we used water dilution to represent lighter or darker areas. This matches how artists use water to dilute the paint, resulting in lighter values. The dilution area was calculated by summing over the lights.
+
+The cangiante effect is a non-realistic shift in color as the value shifts from dark to light. Within the paper, this is calculated by adding the cangiante color associated with a given weight to the original scene color. Although this method results in a color shift as the color goes from light to dark, it doesn't entirely capture the transparency-based layering of watercolor paints. Often painters begin by applying a thin layer of blue paint, which appears darker when layered over with the true color of the object in the scene. In order to achieve this, I used the equations for alpha over, setting the background color to the cangiante color, the background opacity to the cangiante strength, the foreground color to the base color, and the foreground opacity to the dilution area. 
+<img src="images/Frag Shader/I (accurateToPaper).png" alt="">
+<img src="images/Style Shader/I.png" alt="">
 
 <h3>ComputePipeline</h3>
 The ComputePipeline directs the Gaussian Blur shader (gaussian.comp). Since it only involves one input image and one output image, it has 2 bindings. Since the paper suggested using a constant and small kernel size, the kernel was created using the python script computeKernel.py.
