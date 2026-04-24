@@ -48,9 +48,9 @@ void main(){
     //* texelFetch(Zi, texelCoord, 0).r
     
     //bleedBlur(p);
-    vec4 paperTexture = texelFetch(Si, p, 0);
+    vec4 paperTexture = clamp(texelFetch(Si, p, 0), vec4(0),vec4(1));
     //imageStore(Wi, p, B(p) * paperTexture.x);
-    float ctrl = 1.0;//C(p).b;
+    float ctrl = C(p).b;
 
     vec4 B = B(p);
     vec4 I = I(p);
@@ -60,11 +60,13 @@ void main(){
     vec4 diff = Ib-I;
     float m = max(diff.r, max(diff.g, diff.b));
     float exp = 1+ctrl*m;
-    vec4 Ied = vec4(pow(Icb.r, exp), pow(Icb.g, exp), pow(Icb.b, exp), 1.0);
+    vec3 Ied = clamp(vec3(pow(Icb.r, exp), pow(Icb.g, exp), pow(Icb.b, exp)), vec3(0), vec3(1));
 
 
     //imageStore(Wi, p, B(p) * paperTexture.x);
-    imageStore(Wi, p, Ied);
-
+    vec3 Cp = vec3(146.0/255.0, 128.0/255.0, 127.0/255.0)*paperTexture.x;
+    vec3 final = Ied * paperTexture.x;
+    final = vec3(min(Cp.x, final.x),min(Cp.y, final.y),min(Cp.z, final.z));
+    imageStore(Wi, p, vec4(final, 1.0));
 
 }

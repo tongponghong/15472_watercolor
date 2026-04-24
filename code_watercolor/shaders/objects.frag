@@ -517,7 +517,7 @@ void main() {
     //* cangiante weight
     float c = 0.4;
     //* dilution weight
-    float d = 0.1;
+    float d = 0.0;
     //* cangiante color
     vec3 C = vec3(40/255.0, 30/255.0, 150/255.0);
     float dilution_area_var = 1.0;
@@ -533,12 +533,15 @@ void main() {
     float away = clamp(linearize(z)+0.5, 0, 1);
     ctrl = mix(ctrl, 0.5, away);
 
+
     if (tex_type == 0) {
         vec3 c_sun = get_sun_contribution_lamb(out_normal);
         vec3 c_sphere = get_sphere_contribution_lamb(out_normal);
         vec3 c_spot = get_spot_contribution_lamb(out_normal);
 
         albedo = texture(TEXTURE, texCoord).rgb;
+
+        //albedo = mix(albedo, vec3(40/255.0, 30/255.0, 150/255.0), z);
         //texture(LAMB_SAMPLER, out_normal).rgb
         lit_albedo = albedo * (c_sun + c_sphere + c_spot);
 
@@ -554,7 +557,7 @@ void main() {
         // background
         vec4 background = vec4(C + Da * c, c);
         // foreground
-        vec4 foreground = vec4(albedo, max(0.8, Da));
+        vec4 foreground = vec4(albedo, max(0.85, Da));
         vec4 both = alphaOver(background,foreground);
 
         vec3 Cc = both.xyz;
@@ -588,15 +591,15 @@ void main() {
         }
 
         outColor = vec4(Ct, 1.0);
-
         
         //outColor = vec4(vec3(linearize(z)), 1.0);
     
-        float scaleLate = 2.0;
-        vec3 noiseInputLate = position*scaleLate;
-        float ctrlLate = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
-        float ctrlLate2 = clamp(fbm(noiseInputLate)/5,0.0, 1.0);
+        float scaleLate = 8.0;
+        vec3 noiseInputLate = (position*scaleLate)+vec3(1,6,5);
+        float ctrlLate = clamp(fbm(noiseInputLate)/3,0.0, 1.0);
+        float ctrlLate2 = clamp(fbm(noiseInputLate)/3,0.0, 1.0);
         controlColor = vec4(ctrlLate, ctrlLate2, ctrlLate, ctrlLate);
+        controlColor.g = simplex(position).x;
     }
 
     else if (tex_type == 1) {
