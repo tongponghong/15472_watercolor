@@ -2026,14 +2026,14 @@ void Tutorial::destroy_framebuffers() {
 
 
 void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
-	static std::unique_ptr< Timer > timer;
-	timer.reset(new Timer([](double dt){
-		//std::cout << "REPORT frame-time " << dt * 1000.0 << "ms" << std::endl;
-		std::ofstream newFile;
-		newFile.open("gaussian_3.txt", std::fstream::app);
-		newFile << dt * 1000.0 << "\n";
-		newFile.close();
-	}));
+	// static std::unique_ptr< Timer > timer;
+	// timer.reset(new Timer([](double dt){
+	// 	//std::cout << "REPORT frame-time " << dt * 1000.0 << "ms" << std::endl;
+	// 	std::ofstream newFile;
+	// 	newFile.open("bleed_101.txt", std::fstream::app);
+	// 	newFile << dt * 1000.0 << "\n";
+	// 	newFile.close();
+	// }));
 	//assert that parameters are valid:
 	assert(&rtg == &rtg_);
 	assert(render_params.workspace_index < workspaces.size());

@@ -110,7 +110,7 @@ code var {
 
 </style>
 <!-- Load Chart.js for creating charts (documentation https://www.chartjs.org/docs/latest/ ) -->
-<script src="./final-report_files/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <h1>A4: Final Project
@@ -178,9 +178,13 @@ Swapchain image output is now being prepared to be in the correct format (VK_IMA
 <h2>Pipeline Organization</h2>
 
 <h3>ObjectsPipeline</h3>
+<p>
 The setup of the objects pipeline was mostly kept the same. Within the fragment shader, we aimed to replicate the watercolor reflectance model, as described in the paper Art-directed watercolor stylization of 3D animations in real-time. Rather than interpreting lighting through a physically-based model, we used water dilution to represent lighter or darker areas. This matches how artists use water to dilute the paint, resulting in lighter values. The dilution area was calculated by summing over the lights.
-
+The dilution area can intuitively be thought of then as all the area the light touches on a specific surface/mesh. This is not to be confused with the dilution variable, which controls how strongly the color gets diluted towards the paper color. 
+</p>
+<p>
 The cangiante effect is a non-realistic shift in color as the value shifts from dark to light. Within the paper, this is calculated by adding the cangiante color associated with a given weight to the original scene color. Although this method results in a color shift as the color goes from light to dark, it doesn't entirely capture the transparency-based layering of watercolor paints. Often painters begin by applying a thin layer of blue paint, which appears darker when layered over with the true color of the object in the scene. In order to achieve this, I used the equations for alpha over, setting the background color to the cangiante color, the background opacity to the cangiante strength, the foreground color to the base color, and the foreground opacity to the dilution area. 
+</p>
 <img src="images/Frag Shader/I (accurateToPaper).png" alt="">
 <img src="images/Style Shader/I.png" alt="">
 
@@ -204,77 +208,40 @@ The StylePipeline is the final pipeline that directs the final stylization shade
 
 <h2>Evidence</h2>
 
-<p class="placeholder">
-The purpose of this section is to get you to think critically about your code by providing evidence sufficient to demonstrate to course staff that it works.
-These thoughts may also help you improve the code as you work on it in A2 and beyond.
+<p>
+To test the performance of our implementation, we decided to measure frame time based on the maximum radii of Gaussian blur and 4D joint-bilateral filtering effects, and we took into account the amount of geometry present in a scene. 
 </p>
-
-
-<h3>Scene Loading <span class="atag">A1-load</span></h3>
-
-
-<h3>Scene Display <span class="atag">A1-show</span></h3>
-<p class="placeholder">
-Describe, in a few sentences, how your display code goes from your internal scene graph representation to triangles being drawn by the GPU.
-Provide function and structure names for us to examine.
-</p>
-
-<p class="placeholder">
-Provide evidence that your code can display s72 scenes.
-Good evidence: screen shots or movies showing that example scene files load correctly.
-Choose or generate example scene files sufficient to demonstrate all required features (note that the simplifying assumptions in the assignment mean you do not need to completely implement s72).
-</p>
-<p class="placeholder">
-Spend some time thinking about corner cases that the provided examples may not test.
-If you develop a test case for these, include the s72 and b72 files with your report as well.
-</p>
-
-<h3>Scene Display — Interaction <span class="atag">A1-show</span></h3>
-
-<p class="placeholder">
-Describe how your code handles camera handling and switching.
-</p>
-
-<p class="placeholder">
-Provide evidence that these interactions work.
-Possible evidence: a screen recording showing debug, user, and scene camera switching and interactive movement of the debug and user cameras.
-</p>
-
 
 <figure>
 <!-- Feel free to use and duplicate the below example graph to plot data
  	 Edit labels and variables in script below the canvas -->
-<canvas id="A1-cull-ex" style="display: block; width: 600px; max-width: 600px; margin: 0px auto; background: rgb(255, 255, 255); box-sizing: border-box; height: 300px;" width="1320" height="660"></canvas>
+<canvas id="Gaussian-blur-data" style="display:block; width:100%; max-width:600px; margin:0 auto; background:#fff;"></canvas>
 <figcaption>
-(Example caption, doesn't actually match this made-up data.)
-Culling using a box-frustum test improves frame times on the second half of this workload.
-Frame times collected using headless mode on the computer described above with display size set to 1024x768.
+The frame time performance based on various kernel sizes for our gaussian blur filter. The bilateral blur filter remained at a kernel size of 21. 
 </figcaption>
+</figure>
 <script>
 //adding an event listener so that this chart gets made *after* the document loads:
 window.addEventListener('load', () => {
-	//in a real workload these arrays would be a lot longer:
-	const frameNumbers    = [0, 10, 20, 30, 40];
-	const noCullingTimes  = [55, 49, 44, 24, 15];
-	const boxFrustumTimes = [23, 52, 44, 77, 25];
+	const lights     = [1, 3, 5, 11, 15, 21];
+	const frameTimeMean = [0.891, 0.932, 1.073, 1.337, 1.548, 4.181];
+	const frameTimeMedian = [0.829, 0.909, 1.033, 1.270, 1.506, 4.077];
+	//if your tone mapping handles color channels separately
+
 	// Chart.js supports many types of charts and configuration options.
 	//   See: https://www.chartjs.org/docs/latest/
-	// NOTE: make sure to keep things labelled clearly.
-	// NOTE2: if you want to compare numbers use bar charts, not pie charts (people are bad at comparing angles and good at comparing lengths).
-	// NOTE3: scatter and line charts will probably be the most interesting the sorts of data you are visualizing.
-	//     Histograms also useful but you will need to pre-process your data into bins and use the bar chart type.
-	new Chart("A1-cull-ex", {
+	new Chart("Gaussian-blur-data", {
 		type: "line",
 		data: {
-			labels: frameNumbers,
+			labels: lights,
 			datasets: [
-				{ label: "no culling", data: noCullingTimes },
-				{ label: "box/frustum", data: boxFrustumTimes },
+				{ label: "Gaussian blur mean", data: frameTimeMean, backgroundColor:'#f00', borderColor:'#f00' },
+				{ label: "Gaussian blur median", data: frameTimeMedian, backgroundColor:'#0f0', borderColor:'#0f0' },
 			]
 		},
 		options: {
 			plugins: {
-				title: { display: true, text: "Impact of Frustum Culling" }, //show a chart title
+				title: { display: true, text: "Lighting Performance" }, //show a chart title
 				legend: { display: true, onClick:()=>{} }, //show legend but don't allow interacting
 			},
 			scales: {
@@ -283,7 +250,7 @@ window.addEventListener('load', () => {
 					title: { display:true, text:"frame time (ms)" },
 				},
 				x:{
-					title: { display:true, text:"frame number" },
+					title: { display:true, text:"kernel size (k x k)" },
 				},
 			},
 			animation:false, //don't animate in the data sets
@@ -291,8 +258,59 @@ window.addEventListener('load', () => {
 	});
 });
 </script>
-</figure>
 
+<figure>
+<!-- Feel free to use and duplicate the below example graph to plot data
+ 	 Edit labels and variables in script below the canvas -->
+<canvas id="Bilateral-blur-data" style="display:block; width:100%; max-width:600px; margin:0 auto; background:#fff;"></canvas>
+<figcaption>
+The frame time performance based on various kernel sizes for our bilateral blur filter. The gaussian blur remained at an 11 size kernel. 
+</figcaption>
+</figure>
+<script>
+//adding an event listener so that this chart gets made *after* the document loads:
+window.addEventListener('load', () => {
+	const lights     = [5, 11, 21, 51, 75, 101];
+	const frameTimeMean = [1.097, 1.122, 1.312, 1.727, 2.742, 3.450];
+	const frameTimeMedian = [1.180, 1.171, 1.268, 1.788, 2.703, 3.395];
+	//if your tone mapping handles color channels separately
+
+	// Chart.js supports many types of charts and configuration options.
+	//   See: https://www.chartjs.org/docs/latest/
+	new Chart("Bilateral-blur-data", {
+		type: "line",
+		data: {
+			labels: lights,
+			datasets: [
+				{ label: "Bilateral blur mean", data: frameTimeMean, backgroundColor:'#f00', borderColor:'#f00' },
+				{ label: "Bilateral blur median", data: frameTimeMedian, backgroundColor:'#0f0', borderColor:'#0f0' },
+			]
+		},
+		options: {
+			plugins: {
+				title: { display: true, text: "Lighting Performance" }, //show a chart title
+				legend: { display: true, onClick:()=>{} }, //show legend but don't allow interacting
+			},
+			scales: {
+				y:{
+					min:0, //having y-axis start at zero provides better relative view of data
+					title: { display:true, text:"frame time (ms)" },
+				},
+				x:{
+					title: { display:true, text:"kernel size (k x k)" },
+				},
+			},
+			animation:false, //don't animate in the data sets
+		}
+	});
+});
+</script>
+
+
+<p>
+Overall, neither of our implementations seem to have substantial effects on our frame time performance as the frame time remains real-time. It seems that both the bilateral blur filter and gaussian blur filter have similar increases in frame time as the kernel size increases. However, the gaussian blur starts having a significant performance difference at much smaller kernel sizes than the bilateral blur. 
+One way we thought of optimizing our work for future projects is by implementing a two pass method for our Gaussian blur similar to the Bilateral Blur. In addition, instead of having several different kernel constants, we can have the CPU compute the matrices and send them out in a buffer so that the blur can be adjusted by the user during the program. 
+</p>
 
 
 

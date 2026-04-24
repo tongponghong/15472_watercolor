@@ -10,27 +10,27 @@ def G(x,y,stdev):
     g = (1.0 / (2.0 * math.pi * stdevSq)) * math.exp(frac)
     return g
 
-kernelSize = 21
+kernelSize = 75
 halfSize = kernelSize // 2
-stdev = 10
+stdev = 20
 
 result = ""
 
 
-kernel = [0] * (kernelSize * kernelSize)
+kernel = [0] * (kernelSize)
 sum = 0.0
 
 #* get values
 for i in range(kernelSize):
-    for j in range(kernelSize):
-        g = G(i - halfSize, j - halfSize, stdev)
-        kernel[i * kernelSize + j] = g
+    # for j in range(kernelSize):
+        g = G(i - halfSize, 0, stdev)
+        kernel[i ] = g
         sum += g
 
 #* normalize
 for i in range(kernelSize):
-    for j in range(kernelSize):
-        kernel[i * kernelSize + j] /= sum
-        kernel[i * kernelSize + j] = round(kernel[i * kernelSize + j], 4)
+    # for j in range(kernelSize):
+        kernel[i ] /= sum
+        kernel[i ] = round(kernel[i ], 6)
 
 print(kernel)
