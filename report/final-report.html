@@ -184,8 +184,9 @@ The dilution area can intuitively be thought of then as all the area the light t
 </p>
 <p>
 The cangiante effect is a non-realistic shift in color as the value shifts from dark to light. Within the paper, this is calculated by adding the cangiante color associated with a given weight to the original scene color. Although this method results in a color shift as the color goes from light to dark, it doesn't entirely capture the transparency-based layering of watercolor paints. Often painters begin by applying a thin layer of blue paint, which appears darker when layered over with the true color of the object in the scene. In order to achieve this, I used the equations for alpha over, setting the background color to the cangiante color, the background opacity to the cangiante strength, the foreground color to the base color, and the foreground opacity to the dilution area. 
-</p>
+We replicated the cangiante effect according to the paper, which resulted in the following image:</p>
 <img src="images/Frag Shader/I (accurateToPaper).png" alt="">
+Although this resulted in color shift from the original texture, it involved adding the offset color to the original albedo, which makes the color brighter. However, often with watercolor, since this effect is acheived through layering, it results in darkening certain areas of the painting according to this effect. Using our version, we got the following image:
 <img src="images/Style Shader/I.png" alt="">
 
 <h3>ComputePipeline</h3>
@@ -195,15 +196,39 @@ The result of the gaussian filter over the scene can be seen below.
 
 <h3>BleedPipeine</h3>
 The BleedPipeline directs the 4D Bilateral Blur shader (bilateral.comp). Since there are 3 input images and 1 output image, it has 4 bindings. The goal of the bilateral filter is to replicate the bleeding seen in watercolor. 
+In order to acheive this effect, it blurs areas of the painting together based on the depth of the surrounding pixels. In order to get the flattened depth, 
+we added the near and far clipping values as push constants and used them to linearize the depth, which resulted in the following image:
+
+
+<img src="images/Bleed Shader/depth.png" alt="">
+
+Then, the following image shows the pixels that are nearby that are sufficiently far enough behind the current pixel. 
+
+<img src="images/Bleed Shader/sourceBehind.png" alt="">
+
+Following the paper resulted in this image which allows color to blur from areas that are in front but not from areas that are behind.
+
+<img src="images/Bleed Shader/accurateToPaper.png" alt="">
+
+Since we found that this reduced the detail within the scene, we choose to avoid blurring over areas with significant depth change. This allowed much of the silhouette to be preserved while still bluring much of the image. 
+<img src="images/Bleed Shader/notAccurate.png" alt="">
+
 
 
 <h3>StylePipeline</h3>
-The StylePipeline is the final pipeline that directs the final stylization shader (style.comp). Since there are 5 input images and 1 output image, it has 6 bindings total. 
+The StylePipeline is the final pipeline that directs the final stylization shader (style.comp). Since there are 5 input images and 1 output image, it has 6 bindings total. Using the control image, which was set using FBM noise generated in the fragment shader, the gaussian blurred image
+and the bleed image are combined to result in an image that blurs some areas while sharpening others. 
 
-<img src="images/Style Shader/m.png" alt="">
+<img src="images/Style Shader/Ied.png" alt="">
+
+The paper texture is layered on top, resulting in the final image:
 
 <img src="images/Style Shader/final.png" alt="">
 
+If all previously mentioned effects are set to match the original paper it produces the following image. 
+<img src="images/B.png" alt="">
+
+Its difficult to compare the quality of the two versions objectively, but we beleive that our version results in an image with better values and more clarity but it has a more subtle watercolor effect. 
 
 
 <h2>Evidence</h2>
