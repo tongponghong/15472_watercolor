@@ -908,15 +908,15 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 
 	
 
-        for (auto i : strings_to_texture_idxs) {
-            std::cout << "In strings_to_tex_idxs: " << i.first << ", " << i.second << std::endl;
-        }
-		for (auto i : strings_to_cube_texture_idxs) {
-            std::cout << "In strings_to_cube_tex_idxs before envs: " << i.first << ", " << i.second << std::endl;
-        }
-		for (auto i : strings_to_material_idxs) {
-            std::cout << "In strings_to_materials_idxs: " << i.first << ", " << i.second << std::endl;
-        }
+        // for (auto i : strings_to_texture_idxs) {
+        //     std::cout << "In strings_to_tex_idxs: " << i.first << ", " << i.second << std::endl;
+        // }
+		// for (auto i : strings_to_cube_texture_idxs) {
+        //     std::cout << "In strings_to_cube_tex_idxs before envs: " << i.first << ", " << i.second << std::endl;
+        // }
+		// for (auto i : strings_to_material_idxs) {
+        //     std::cout << "In strings_to_materials_idxs: " << i.first << ", " << i.second << std::endl;
+        // }
 
 		std::cout << "loading in the cube lambertian lookup" << std::endl;
 		if (rtg.lamb_lookup_tex != "") { // handle the lambertian lookup table 
@@ -2548,14 +2548,12 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 		};
 
-		//TODO fill in for control image
 		VkDescriptorImageInfo control_info {
 			.sampler = VK_NULL_HANDLE,
 			.imageView = ctrl_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 		};
 
-		//TODO fill in for depth image 
 		VkDescriptorImageInfo depth_info {
 			.sampler = depth_sampler,
 			.imageView = swapchain_depth_image_view,
@@ -2659,13 +2657,6 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		};
 
 		//* there are 5 input images, and 1 output image 
-// layout(binding=0) readonly uniform image2D Ii; // color image
-// layout(binding=1) uniform image2D Ci; // control image
-// layout(binding=2) uniform sampler2D Bluri; // blurred image
-// layout(binding=3) uniform image2D Bi; // bleed image
-// layout(binding=4) uniform image2D Si; // Surface image
-
-// layout(binding=5) uniform image2D Wi;
 		std::array< VkWriteDescriptorSet, 6 > style_writes{
 			VkWriteDescriptorSet{
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -3463,7 +3454,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdCopyImage(
 			workspace.command_buffer,
 			// srcImage                     srcImageLayout
-			final_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			offscreen_input_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			// dstImage                     dstImageLayout    
 			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
 			1, &region    
@@ -3783,11 +3774,11 @@ void Tutorial::update(float dt) {
 	else {
 		assert(0 && "only three camera modes");
 	}
+
+	lines_vertices.clear();
 	
 	{ // make some objects:
 		//std::cout << "Curr num of objs: " << object_instances.size() << std::endl;
-
-		lines_vertices.clear();
 
 		for (ObjectInstance &obj : object_instances) {
 			//std::cout << " curr object: " << obj.vertices.first << std::endl;
@@ -3803,22 +3794,26 @@ void Tutorial::update(float dt) {
 					.Color{.r = 0x44, .g = 0x00, .b = 0xff, .a = 0xff}
 				});
 			}
-			//std::cout << " this is the new clip from local " << std::endl;
-			//print_matrix4x4(obj.transform.CLIP_FROM_LOCAL);
 		}
 
 		if (camera_mode == CameraMode::Debug) {
 			std::vector< LinesPipeline::Vertex > temp_frustum_lines_vertices;
 			mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((prevCamera).currClipFromWorld)));
 			draw_bbox(temp_frustum_lines_vertices, vec3{-1,-1,0}, vec3{1,1,1}, worldFromClip, true);
-			
-			// for (auto &vertex : temp_frustum_lines_vertices) {
-			
-			// 	vertex.Position.y = -vertex.Position.y;
-			// }
 
 			lines_vertices.insert(lines_vertices.end(), temp_frustum_lines_vertices.begin(), temp_frustum_lines_vertices.end());
 		}
+	}
+
+	{ // make some drawings
+		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
+
+		// updates the line so that the userDrawnVertices are corrected added to the array
+		draw_line(userDrawnLines, worldFromClip);
+
+		// if (drawMode || camera_mode == CameraMode::Debug) { 
+		// 	lines_vertices.insert(lines_vertices.end(), userDrawnLines.begin(), userDrawnLines.end());
+		// }
 	}
 }
 
@@ -3904,139 +3899,6 @@ void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance 
 			});
 		}
 }
-
-void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 box_min, vec3 box_max, mat4 curr_xform, bool isFrustum) {
-	float box_depth = std::abs(box_max[2] - box_min[2]);
-	float box_height = std::abs(box_max[1] - box_min[1]);
-	float box_width = std::abs(box_max[0] - box_min[0]);
-
-	vec4 color;
-
-	if (isFrustum) color = vec4{255, 112, 46, 0xff}; 
-	else color = vec4{70, 173, 242, 0xff};
-
-	// first square 
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-
-    // second square 
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-
-	// lines in between
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-	lines_buff.emplace_back(PosColVertex {
-				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
-			});
-		
-	for (auto &vertex : lines_buff) {
-		vec4 currVecPos = vec4{vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f};
-		currVecPos = curr_xform * currVecPos;
-
-		if (isFrustum) vertex.Position.y = -vertex.Position.y;
-
-		if (currVecPos[3] != 0.0f) {
-			vertex.Position.x = currVecPos[0] / currVecPos[3];
-			vertex.Position.y = currVecPos[1] / currVecPos[3];
-			vertex.Position.z = currVecPos[2] / currVecPos[3];
-		}
-		else {
-			vertex.Position.x = currVecPos[0];
-			vertex.Position.y = currVecPos[1];
-			vertex.Position.z = currVecPos[2];
-		}
-
-	}
-}
-
 
 void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &scene_objects) {
     std::stack< NodeInfo > nodeStack;
@@ -4345,14 +4207,74 @@ void Tutorial::on_input(InputEvent const &evt) {
 		return;
 	}
 	
-	GLFWwindow *window = rtg.window;
 
-	if (evt.type == InputEvent::MouseMotion){
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		//std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_D) {
+		drawMode = !drawMode;
+		std::cout << "drawmode: " << drawMode << std::endl;
+	}
+
+	if (drawMode && (evt.type == InputEvent::MouseButtonDown && evt.button.button == GLFW_MOUSE_BUTTON_LEFT)) {
+		// double xpos, ypos;
+		// glfwGetCursorPos(window, &xpos, &ypos);
+		// std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
+		
+		float init_x = evt.button.x;
+		float init_y = evt.button.y;
+
+		(void) init_x;
+		(void) init_y;
+		// (void) init_x;
+		// (void) init_y;
+
+		//Camera init_camera = free_camera;
+
+		// [this] caputres a copy of -this- pointer
+		action = [this](InputEvent const &evt) {
+			if (evt.type == InputEvent::MouseButtonUp && evt.button.button == GLFW_MOUSE_BUTTON_LEFT) {
+				// cancel upon button lifted:
+				action = nullptr;
+				return;
+			}
+
+			if (evt.type == InputEvent::MouseMotion) {
+				// motion, normalized so 1.0 is window height
+				//std::cout << "x, y:" << evt.motion.x << ", " << evt.motion.y << std::endl;
+
+				// convert to NDC
+				//std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
+				float NDC_x = (4.0f * evt.motion.x / rtg.swapchain_extent.width) - 1.0f;
+				float NDC_y = (4.0f * evt.motion.y / rtg.swapchain_extent.height) - 1.0f;
+				//float NDC_z = 1.0f;
+				// TODO: NEED TO REFERENCE THE POINT THAT WAS BEHIND AS WELL (EACH LINE NEEDS A REDUNDANT VERTEX)
+
+				vec4 clip_pt = vec4{NDC_x, NDC_y, 0.0f, 1.0f};
+
+				// mat4 currProj = perspective(currCamera.fov, currCamera.aspect, currCamera.near, currCamera.far);
+				// mat4 inv_currProj = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4(currProj)));
+				// vec4 eyeCoords = inv_currProj * clip_pt;
+
+				//std::cout << "After xform: " << clip_pt[0] << "||" << clip_pt[1] << "||" << clip_pt[2] << "||" << clip_pt[3] << std::endl;
+
+				userDrawnLines.emplace_back(PosColVertex{
+					.Position {
+						.x = clip_pt[0],
+						.y = clip_pt[1],
+						.z = clip_pt[2],
+					},
+					.Color {
+						.r = 255,
+						.g = 0,
+						.b = 0,
+						.a = 255,
+					}
+				});
+				return;
+			}
+		};
+
 		return;
 	}
+
 	// glfwSetCursorPosCallback(window, cursorPositionCallback);
 
 	// change exposure 
@@ -4615,7 +4537,6 @@ void Tutorial::on_input(InputEvent const &evt) {
 			return;
 		}
 	}
-
 }
 
 
@@ -4634,7 +4555,213 @@ void Tutorial::update_camera(Camera &camera) {
 	camera.currClipFromWorld = CLIP_FROM_WORLD;
 }
 
+void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 box_min, vec3 box_max, mat4 curr_xform, bool isFrustum) {
+	float box_depth = std::abs(box_max[2] - box_min[2]);
+	float box_height = std::abs(box_max[1] - box_min[1]);
+	float box_width = std::abs(box_max[0] - box_min[0]);
 
+	vec4 color;
+
+	if (isFrustum) color = vec4{255, 112, 46, 0xff}; 
+	else color = vec4{70, 173, 242, 0xff};
+
+	// first square 
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+
+    // second square 
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+
+	// lines in between
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	lines_buff.emplace_back(PosColVertex {
+				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+		
+	for (auto &vertex : lines_buff) {
+		vec4 currVecPos = vec4{vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f};
+		currVecPos = curr_xform * currVecPos;
+
+		if (isFrustum) vertex.Position.y = -vertex.Position.y;
+
+		if (currVecPos[3] != 0.0f) {
+			vertex.Position.x = currVecPos[0] / currVecPos[3];
+			vertex.Position.y = currVecPos[1] / currVecPos[3];
+			vertex.Position.z = currVecPos[2] / currVecPos[3];
+		}
+		else {
+			vertex.Position.x = currVecPos[0];
+			vertex.Position.y = currVecPos[1];
+			vertex.Position.z = currVecPos[2];
+		}
+
+	}
+}
+
+void Tutorial::draw_line(std::vector< LinesPipeline::Vertex > &lines_buff, mat4 curr_xform) { 
+	// (hopefully stops blanks/jumps? :sob:)
+	// figures out what the last vertex was in the buffer and duplicates it 
+	// then add the next point 
+
+	//mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
+	//LinesPipeline::Vertex last_vertex;
+	// first update the last vertex 
+	// if (!lines_buff.empty()) {	
+	// 	last_vertex = lines_buff.back();
+	// 	//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+	// 	vec4 currVecPos = vec4{last_vertex.Position.x, last_vertex.Position.y, last_vertex.Position.z, 1.0f};
+	// 	currVecPos = curr_xform * currVecPos;
+
+	// 	if (currVecPos[3] != 0.0f) {
+	// 		last_vertex.Position.x = currVecPos[0] / currVecPos[3];
+	// 		last_vertex.Position.y = currVecPos[1] / currVecPos[3];
+	// 		last_vertex.Position.z = currVecPos[2] / currVecPos[3];
+	// 	}
+	// 	else {
+	// 		last_vertex.Position.x = currVecPos[0];
+	// 		last_vertex.Position.y = currVecPos[1];
+	// 		last_vertex.Position.z = currVecPos[2];
+	// 	}
+
+	// 	//std::cout << "After xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+	// }
+
+	// then figure out how to add it into the main (lines_vertices) buffer 
+	if ((drawMode || camera_mode == CameraMode::Debug) && !lines_buff.empty()) { 
+		for (int i = 0; i < lines_buff.size(); ++i) {
+
+			LinesPipeline::Vertex currVertex;
+			
+			currVertex = lines_buff[i];
+			//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+			vec4 currVecPos = vec4{currVertex.Position.x, currVertex.Position.y, currVertex.Position.z, 1.0f};
+			currVecPos = curr_xform * currVecPos;
+
+			if (currVecPos[3] != 0.0f) {
+				currVertex.Position.x = currVecPos[0] / currVecPos[3];
+				currVertex.Position.y = currVecPos[1] / currVecPos[3];
+				currVertex.Position.z = currVecPos[2] / currVecPos[3];
+			}
+			else {
+				currVertex.Position.x = currVecPos[0];
+				currVertex.Position.y = currVecPos[1];
+				currVertex.Position.z = currVecPos[2];
+			}
+
+			if (i >= 2) {
+
+				LinesPipeline::Vertex prevVertex = lines_buff[i - 1];
+				//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+				vec4 currVecPos = vec4{prevVertex.Position.x, prevVertex.Position.y, prevVertex.Position.z, 1.0f};
+				currVecPos = curr_xform * currVecPos;
+
+				if (currVecPos[3] != 0.0f) {
+					prevVertex.Position.x = currVecPos[0] / currVecPos[3];
+					prevVertex.Position.y = currVecPos[1] / currVecPos[3];
+					prevVertex.Position.z = currVecPos[2] / currVecPos[3];
+				}
+				else {
+					prevVertex.Position.x = currVecPos[0];
+					prevVertex.Position.y = currVecPos[1];
+					prevVertex.Position.z = currVecPos[2];
+				}
+
+				lines_vertices.emplace_back(prevVertex);
+			}
+			lines_vertices.emplace_back(currVertex);
+		}
+	
+	}
+}
 
 // CODE GRAVEYARD:
 

@@ -500,13 +500,19 @@ struct Tutorial : RTG::Application {
 
 
 	std::vector< LinesPipeline::Vertex > lines_vertices;
-	
-	// ObjectsPipeline::Sun_Light sunlight;
-	// ObjectsPipeline::Sphere_Light spherelight;
-	// ObjectsPipeline::Spot_Light spotlight;
 
 	//--------------------------------------------------------------------
 	//Rendering function, uses all the resources above to queue work to draw a frame:
 
 	virtual void render(RTG &, RTG::RenderParams const &) override;
+
+	//--------------------------------------------------------------------
+	//Drawing Mode
+
+	bool drawMode = false;
+
+	std::vector< LinesPipeline::Vertex > userDrawnLines;
+	void draw_line(std::vector< LinesPipeline::Vertex > &lines_buff, mat4 curr_xform);
+	
+
 };
