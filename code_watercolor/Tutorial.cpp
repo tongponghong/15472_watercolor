@@ -3809,11 +3809,12 @@ void Tutorial::update(float dt) {
 		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
 
 		// updates the line so that the userDrawnVertices are corrected added to the array
-		draw_line(userDrawnLines, worldFromClip);
+		draw_line(worldFromClip);
 
-		// if (drawMode || camera_mode == CameraMode::Debug) { 
-		// 	lines_vertices.insert(lines_vertices.end(), userDrawnLines.begin(), userDrawnLines.end());
-		// }
+		if (drawMode || camera_mode == CameraMode::Debug) { 
+			lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
+														user_drawn_points_WORLD.end());
+		}
 	}
 }
 
@@ -4247,27 +4248,17 @@ void Tutorial::on_input(InputEvent const &evt) {
 				//float NDC_z = 1.0f;
 				// TODO: NEED TO REFERENCE THE POINT THAT WAS BEHIND AS WELL (EACH LINE NEEDS A REDUNDANT VERTEX)
 
-				vec4 clip_pt = vec4{NDC_x, NDC_y, 0.0f, 1.0f};
-
+				vec4 ray_start = vec4{NDC_x, NDC_y, 0.0f, 1.0f};
+				vec4 ray_end = vec4{NDC_x, NDC_y, 1.0f, 1.0f};
 				// mat4 currProj = perspective(currCamera.fov, currCamera.aspect, currCamera.near, currCamera.far);
 				// mat4 inv_currProj = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4(currProj)));
 				// vec4 eyeCoords = inv_currProj * clip_pt;
 
 				//std::cout << "After xform: " << clip_pt[0] << "||" << clip_pt[1] << "||" << clip_pt[2] << "||" << clip_pt[3] << std::endl;
 
-				userDrawnLines.emplace_back(PosColVertex{
-					.Position {
-						.x = clip_pt[0],
-						.y = clip_pt[1],
-						.z = clip_pt[2],
-					},
-					.Color {
-						.r = 255,
-						.g = 0,
-						.b = 0,
-						.a = 255,
-					}
-				});
+				near_clip_pts.emplace_back(ray_start);
+				far_clip_pts.emplace_back(ray_end);
+
 				return;
 			}
 		};
@@ -4687,79 +4678,63 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 	}
 }
 
-void Tutorial::draw_line(std::vector< LinesPipeline::Vertex > &lines_buff, mat4 curr_xform) { 
+void Tutorial::draw_line(mat4 curr_xform) { 
 	// (hopefully stops blanks/jumps? :sob:)
 	// figures out what the last vertex was in the buffer and duplicates it 
 	// then add the next point 
 
-	//mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
-	//LinesPipeline::Vertex last_vertex;
-	// first update the last vertex 
-	// if (!lines_buff.empty()) {	
-	// 	last_vertex = lines_buff.back();
-	// 	//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
-	// 	vec4 currVecPos = vec4{last_vertex.Position.x, last_vertex.Position.y, last_vertex.Position.z, 1.0f};
-	// 	currVecPos = curr_xform * currVecPos;
-
-	// 	if (currVecPos[3] != 0.0f) {
-	// 		last_vertex.Position.x = currVecPos[0] / currVecPos[3];
-	// 		last_vertex.Position.y = currVecPos[1] / currVecPos[3];
-	// 		last_vertex.Position.z = currVecPos[2] / currVecPos[3];
-	// 	}
-	// 	else {
-	// 		last_vertex.Position.x = currVecPos[0];
-	// 		last_vertex.Position.y = currVecPos[1];
-	// 		last_vertex.Position.z = currVecPos[2];
-	// 	}
-
-	// 	//std::cout << "After xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
-	// }
+	// inter_lines_buff is going to the be the intermediate?
+	// use draw_line to update the intermediate buffer, copy it into the main buffer back in Tutorial::update()
+	
 
 	// then figure out how to add it into the main (lines_vertices) buffer 
-	if ((drawMode || camera_mode == CameraMode::Debug) && !lines_buff.empty()) { 
-		for (int i = 0; i < lines_buff.size(); ++i) {
-
-			LinesPipeline::Vertex currVertex;
+	// fix this if condiition bc pretty sure its not correct haha
+	//if ((drawMode || camera_mode == CameraMode::Debug) && !near_clip_pts.empty()) { 
+		
+		//for (int i = 0; i < near_clip_pts.size(); ++i) {
 			
-			currVertex = lines_buff[i];
-			//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
-			vec4 currVecPos = vec4{currVertex.Position.x, currVertex.Position.y, currVertex.Position.z, 1.0f};
-			currVecPos = curr_xform * currVecPos;
+			
+		//}
 
-			if (currVecPos[3] != 0.0f) {
-				currVertex.Position.x = currVecPos[0] / currVecPos[3];
-				currVertex.Position.y = currVecPos[1] / currVecPos[3];
-				currVertex.Position.z = currVecPos[2] / currVecPos[3];
-			}
-			else {
-				currVertex.Position.x = currVecPos[0];
-				currVertex.Position.y = currVecPos[1];
-				currVertex.Position.z = currVecPos[2];
-			}
+	//}
 
-			if (i >= 2) {
-
-				LinesPipeline::Vertex prevVertex = lines_buff[i - 1];
-				//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
-				vec4 currVecPos = vec4{prevVertex.Position.x, prevVertex.Position.y, prevVertex.Position.z, 1.0f};
-				currVecPos = curr_xform * currVecPos;
-
-				if (currVecPos[3] != 0.0f) {
-					prevVertex.Position.x = currVecPos[0] / currVecPos[3];
-					prevVertex.Position.y = currVecPos[1] / currVecPos[3];
-					prevVertex.Position.z = currVecPos[2] / currVecPos[3];
-				}
-				else {
-					prevVertex.Position.x = currVecPos[0];
-					prevVertex.Position.y = currVecPos[1];
-					prevVertex.Position.z = currVecPos[2];
-				}
-
-				lines_vertices.emplace_back(prevVertex);
-			}
-			lines_vertices.emplace_back(currVertex);
-		}
+	if (near_clip_pts.empty() || far_clip_pts.empty()) return;
 	
+	vec4 curr_ray_start = near_clip_pts.back();
+	vec4 curr_ray_end = far_clip_pts.back();
+
+	vec4 WORLD_ray_start = curr_xform * curr_ray_start;
+	vec4 WORLD_ray_end = curr_xform * curr_ray_end;
+
+	vec4 ray_dir = WORLD_ray_end - WORLD_ray_start;
+
+	ray_dir = normalize(ray_dir);
+
+	
+	vec4 plane_pt = vec4{currCamera.target, 1.0f};
+	vec4 plane_normal = normalize(ray_dir);
+
+	// float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);
+	// vec4 world_point = WORLD_ray_start + ray_dir * distance;
+
+	if (dot(ray_dir, plane_normal) != 0) {
+		float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);
+
+		vec4 world_point = WORLD_ray_start + ray_dir * distance;
+
+		user_drawn_points_WORLD.emplace_back(LinesPipeline::Vertex{
+			.Position{
+				.x = world_point.x / world_point.w,
+				.y = world_point.y / world_point.w, 
+				.z = world_point.z / world_point.w,
+			},
+			.Color{
+				.r = 255,
+				.g = 0,
+				.b = 0,
+				.a = 255
+			}
+		});
 	}
 }
 
@@ -4767,6 +4742,48 @@ void Tutorial::draw_line(std::vector< LinesPipeline::Vertex > &lines_buff, mat4 
 
 
 
+// for (int i = 0; i < lines_buff.size(); ++i) {
+
+// 			LinesPipeline::Vertex currVertex;
+			
+// 			currVertex = lines_buff[i];
+// 			//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+// 			vec4 currVecPos = vec4{currVertex.Position.x, currVertex.Position.y, currVertex.Position.z, 1.0f};
+// 			currVecPos = curr_xform * currVecPos;
+
+// 			if (currVecPos[3] != 0.0f) {
+// 				currVertex.Position.x = currVecPos[0] / currVecPos[3];
+// 				currVertex.Position.y = currVecPos[1] / currVecPos[3];
+// 				currVertex.Position.z = currVecPos[2] / currVecPos[3];
+// 			}
+// 			else {
+// 				currVertex.Position.x = currVecPos[0];
+// 				currVertex.Position.y = currVecPos[1];
+// 				currVertex.Position.z = currVecPos[2];
+// 			}
+
+// 			if (i >= 2) {
+
+// 				LinesPipeline::Vertex prevVertex = lines_buff[i - 1];
+// 				//std::cout << "Before xform: " << vertex.Position.x << "||" << vertex.Position.y << "||" << vertex.Position.z << std::endl;
+// 				vec4 currVecPos = vec4{prevVertex.Position.x, prevVertex.Position.y, prevVertex.Position.z, 1.0f};
+// 				currVecPos = curr_xform * currVecPos;
+
+// 				if (currVecPos[3] != 0.0f) {
+// 					prevVertex.Position.x = currVecPos[0] / currVecPos[3];
+// 					prevVertex.Position.y = currVecPos[1] / currVecPos[3];
+// 					prevVertex.Position.z = currVecPos[2] / currVecPos[3];
+// 				}
+// 				else {
+// 					prevVertex.Position.x = currVecPos[0];
+// 					prevVertex.Position.y = currVecPos[1];
+// 					prevVertex.Position.z = currVecPos[2];
+// 				}
+
+// 				lines_vertices.emplace_back(prevVertex);
+// 			}
+// 			lines_vertices.emplace_back(currVertex);
+// 		}
 // { // load in environments 
 	// 	std::cout << "Loading in environments!" << std::endl;
 	// 	for (auto enviro : rtg.scene.environments) {

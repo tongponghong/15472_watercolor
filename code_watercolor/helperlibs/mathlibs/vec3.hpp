@@ -7,29 +7,33 @@
 #include <cstdint>
 #include <iostream>
 
-using vec3 = std::array < float, 3 >;
+//using vec3 = std::array < float, 3 >;
 
-// struct vec3 {
-//     union {
-//         float data_array[3];
+// with help from Ollie Arrison
+struct vec3 {
+    union {
+        float data_array[3];
         
-//         struct {
-//             float x, y, z;
-//         };
+        struct {
+            float x, y, z;
+        };
 
-//         struct {
-//             float r, g, b;
-//         };
-//     };
+        struct {
+            float r, g, b;
+        };
+    };
 
-//     float& operator[](uint32_t index) {
-//         return data_array[index];
-//     }
+    vec3() = default;
+    vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
-//     float operator[](uint32_t index) const {
-//         return data_array[index];
-//     }
-// };
+    float& operator[](uint32_t index) {
+        return data_array[index];
+    }
+
+    float operator[](uint32_t index) const {
+        return data_array[index];
+    }
+};
 
 static_assert(sizeof(vec3) == 3 * 4, "vec4 is exactly 3 32-bit floats");
 
@@ -83,6 +87,7 @@ inline vec3 operator*(float b, vec3 const &u) {
 inline vec3 operator/(vec3 const &u, float b) {
     return vec3{u[0] / b, u[1] / b, u[2] / b};
 }
+
 inline vec3 operator-=(vec3 &a, float b) {
     a[0] -= b;
     a[1] -= b;

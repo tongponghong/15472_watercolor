@@ -15,7 +15,37 @@ using mat4 = std::array< float, 16 >;
 
 static_assert(sizeof(mat4) == 16 * 4, "mat4 is exactly 16 32-bit floats");
 
-using vec4 = std::array < float, 4 >;
+//using vec4 = std::array < float, 4 >;
+
+// with help from Ollie Arrison
+struct vec4 {
+    union {
+        float data_array[4];
+        
+        struct {
+            float x, y, z, w;
+        };
+
+        struct {
+            float r, g, b, a;
+        };
+    };
+
+    vec4() = default;
+    vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+
+    vec4(vec3 v, float _w) {x = v.x; y = v.y; z = v.z; w = _w; }
+
+    float& operator[](uint32_t index) {
+        return data_array[index];
+    }
+
+    float const& operator[](uint32_t index) const {
+        return data_array[index];
+    }
+
+};
+
 static_assert(sizeof(vec4) == 4 * 4, "vec4 is exactly 4 32-bit floats");
 
 inline vec4 operator-(vec4 const &a, vec4 const &b) {
@@ -97,6 +127,10 @@ inline mat4 operator*(mat4 const &A, mat4 const &B) {
     }
 
     return ret;
+}
+
+inline vec4 operator/(vec4 const &u, float b) {
+    return vec4{u[0] / b, u[1] / b, u[2] / b, u[3] / b};
 }
 
 inline void print_matrix4x4(mat4 M) {
@@ -298,6 +332,10 @@ inline mat4 convert_back_to_mymat4(glm::mat4 M) {
 
 inline float dot(vec4 const &u, vec4 const &v) {
     return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] + u[3] * v[3];
+}
+
+inline vec4 normalize(const vec4 &a) {
+    return a / norm(a);
 }
 
 // with help from matlab resources

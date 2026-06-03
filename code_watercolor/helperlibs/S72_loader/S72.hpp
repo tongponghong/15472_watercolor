@@ -39,7 +39,7 @@
 struct S72 {
 	//NOTE: redefine these for your vector and quaternion types of choice:
 	// using vec3 = struct vec3_internal{ float x, y, z; };
-	using vec3 = std::array < float, 3 >;
+	//using vec3 = std::array < float, 3 >;
 	// using quat = struct quat_internal{ float x, y, z, w; };
 	using quat = vec4;
 	using color = struct color_internal{ float r, g, b; };

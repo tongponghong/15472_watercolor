@@ -511,8 +511,11 @@ struct Tutorial : RTG::Application {
 
 	bool drawMode = false;
 
-	std::vector< LinesPipeline::Vertex > userDrawnLines;
-	void draw_line(std::vector< LinesPipeline::Vertex > &lines_buff, mat4 curr_xform);
+	std::vector< vec4 > near_clip_pts;
+	std::vector< vec4 > far_clip_pts;
+	std::vector< LinesPipeline::Vertex > user_drawn_points_WORLD; 
+
+	void draw_line(mat4 curr_xform);
 	
 
 };
