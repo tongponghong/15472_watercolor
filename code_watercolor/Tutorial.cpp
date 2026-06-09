@@ -1529,6 +1529,20 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			camera_mode = CameraMode::Free;
 		}
 	}
+
+	{ // figure out animation times
+		// move this into the initializer?
+		for (auto &driver : rtg.scene.drivers) {
+			float animation_cycle_length = driver.times.back();
+			if (animation_cycle_length > longest_cycle) {
+				longest_cycle = animation_cycle_length;
+			}
+		} 
+
+		if (rtg.scene.drivers.empty()) {
+			longest_cycle = FLT_MAX;
+		}
+	}
 }
 
 Tutorial::~Tutorial() {
@@ -2062,7 +2076,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		    workspace.lines_vertices_src.size < needed_bytes) {
 			
 			// round to next multiple of 4k to avoid reallocating continuously if vertex count grows slowly :
-			size_t new_bytes = ((needed_bytes + 4096) / 4096) * 4096;
+			size_t new_bytes = ((needed_bytes + 16384) / 16384) * 16384;
 			if (workspace.lines_vertices_src.handle) {
 				rtg.helpers.destroy_buffer(std::move(workspace.lines_vertices_src));
 			}
@@ -2777,11 +2791,12 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		//float scissorWidth = 0.0f;
 		float correctWidth = camera_aspect * rtg.swapchain_extent.height;
 		//std::cout << correctWidth << " <- this is the correct width" << std::endl;
+		//std::cout << "This is the old swapchain_extent.width: " << rtg.swapchain_extent.width << std::endl;
 		float correctHeight = rtg.swapchain_extent.width / camera_aspect;
 
 		float currAspectRatio = rtg.swapchain_extent.width / rtg.swapchain_extent.height;
 		
-		//std::cout << window_aspect << " <- this is the window_aspect" << std::endl;
+		//std::cout << currAspectRatio << " <- this is the window_aspect" << std::endl;
 		// figured out with Enrique 
 		{ // configure viewport transform :
 			// how device coords map to window coords
@@ -2817,8 +2832,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			// set scissor rectangle
 			//subset of screen that gets drawn to 
 			VkRect2D scissor {
-				.offset = {.x = int32_t(viewport.x), 
-					       .y = int32_t(viewport.y)},
+				.offset = {.x = (viewport.x >= 0) ? int32_t(viewport.x) : 0, 
+					       .y = (viewport.y >= 0) ? int32_t(viewport.y) : 0},
 				.extent = {.width = uint32_t(viewport.width),
 				           .height = uint32_t(viewport.height)}, // ensures that it covers the whole swapchain img
 			};
@@ -3527,17 +3542,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 }
 
 void Tutorial::update(float dt) {
-	float longest_cycle = 0.0f;
-	for (auto &driver : rtg.scene.drivers) {
-		float animation_cycle_length = driver.times.back();
-		if (animation_cycle_length > longest_cycle) {
-			longest_cycle = animation_cycle_length;
-		}
-	} 
-
-	if (rtg.scene.drivers.empty()) {
-		longest_cycle = FLT_MAX;
-	}
+	// // move this into the initializer?
 
 	time = std::fmod(time + dt, longest_cycle);
 	//std::cout << "camera_mode: " << int(camera_mode) << std::endl;
@@ -3806,12 +3811,21 @@ void Tutorial::update(float dt) {
 	}
 
 	{ // make some drawings
+
+		std::vector< LinesPipeline::Vertex > indicator_vertices;
+
 		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
 
-		// updates the line so that the userDrawnVertices are corrected added to the array
+		//draw_indicator(indicator_vertices, worldFromClip);
+		// FIX THIS BC IT IS NOT USING THE CORRECT CAMERA TRANSOFRM (IT DOESNT EXIST)
+		print_matrix4x4(currCamera.transform);
+
+		//lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
+
+		// updates the line so that the userDrawnVertices are correctly added to the array
 		draw_line(worldFromClip);
 
-		if (drawMode || camera_mode == CameraMode::Debug) { 
+		{ 
 			lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
 														user_drawn_points_WORLD.end());
 		}
@@ -3839,66 +3853,66 @@ void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance 
     }
 
 	if (sunlight_insts.empty()) {
-			sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-				.angle_w_pad{
-					.angle = 0.0f,
-				},
-				.SUN_DIRECTION{	
-					.x = 0.0,
-					.y = 0.0,
-					.z = 0.0,
-				},
-				.SUN_ENERGY{
-					.r = 0.0,
-					.g = 0.0,
-					.b = 0.0,
-				}
-			});
-		}
-
-		if (spherelight_insts.empty()) {
-			spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
-					.SPHERE_POSITION_AND_RADIUS{
-						.x = 0.0,
-						.y = 0.0,
-						.z = 0.0,
-						.radius = 0.0,
-					},
-					.SPHERE_POWER_AND_LIMIT{
-						.r = 0.0,
-						.g = 0.0,
-						.b = 0.0,
-						.limit = 0.0,
-					}
-					
-				});
+		sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
+			.angle_w_pad{
+				.angle = 0.0f,
+			},
+			.SUN_DIRECTION{	
+				.x = 0.0,
+				.y = 0.0,
+				.z = 0.0,
+			},
+			.SUN_ENERGY{
+				.r = 0.0,
+				.g = 0.0,
+				.b = 0.0,
 			}
+		});
+	}
 
-		if (spotlight_insts.empty()) {
-			spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
-				.SPOT_POSITION_AND_RADIUS{
+	if (spherelight_insts.empty()) {
+		spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
+				.SPHERE_POSITION_AND_RADIUS{
 					.x = 0.0,
 					.y = 0.0,
 					.z = 0.0,
 					.radius = 0.0,
 				},
-				.SPOT_DIRECTION{
-					.x = 0.0,
-					.y = 0.0,
-					.z = 1.0,
-				},
-				.SPOT_POWER_AND_LIMIT{
+				.SPHERE_POWER_AND_LIMIT{
 					.r = 0.0,
 					.g = 0.0,
 					.b = 0.0,
 					.limit = 0.0,
-				},
-				.SPOT_OUTER_AND_INNER_LIM{
-					.outer = 0.0,
-					.inner = 0.0,
 				}
+				
 			});
 		}
+
+	if (spotlight_insts.empty()) {
+		spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
+			.SPOT_POSITION_AND_RADIUS{
+				.x = 0.0,
+				.y = 0.0,
+				.z = 0.0,
+				.radius = 0.0,
+			},
+			.SPOT_DIRECTION{
+				.x = 0.0,
+				.y = 0.0,
+				.z = 1.0,
+			},
+			.SPOT_POWER_AND_LIMIT{
+				.r = 0.0,
+				.g = 0.0,
+				.b = 0.0,
+				.limit = 0.0,
+			},
+			.SPOT_OUTER_AND_INNER_LIM{
+				.outer = 0.0,
+				.inner = 0.0,
+			}
+		});
+	}
 }
 
 void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &scene_objects) {
@@ -4242,11 +4256,60 @@ void Tutorial::on_input(InputEvent const &evt) {
 				//std::cout << "x, y:" << evt.motion.x << ", " << evt.motion.y << std::endl;
 
 				// convert to NDC
+
+				float newWidth = camera_aspect * rtg.swapchain_extent.height;
+				//std::cout << newWidth << " <- this is the correct width" << std::endl;
+				float newHeight = rtg.swapchain_extent.width / camera_aspect;
+				//std::cout << newHeight << " <- this is the correct height" << std::endl;
+
+				float currAspectRatio = rtg.swapchain_extent.width / rtg.swapchain_extent.height;
+				
+				float currMouseX = 0.0f;
+				float currMouseY = 0.0f;
+				// vertical bars of width
+				if (currAspectRatio > camera_aspect) {
+					float width_diff = rtg.swapchain_extent.width - newWidth;
+					float scissorWidth = width_diff / 2.0f;
+				
+					//width = newWidth;
+					//std::cout << "scissor width " << scissorWidth << std::endl;
+
+					currMouseX = std::max(scissorWidth / 2, evt.motion.x);
+					currMouseY = std::max(0.0f, evt.motion.y);
+
+					currMouseX = std::min(static_cast<float>(rtg.swapchain_extent.width / 2) - scissorWidth / 2, currMouseX);
+					currMouseY = std::min(static_cast<float>(rtg.swapchain_extent.height / 2), currMouseY);
+					//x = scissorWidth;
+				}
+				
+				// horizontal bars of height 
+				else {
+					float height_diff = rtg.swapchain_extent.height - newHeight;
+					float scissorHeight = height_diff / 2.0f;
+			
+					//height = newHeight;
+					//y = scissorHeight;
+					//std::cout << scissorHeight << " scissorheight" << std::endl;
+					currMouseX = std::max(0.0f, evt.motion.x);
+					currMouseY = std::max(scissorHeight / 2, evt.motion.y);
+					
+					currMouseX = std::min(static_cast<float>(rtg.swapchain_extent.width / 2), currMouseX);
+					currMouseY = std::min(static_cast<float>(rtg.swapchain_extent.height / 2) - scissorHeight / 2, currMouseY);
+				}
+				
+				// check for potential floating point issues on edges?
+				
+				
+
+				//std::cout << "evt: " << evt.motion.x << "|| " << evt.motion.y << std::endl;
+				//std::cout << "currM: " << currMouseX << "|| " << currMouseY << std::endl;
+
+				//TODO: NEED TO FIX THIS BC ITS MAPPING INCORRECTLY BASED ON WIDTH AND HEIGHT 
 				//std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
-				float NDC_x = (4.0f * evt.motion.x / rtg.swapchain_extent.width) - 1.0f;
-				float NDC_y = (4.0f * evt.motion.y / rtg.swapchain_extent.height) - 1.0f;
+				float NDC_x = (4.0f * currMouseX / rtg.swapchain_extent.width) - 1.0f;
+				float NDC_y = (4.0f * currMouseY / rtg.swapchain_extent.height) - 1.0f;
 				//float NDC_z = 1.0f;
-				// TODO: NEED TO REFERENCE THE POINT THAT WAS BEHIND AS WELL (EACH LINE NEEDS A REDUNDANT VERTEX)
+				//NEED TO REFERENCE THE POINT THAT WAS BEHIND AS WELL (EACH LINE NEEDS A REDUNDANT VERTEX)
 
 				vec4 ray_start = vec4{NDC_x, NDC_y, 0.0f, 1.0f};
 				vec4 ray_end = vec4{NDC_x, NDC_y, 1.0f, 1.0f};
@@ -4434,7 +4497,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 		}
 	}
 
-	// free camera controls
+	// debug camera controls
 	if (camera_mode == CameraMode::Debug) {
 		//currCamera = debug_camera;
 		camera_aspect = debug_camera.aspect;
@@ -4679,27 +4742,13 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 }
 
 void Tutorial::draw_line(mat4 curr_xform) { 
-	// (hopefully stops blanks/jumps? :sob:)
 	// figures out what the last vertex was in the buffer and duplicates it 
 	// then add the next point 
-
-	// inter_lines_buff is going to the be the intermediate?
 	// use draw_line to update the intermediate buffer, copy it into the main buffer back in Tutorial::update()
-	
-
-	// then figure out how to add it into the main (lines_vertices) buffer 
-	// fix this if condiition bc pretty sure its not correct haha
-	//if ((drawMode || camera_mode == CameraMode::Debug) && !near_clip_pts.empty()) { 
-		
-		//for (int i = 0; i < near_clip_pts.size(); ++i) {
-			
-			
-		//}
-
-	//}
 
 	if (near_clip_pts.empty() || far_clip_pts.empty()) return;
-	
+	if (!drawMode) return;
+
 	vec4 curr_ray_start = near_clip_pts.back();
 	vec4 curr_ray_end = far_clip_pts.back();
 
@@ -4711,7 +4760,8 @@ void Tutorial::draw_line(mat4 curr_xform) {
 	ray_dir = normalize(ray_dir);
 
 	
-	vec4 plane_pt = vec4{currCamera.target, 1.0f};
+	vec4 plane_pt = vec4{currCamera.target, 1.0f}; // change this so it can become adjustable (DO NOT change target bc could potentially mess up other stuff :sob)
+	// also draw in a little circle or something so user knows where they are drawing relative to screen
 	vec4 plane_normal = normalize(ray_dir);
 
 	// float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);
@@ -4721,6 +4771,10 @@ void Tutorial::draw_line(mat4 curr_xform) {
 		float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);
 
 		vec4 world_point = WORLD_ray_start + ray_dir * distance;
+
+		if (user_drawn_points_WORLD.size() >= 2) {
+			user_drawn_points_WORLD.emplace_back(user_drawn_points_WORLD.back());
+		}
 
 		user_drawn_points_WORLD.emplace_back(LinesPipeline::Vertex{
 			.Position{
@@ -4737,6 +4791,47 @@ void Tutorial::draw_line(mat4 curr_xform) {
 		});
 	}
 }
+
+void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform) {
+	
+	vec4 color = vec4{0.0, 0.0, 0.0, 0.0};
+
+	int NUM_POINTS = 24;
+	float radius = 2.0f;
+
+	for (int i = 0; i < NUM_POINTS+1; ++i) {
+		float currDeg = 360.0f / NUM_POINTS * float(i);
+		float currRad = currDeg * float(M_PI) / 180.0f;
+
+		if (indicator_buff.size() > 1) {
+			indicator_buff.emplace_back(indicator_buff.back());
+		}
+
+		indicator_buff.emplace_back(PosColVertex {
+				.Position{.x = radius * std::cos(currRad), .y = radius * std::sin(currRad), .z = 0.5f},
+				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+			});
+	}
+
+	for (auto &vertex : indicator_buff) {
+		vec4 currVecPos = vec4{vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f};
+		currVecPos = curr_xform * currVecPos;
+
+		if (currVecPos[3] != 0.0f) {
+			vertex.Position.x = currVecPos[0] / currVecPos[3];
+			vertex.Position.y = currVecPos[1] / currVecPos[3];
+			vertex.Position.z = currVecPos[2] / currVecPos[3];
+		}
+		else {
+			vertex.Position.x = currVecPos[0];
+			vertex.Position.y = currVecPos[1];
+			vertex.Position.z = currVecPos[2];
+		}
+
+	}
+
+}
+
 
 // CODE GRAVEYARD:
 

@@ -443,6 +443,7 @@ struct Tutorial : RTG::Application {
 	// model action, intercepts inputs:
 	std::function< void(InputEvent const &) > action;
 
+	float longest_cycle = 0.0f;
 	float time = 0.0f;
 
 	// for selecting between cameras
@@ -498,7 +499,6 @@ struct Tutorial : RTG::Application {
 	// computed from the current camera (as set by camera_mode) during update() 
 	mat4 CLIP_FROM_WORLD = identity_4x4();
 
-
 	std::vector< LinesPipeline::Vertex > lines_vertices;
 
 	//--------------------------------------------------------------------
@@ -516,6 +516,7 @@ struct Tutorial : RTG::Application {
 	std::vector< LinesPipeline::Vertex > user_drawn_points_WORLD; 
 
 	void draw_line(mat4 curr_xform);
-	
-
+	void draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform);
 };
+
+
