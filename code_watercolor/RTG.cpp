@@ -12,9 +12,9 @@
 #include <GLFW/glfw3.h>
 #include "helperlibs/S72_loader/S72.hpp"
 
-// #include "helperlibs/imgui/imgui.h"
-// #include "helperlibs/imgui/backends/imgui_impl_glfw.h"
-// #include "helperlibs/imgui/backends/imgui_impl_vulkan.h"
+#include "helperlibs/imgui/imgui.h"
+#include "helperlibs/imgui/backends/imgui_impl_glfw.h"
+#include "helperlibs/imgui/backends/imgui_impl_vulkan.h"
 
 #include <cassert>
 #include <chrono>
@@ -523,28 +523,6 @@ RTG::RTG(Configuration const &configuration_) : helpers(*this) {
 			VK( vkCreateSemaphore(device, &create_info, nullptr, &workspace.image_available) );
 		}
 	}
-
-	// { // initialize DearImGUI
-	// 	IMGUI_CHECKVERSION();
-	// 	ImGui::CreateContext();
-	// 	ImGuiIO& io = ImGui::GetIO();
-	// 	(void) io;
-
-	// 	ImGui::StyleColorsDark();
-
-	// 	ImGui_ImplGlfw_InitForVulkan(window, true);
-	// 	ImGui_ImplVulkan_InitInfo init_info{
-	// 		.Instance = instance,
-	// 		.PhysicalDevice = physical_device,
-	// 		.Device = device,
-	// 		.QueueFamily = graphics_queue_family.value(),
-	// 		.Queue = graphics_queue,
-	// 		.PipelineCache = pipeline_cache,
-	// 		.DescriptorPool = VK_NULL_HANDLE,
-
-	// 	}
-
-	// }
 }
 
 RTG::~RTG() {
@@ -574,6 +552,8 @@ RTG::~RTG() {
 	//destroy Helpers structure resources:
 	helpers.destroy();
 
+
+
 	//destroy the rest of the resources:
 	if (device != VK_NULL_HANDLE) {
 		vkDestroyDevice(device, nullptr);
@@ -602,6 +582,7 @@ RTG::~RTG() {
 		vkDestroyInstance(instance, nullptr);
 		instance = VK_NULL_HANDLE;
 	}
+
 
 }
 
@@ -872,6 +853,8 @@ static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
 	std::vector< InputEvent > *event_queue = reinterpret_cast< std::vector< InputEvent > * >(glfwGetWindowUserPointer(window));
 	if (!event_queue) return;
 
+	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);
+
 	InputEvent event;
 	std::memset(&event, '\0', sizeof(event));
 
@@ -891,6 +874,8 @@ static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
 static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
 	std::vector< InputEvent > *event_queue = reinterpret_cast< std::vector< InputEvent > * >(glfwGetWindowUserPointer(window));
 	if (!event_queue) return;
+
+	ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
 	InputEvent event;
 	std::memset(&event, '\0', sizeof(event));
@@ -924,6 +909,8 @@ static void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) 
 	std::vector< InputEvent > *event_queue = reinterpret_cast< std::vector< InputEvent > * >(glfwGetWindowUserPointer(window));
 	if (!event_queue) return;
 
+	ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+
 	InputEvent event;
 	std::memset(&event, '\0', sizeof(event));
 
@@ -937,6 +924,8 @@ static void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	std::vector< InputEvent > *event_queue = reinterpret_cast< std::vector< InputEvent > * >(glfwGetWindowUserPointer(window));
 	if (!event_queue) return;
+
+	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 
 	InputEvent event;
 	std::memset(&event, '\0', sizeof(event));
@@ -1064,9 +1053,15 @@ void RTG::run(Application &application) {
 			// if we've run out of events, stop running main loop:
 			if (!std::cin) break;
 		}
+
 		else {
 			glfwPollEvents();
+			
+
+
+
 		}
+
 		//deliver all input events to application:
 		for (InputEvent const &input : event_queue) {
 			application.on_input(input);
@@ -1152,6 +1147,11 @@ void RTG::run(Application &application) {
 				throw std::runtime_error("Failed to acquire swapchain image (" + std::string(string_VkResult(result)) + ")!");
 			}
 		}
+
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+	
 		// call render function: 
 		application.render(*this, RenderParams{
 			.workspace_index = workspace_index, 
@@ -1203,7 +1203,7 @@ void RTG::run(Application &application) {
 			}
 		}
 
-		//TODO: present image (resize swapchain if needed)
+		//TODO: present image (resize swapchain if needed) 
 	}
 
 	// wait for any in-flight "headless" frames marked fo saving to finish:

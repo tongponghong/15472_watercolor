@@ -27,6 +27,7 @@ struct Tutorial : RTG::Application {
 	//Render passes describe how pipelines write to images:
 	VkRenderPass render_pass = VK_NULL_HANDLE;
 	VkRenderPass shadow_render_pass = VK_NULL_HANDLE;
+	VkRenderPass ImGui_render_pass = VK_NULL_HANDLE;
 
 	
 
@@ -190,12 +191,6 @@ struct Tutorial : RTG::Application {
 		void destroy (RTG &);
 	} shadows_pipeline;
 
-	//pools from which per-workspace things are allocated:
-	VkCommandPool command_pool = VK_NULL_HANDLE;
-	VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
-	
-	//STEPX: Add descriptor pool here.
-
 	struct ComputePipeline {
 		// no descriptor set layouts
 		VkDescriptorSetLayout set0_image;
@@ -256,6 +251,12 @@ struct Tutorial : RTG::Application {
 		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
 		void destroy (RTG &);
 	} style_pipeline;
+
+	//pools from which per-workspace things are allocated:
+	VkCommandPool command_pool = VK_NULL_HANDLE;
+	VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
+	
+	//STEPX: Add descriptor pool here.
 
 	//workspaces hold per-render resources:
 	struct Workspace {
@@ -416,8 +417,9 @@ struct Tutorial : RTG::Application {
 	// for depth sampling image for watercolor
 	VkSampler depth_sampler = VK_NULL_HANDLE;
 
-	std::vector< VkFramebuffer > swapchain_framebuffers;
+	std::vector< VkFramebuffer > swapchain_framebuffers; // deprecated
 	VkFramebuffer offscreen_image_framebuffer = VK_NULL_HANDLE;
+	std::vector< VkFramebuffer > imgui_framebuffers;
 	//used from on_swapchain and the destructor: (framebuffers are created in on_swapchain)
 	void destroy_framebuffers();
 
@@ -455,6 +457,7 @@ struct Tutorial : RTG::Application {
 
 	// used when camera_mode == CameraMode::Free or debug
 	struct Camera {
+		//TODO: check if its more intuitive to move the target, or to separate the target and user drawing point
 		vec3 target = vec3{0, 0, 0}; // where the camera is looking + orbiting
 		float radius = 2.0f; // distance from camera to target
 		float azimuth = 0.0f; // CCW angle around z axis between x axis and camera directon (radians)
@@ -511,11 +514,13 @@ struct Tutorial : RTG::Application {
 
 	bool drawMode = false;
 
+	float user_draw_depth_scale = 1.0f;
+
 	std::vector< vec4 > near_clip_pts;
 	std::vector< vec4 > far_clip_pts;
 	std::vector< LinesPipeline::Vertex > user_drawn_points_WORLD; 
 
-	void draw_line(mat4 curr_xform);
+	void draw_line(mat4 curr_xform, vec3 user_target_offset);
 	void draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform);
 };
 

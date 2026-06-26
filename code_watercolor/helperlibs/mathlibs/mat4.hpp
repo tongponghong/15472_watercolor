@@ -266,6 +266,21 @@ inline vec3 get_eye(vec3 target, float azimuth, float elevation, float radius) {
     return eye;
 }
 
+inline vec3 get_camera_direction(vec3 target, float azimuth, float elevation, float radius) {
+    float ca = std::cos(azimuth);
+    float sa = std::sin(azimuth);
+    float ce = std::cos(elevation);
+    float se = std::sin(elevation);
+
+    // std::cout << "azimuth: " << azimuth << std::endl;
+    // std::cout << "elevation: " << elevation << std::endl;
+
+    // direction to camera from the target
+    vec3 out = vec3{ce * ca, ce * sa, se};
+
+    return -out;
+}
+
 // from https://www.songho.ca/opengl/gl_quaternion.html#final
 inline mat4 get_rotation_matrix(vec4 unit_quaternion) {
     float x = unit_quaternion[0];

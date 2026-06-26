@@ -10,6 +10,10 @@
 
 #include <GLFW/glfw3.h>
 
+#include "helperlibs/imgui/imgui.h"
+#include "helperlibs/imgui/backends/imgui_impl_glfw.h"
+#include "helperlibs/imgui/backends/imgui_impl_vulkan.h"
+
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -209,6 +213,69 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK( vkCreateRenderPass(rtg.device, &create_info, nullptr, &shadow_render_pass) );
 	}
 
+	{ // create ImGUI render pass
+		// attachments:
+		std::array< VkAttachmentDescription, 1 > imgui_attachments{
+			// output 1
+			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)
+				.format = rtg.surface_format.format,
+				.samples = VK_SAMPLE_COUNT_1_BIT,
+				// how to load data before rendering
+				.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+				// how to write data back after rendering
+				.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				// what layout th imag will be transitioned to before load
+				.initialLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				// what layout the image will be transitioned to after store 
+				.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			},
+		};
+
+		// subpass(es):
+		std::array< VkAttachmentReference, 1 > color_attachment_refs{
+			// color_attachment_ref
+			VkAttachmentReference{
+				.attachment = 0,
+				.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			},
+		};
+
+		VkSubpassDescription subpass{
+			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+			.colorAttachmentCount = color_attachment_refs.size(),
+			.pColorAttachments = color_attachment_refs.data(),
+		};
+
+		// this defers the image load actions for the attachments:
+		std::array< VkSubpassDependency, 1 > dependencies {
+			// finish all work in color attachment output stage
+			// then do layout transition
+			// then start work in the color attachment output stage again
+			VkSubpassDependency{
+				.srcSubpass = VK_SUBPASS_EXTERNAL,
+				.dstSubpass = 0,
+				.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				.srcAccessMask = 0,
+				.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			},
+		};
+
+		VkRenderPassCreateInfo create_info {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+			.attachmentCount = uint32_t(imgui_attachments.size()),
+			.pAttachments = imgui_attachments.data(),
+			.subpassCount = 1,
+			.pSubpasses = &subpass,
+			.dependencyCount = uint32_t(dependencies.size()),
+			.pDependencies = dependencies.data(),
+		};
+
+		VK( vkCreateRenderPass(rtg.device, &create_info, nullptr, &ImGui_render_pass) );
+	}
+
 	{ // create command pool
 		VkCommandPoolCreateInfo create_info{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -252,13 +319,15 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK( vkCreateImageView(rtg.device, &create_info, nullptr, &shadow_atlas_image_view) );
 	}
 
+
+	//? i dont think this should be here uhhh ill check this out later 
 	std::array< VkImageView, 1 > attachments{
 		shadow_atlas_image_view
 	};
 
 	VkFramebufferCreateInfo create_info {
 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-		.renderPass = render_pass,
+		.renderPass = shadow_render_pass, //* hopeuflly this doesnt break anything
 		.attachmentCount = uint32_t(attachments.size()),
 		.pAttachments = attachments.data(),
 		.width = shadowAtlasExtent.width,
@@ -279,6 +348,37 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	style_pipeline.create(rtg, render_pass, 0);
 
 	workspaces.resize(rtg.swapchain_images.size());
+
+	{ // initialize DearImGUI
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		(void) io;
+
+		ImGui::StyleColorsDark();
+
+		ImGui_ImplGlfw_InitForVulkan(rtg.window, true);
+		ImGui_ImplVulkan_InitInfo init_info{
+			.Instance = rtg.instance,
+			.PhysicalDevice = rtg.physical_device,
+			.Device = rtg.device,
+			.QueueFamily = rtg.graphics_queue_family.value(),
+			.Queue = rtg.graphics_queue,
+			.PipelineCache = rtg.pipeline_cache,
+			.DescriptorPool = VK_NULL_HANDLE,
+			.DescriptorPoolSize = 10, // idk just something more than 8 ig lol 
+			.PipelineInfoMain{
+				.RenderPass = ImGui_render_pass,
+				.Subpass = 0,
+				.MSAASamples = VK_SAMPLE_COUNT_1_BIT,
+			},
+			.MinImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
+			.ImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
+		};
+
+		ImGui_ImplVulkan_Init(&init_info);
+
+	}
 	
 	{ // create descriptor pool
 		uint32_t per_workspace = uint32_t(workspaces.size());
@@ -1735,6 +1835,9 @@ Tutorial::~Tutorial() {
 		shadow_render_pass = VK_NULL_HANDLE;
 	}
 
+	if (ImGui_render_pass != VK_NULL_HANDLE) {
+		vkDestroyRenderPass(rtg.device, ImGui_render_pass, nullptr);
+	}
 
 	// destroy command pool
 	if (command_pool != VK_NULL_HANDLE) {
@@ -1746,6 +1849,10 @@ Tutorial::~Tutorial() {
 		vkDestroyRenderPass(rtg.device, render_pass, nullptr);
 		render_pass = VK_NULL_HANDLE;
 	}
+
+	ImGui_ImplVulkan_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
@@ -1948,17 +2055,14 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 		VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &offscreen_image_framebuffer) );
 	}
 
-	// create framebufers pointing to each swapchain image view and the shared depth image view
-	// swapchain_framebuffers.assign(swapchain.image_views.size(), VK_NULL_HANDLE);
-	// for (size_t i = 0; i < swapchain.image_views.size(); ++i) {
-	// 	std::array< VkImageView, 2 > attachments{
-	// 		swapchain.image_views[i],
-	// 		swapchain_depth_image_view,
+	// { // create a framebuffer for imgui
+	// 	std::array< VkImageView, 1 > attachments{
+		
 	// 	};
 
 	// 	VkFramebufferCreateInfo create_info {
 	// 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-	// 		.renderPass = render_pass,
+	// 		.renderPass = ImGui_render_pass,
 	// 		.attachmentCount = uint32_t(attachments.size()),
 	// 		.pAttachments = attachments.data(),
 	// 		.width = swapchain.extent.width,
@@ -1966,17 +2070,35 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	// 		.layers = 1,
 	// 	};
 
-	// 	VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &swapchain_framebuffers[i]) );
 	// }
+	// create framebuffers for each imgui frame
+	imgui_framebuffers.assign(swapchain.image_views.size(), VK_NULL_HANDLE);
+	for (size_t i = 0; i < swapchain.image_views.size(); ++i) {
+		std::array< VkImageView, 1 > attachments{
+			swapchain.image_views[i],
+		};
+
+		VkFramebufferCreateInfo create_info {
+			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.renderPass = ImGui_render_pass,
+			.attachmentCount = uint32_t(attachments.size()),
+			.pAttachments = attachments.data(),
+			.width = swapchain.extent.width,
+			.height = swapchain.extent.height,
+			.layers = 1,
+		};
+
+		VK( vkCreateFramebuffer(rtg.device, &create_info, nullptr, &imgui_framebuffers[i]) );
+	}
 }
 
 void Tutorial::destroy_framebuffers() {
-	// for (VkFramebuffer &framebuffer : swapchain_framebuffers) {
-	// 	assert(framebuffer != VK_NULL_HANDLE);
-	// 	vkDestroyFramebuffer(rtg.device, framebuffer, nullptr);
-	// 	framebuffer = VK_NULL_HANDLE;
-	// }
-	// swapchain_framebuffers.clear();
+	for (VkFramebuffer &framebuffer : imgui_framebuffers) {
+		assert(framebuffer != VK_NULL_HANDLE);
+		vkDestroyFramebuffer(rtg.device, framebuffer, nullptr);
+		framebuffer = VK_NULL_HANDLE;
+	}
+	imgui_framebuffers.clear();
 
 	assert(swapchain_depth_image_view != VK_NULL_HANDLE);
 	vkDestroyImageView(rtg.device, swapchain_depth_image_view, nullptr);
@@ -2052,7 +2174,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	assert(&rtg == &rtg_);
 	assert(render_params.workspace_index < workspaces.size());
 	//assert(render_params.image_index < swapchain_framebuffers.size());
-
+	ImGui::ShowDemoWindow();
+	ImGui::Render();
 	//get more convenient names for the current workspace and target framebuffer:
 	Workspace &workspace = workspaces[render_params.workspace_index];
 	//VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
@@ -2760,7 +2883,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		);
 	}
 
-	{ // render pass part 
+	{ //* render pass part 
 		std::array< VkClearValue, 3 > clear_values {
 			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
 			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
@@ -3071,8 +3194,10 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			}
 
 		}
+
 		vkCmdEndRenderPass (workspace.command_buffer);
 	}
+
 
 	//int idx = strings_to_texture_idxs[rtg.configuration.paper_path];
 
@@ -3468,48 +3593,80 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 		vkCmdCopyImage(
 			workspace.command_buffer,
-			// srcImage                     srcImageLayout
-			offscreen_input_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			// srcImage (change this to be watercolor or not)  srcImageLayout
+			final_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			// dstImage                     dstImageLayout    
 			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
 			1, &region    
 		);
 	}
 
-	{ // barrier from intermediate to swapchain and present on screen
-		
-		// barrier for the input (the final image after the compute)
-		VkImageMemoryBarrier barrier_after_copy{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-			.dstAccessMask = 0, // no conditions on later commands bc image is expected to be ready 
-			.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
-			.image = rtg.swapchain_images[render_params.image_index],
-			.subresourceRange {
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = 0,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = 1,
-			}
-		};
-		
+	{ //* ImGui render pass!
 
-		vkCmdPipelineBarrier(
-			workspace.command_buffer,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, // just did copy
-			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,       // copy back to swapchain to presentation
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier_after_copy
-		);
+		std::array< VkClearValue, 1 > clear_values {
+			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
+		};
+
+		VkRenderPassBeginInfo begin_info {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.renderPass = ImGui_render_pass,
+			// references the attachments used in a render pass 
+			.framebuffer = imgui_framebuffers[render_params.image_index],
+			// tells the pixel area that is being rendered to
+			.renderArea {
+				.offset = {.x = 0, .y = 0},
+				.extent = rtg.swapchain_extent,
+			},
+			.clearValueCount = uint32_t(clear_values.size()),
+			// color buffer and depth buffer loaded by begin cleared to the below vals
+			.pClearValues = clear_values.data(),
+		};
+
+		vkCmdBeginRenderPass (workspace.command_buffer, 
+			                  &begin_info, 
+			                  VK_SUBPASS_CONTENTS_INLINE);
+
+
+
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), workspace.command_buffer);
+
+		vkCmdEndRenderPass (workspace.command_buffer);
 	}
 
+	// { // barrier from intermediate to swapchain and present on screen
+		
+	// 	// barrier for the input (the final image after the compute)
+	// 	VkImageMemoryBarrier barrier_after_copy{
+	// 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+	// 		.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+	// 		.dstAccessMask = 0, // no conditions on later commands bc image is expected to be ready 
+	// 		.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	// 		.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
+	// 		.image = rtg.swapchain_images[render_params.image_index],
+	// 		.subresourceRange {
+	// 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+	// 			.baseMipLevel = 0,
+	// 			.levelCount = 1,
+	// 			.baseArrayLayer = 0,
+	// 			.layerCount = 1,
+	// 		}
+	// 	};
+		
+	// 	vkCmdPipelineBarrier(
+	// 		workspace.command_buffer,
+	// 		VK_PIPELINE_STAGE_TRANSFER_BIT, // just did copy
+	// 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,       // copy back to swapchain to presentation
+	// 		0,
+	// 		0, nullptr,
+	// 		0, nullptr,
+	// 		1, &barrier_after_copy
+	// 	);
+	// }
+
+	//* end the command buffer since everything has been put in the buffer 
 	VK( vkEndCommandBuffer(workspace.command_buffer) );
 
-	{ //submit `workspace.command buffer` for the GPU to run:
+	{ //* submit `workspace.command buffer` for the GPU to run:
 		// signalled when image done presented and ready to render to
 		std::array< VkSemaphore, 1 > wait_semaphores{
 			render_params.image_available 
@@ -3542,7 +3699,6 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 }
 
 void Tutorial::update(float dt) {
-	// // move this into the initializer?
 
 	time = std::fmod(time + dt, longest_cycle);
 	//std::cout << "camera_mode: " << int(camera_mode) << std::endl;
@@ -3589,28 +3745,15 @@ void Tutorial::update(float dt) {
 			if (driver.interpolation == S72::Driver::Interpolation::STEP) {
 				if (driver.channel == S72::Driver::Channel::translation || 
 					driver.channel == S72::Driver::Channel::scale) {
-					//std::cout << "--------------- NODE NAME: " << driver.node.name << " -------------------" << std::endl;
-					//std::cout << "--------------- old translation" << std::endl;
-					//print_matrix4x4(object_instances[currNode.obj_index].transform.WORLD_FROM_LOCAL);
-					
+
 					vec3 firstVal = vec3{driver.values[currKeyFrame * 3], 
 										driver.values[currKeyFrame * 3 + 1],
 										driver.values[currKeyFrame * 3 + 2]};
 
-					//std::cout << "---------------- first translation" << std::endl;
-											
-				
-			
-					//mat4 newTransMat = get_translation_matrix(LERPtrans);
 					if (driver.channel == S72::Driver::Channel::translation) 
 						driver.node.translation = firstVal;
 
 					else driver.node.scale = firstVal;
-					
-
-					//std::cout << "---------------- translation matrix" << std::endl;
-					//print_matrix4x4(newTransMat);
-					
 				}
 
 				else if (driver.channel == S72::Driver::Channel::rotation) {
@@ -3619,44 +3762,28 @@ void Tutorial::update(float dt) {
 										driver.values[currKeyFrame * 4 + 2],
 										driver.values[currKeyFrame * 4 + 3]};
 											
-					
 					driver.node.rotation = firstVal;
-									
 				}
 			}	
 			
 			else if (driver.interpolation == S72::Driver::Interpolation::LINEAR) {
 				if (driver.channel == S72::Driver::Channel::translation || 
 					driver.channel == S72::Driver::Channel::scale) {
-					//std::cout << "--------------- NODE NAME: " << driver.node.name << " -------------------" << std::endl;
-					//std::cout << "--------------- old translation" << std::endl;
-					//print_matrix4x4(object_instances[currNode.obj_index].transform.WORLD_FROM_LOCAL);
-					
+
 					vec3 firstVal = vec3{driver.values[currKeyFrame * 3], 
 										driver.values[currKeyFrame * 3 + 1],
 										driver.values[currKeyFrame * 3 + 2]};
-
-					//std::cout << "---------------- first translation" << std::endl;
-											
+				
 					vec3 secVal   = vec3{driver.values[nextKeyFrame * 3], 
 										driver.values[nextKeyFrame * 3 + 1],
 										driver.values[nextKeyFrame * 3 + 2]};	
-					
-					//std::cout << "---------------- second translation" << std::endl;
 
-					
 					vec3 LERPval = firstVal + (secVal - firstVal) * timeInt;
-			
-					//mat4 newTransMat = get_translation_matrix(LERPtrans);
+
 					if (driver.channel == S72::Driver::Channel::translation) 
 						driver.node.translation = LERPval;
 
 					else driver.node.scale = LERPval;
-					
-
-					//std::cout << "---------------- translation matrix" << std::endl;
-					//print_matrix4x4(newTransMat);
-					
 				}
 
 				else if (driver.channel == S72::Driver::Channel::rotation) {
@@ -3674,8 +3801,7 @@ void Tutorial::update(float dt) {
 					
 					vec4 LERPval = firstVal + (secVal - firstVal) * timeInt;
 
-					driver.node.rotation = LERPval;
-									
+					driver.node.rotation = LERPval;				
 				}
 				
 			}	
@@ -3706,12 +3832,10 @@ void Tutorial::update(float dt) {
 						vec4 SLERPval = sin((1 - timeInt) * angle) / sin(angle) * firstVal +
 										sin((timeInt) * angle) / sin(angle) * secVal;  
 
-						//print_vector_4x1(SLERPval);
 						driver.node.rotation = SLERPval;
 					}
 				}
 			}	
-			
 		}
 		traverse_scene(rtg.scene, object_instances);
 	}
@@ -3816,396 +3940,43 @@ void Tutorial::update(float dt) {
 
 		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
 
-		//draw_indicator(indicator_vertices, worldFromClip);
+		mat4 freeCamFromWorld = orbit(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
+		mat4 worldFromFreeCam = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4(freeCamFromWorld)));
+		
 		// FIX THIS BC IT IS NOT USING THE CORRECT CAMERA TRANSOFRM (IT DOESNT EXIST)
-		print_matrix4x4(currCamera.transform);
+		//print_matrix4x4(worldFromFreeCam);
+		//std::cout << "radius: " << currCamera.radius << std::endl;
+		
+		// now move the target so it scales correctly:
 
-		//lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
+		vec3 camera_dir = get_camera_direction(currCamera.target, currCamera.azimuth, 
+										  	   currCamera.elevation, currCamera.radius);
+
+		vec3 user_target_offset = camera_dir * user_draw_depth_scale;
+
+		worldFromFreeCam[12] = currCamera.target.x + user_target_offset.x;
+		worldFromFreeCam[13] = currCamera.target.y + user_target_offset.y;
+		worldFromFreeCam[14] = currCamera.target.z + user_target_offset.z;
+
+		// worldFromFreeCam[12] = camera_dir.x;
+		// worldFromFreeCam[13] = camera_dir.y;
+		// worldFromFreeCam[14] = camera_dir.z;
+
+		//print_matrix4x4(worldFromFreeCam);
+
+		draw_indicator(indicator_vertices, worldFromFreeCam);
+
+
+		lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
 
 		// updates the line so that the userDrawnVertices are correctly added to the array
-		draw_line(worldFromClip);
+		draw_line(worldFromClip, user_target_offset);
 
 		{ 
 			lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
 														user_drawn_points_WORLD.end());
 		}
 	}
-}
-
-mat4 Tutorial::get_node_xform(S72::Node *node) {
-    mat4 transMat = get_translation_matrix(node->translation);
-    mat4 rotMat = get_rotation_matrix(node->rotation);
-    mat4 scaleMat = get_scale_matrix(node->scale);
-
-    return get_parent_from_local(transMat, rotMat, scaleMat);
-}
-
-void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance > &scene_objects) {
-    // std::vector< S72::Node * > root_nodes = scene.scene.roots;
-    scene_objects.clear();
-	scene_cameras.clear();
-	sunlight_insts.clear();
-	spherelight_insts.clear();
-	spotlight_insts.clear();
-
-    for (S72::Node *root : scene.scene.roots) {
-        traverse_root(root, scene_objects);
-    }
-
-	if (sunlight_insts.empty()) {
-		sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-			.angle_w_pad{
-				.angle = 0.0f,
-			},
-			.SUN_DIRECTION{	
-				.x = 0.0,
-				.y = 0.0,
-				.z = 0.0,
-			},
-			.SUN_ENERGY{
-				.r = 0.0,
-				.g = 0.0,
-				.b = 0.0,
-			}
-		});
-	}
-
-	if (spherelight_insts.empty()) {
-		spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
-				.SPHERE_POSITION_AND_RADIUS{
-					.x = 0.0,
-					.y = 0.0,
-					.z = 0.0,
-					.radius = 0.0,
-				},
-				.SPHERE_POWER_AND_LIMIT{
-					.r = 0.0,
-					.g = 0.0,
-					.b = 0.0,
-					.limit = 0.0,
-				}
-				
-			});
-		}
-
-	if (spotlight_insts.empty()) {
-		spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
-			.SPOT_POSITION_AND_RADIUS{
-				.x = 0.0,
-				.y = 0.0,
-				.z = 0.0,
-				.radius = 0.0,
-			},
-			.SPOT_DIRECTION{
-				.x = 0.0,
-				.y = 0.0,
-				.z = 1.0,
-			},
-			.SPOT_POWER_AND_LIMIT{
-				.r = 0.0,
-				.g = 0.0,
-				.b = 0.0,
-				.limit = 0.0,
-			},
-			.SPOT_OUTER_AND_INNER_LIM{
-				.outer = 0.0,
-				.inner = 0.0,
-			}
-		});
-	}
-}
-
-void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &scene_objects) {
-    std::stack< NodeInfo > nodeStack;
-
-    // get the root onto the stack
-
-    mat4 root_parent_from_local = get_node_xform(root);
-
-    NodeInfo rootNode {
-        .node = root,
-        .nodeTransform = root_parent_from_local,
-    };
-
-    nodeStack.push(rootNode);
-
-	// keep track of which mesh instance each node controls by indexing into obj buffer (object_instances)
-	//size_t idxInObjBuffer = 0;
-
-    while(!nodeStack.empty()) {
-        NodeInfo currNode = nodeStack.top();
-
-        nodeStack.pop();
-
-        if (currNode.node->mesh) {
-            // add this mesh to an intermediate buffer, or get each property from mesh and then add those to separate buffers 
-            // e.g. take the mesh and start processing the binary blob immediately using offset and count and then adding those to their own buffers per mesh property/xform/texture
-            
-            // emplace back into an objectInstance buffer 
-            // 
-
-            S72::Mesh *currMesh = currNode.node->mesh;
-			//std::cout << "this is the current mesh: " << currNode.node->mesh->name << std::endl;
-            std::string textureSource;
-			std::string cubeTextureSource;
-			std::string normalSource;
-            uint8_t texType = 0;
-
-            // std::cout << "meshct: " << currMesh->count << std::endl;
-            // std::cout << "offset: " << currMesh->offset_in_static_buffer << std::endl;
-			if (!currMesh->material) {
-				//std::cout << "no material attached!" << std::endl;
-				texType = 0;
-				textureSource = "blank";
-				//std::cout << "This is the texture source: " << textureSource << std::endl;
-			}
-			else {
-
-				if (currMesh->material->normal_map) {
-					//std::cout << "This material has a normal map! " << currMesh->name << currMesh->material->normal_map->src << std::endl;
-					normalSource = currMesh->material->normal_map->src;
-				}
-				else {
-					//std::cout << "This material does not have a normal map! " << currMesh->name << std::endl;
-					normalSource = "defaultNorm";
-				}
-				
-				//std::cout << "didnt crash 2: " << std::endl;
-
-				if (S72::Material::Lambertian *brdfPtr = std::get_if<S72::Material::Lambertian> (&currMesh->material->brdf)) {
-					texType = 0;
-					
-					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->albedo)) {
-						
-						textureSource = (*texturePtr)->src;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					else if (std::holds_alternative<S72::color> (brdfPtr->albedo)) {
-						//std::cout << "didnt crash 3" << std::endl;
-						textureSource = currMesh->material->name;
-						//std::cout << "didnt crash 4" << std::endl;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					
-				}
-
-				else if (S72::Material::PBR *brdfPtr = std::get_if<S72::Material::PBR> (&currMesh->material->brdf)) {
-					texType = 0;
-					// albedo 
-					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->albedo)) {
-						textureSource = (*texturePtr)->src;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					else if (std::holds_alternative<S72::color> (brdfPtr->albedo)) {
-						textureSource = currMesh->material->name;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					
-					// roughness
-					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->roughness)) {
-						textureSource = (*texturePtr)->src;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					else if (std::holds_alternative<float> (brdfPtr->roughness)) {
-						textureSource = currMesh->material->name;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-
-					// metalness
-					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->metalness)) {
-						textureSource = (*texturePtr)->src;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-					else if (std::holds_alternative<float> (brdfPtr->metalness)) {
-						textureSource = currMesh->material->name;
-						//std::cout << "This is the texture source: " << textureSource << std::endl;
-					}
-				}
-
-				else if (S72::Material::Environment *brdfPtr = std::get_if<S72::Material::Environment> (&currMesh->material->brdf)) {
-					(void) brdfPtr;
-					texType = 1;
-					// under assumption only one environment
-					//std::cout << "grabbing cube texture source" << std::endl;
-					//std::cout << rtg.scene.environments.size() << std::endl;
-				
-					cubeTextureSource = rtg.scene.environments.begin()->second.name;
-					//std::cout << "success! cube texture source: " << cubeTextureSource << std::endl;
-				}
-
-				else if (S72::Material::Mirror *brdfPtr = std::get_if<S72::Material::Mirror> (&currMesh->material->brdf)) {
-					(void) brdfPtr;
-					texType = 2;
-					// under assumption only one environment
-					//std::cout << "grabbing cube texture source" << std::endl;
-					//std::cout << rtg.scene.environments.size() << std::endl;
-					//cubeTextureSource = rtg.scene.environments[0].name;]
-				
-					cubeTextureSource = rtg.scene.environments.begin()->second.name;
-					//std::cout << "success! cube texture source: " << cubeTextureSource << std::endl;
-				}
-			}
-
-			// now this node knows where to index in object_instances
-			currNode.node->obj_index = scene_objects.size();
-			//std::cout << "this is the material name: " << textureSource << std::endl;
-            ObjectInstance newObj{
-				.objName = currMesh->name,
-				.nodeName = currNode.node->name,
-                .vertices {
-                    .count = currMesh->count,
-                    .first = static_cast<uint32_t>((currMesh->offset_in_static_buffer) / sizeof(PosNorTanTexVertex)),
-                },
-                .transform{
-                        .CLIP_FROM_LOCAL = mat4{}, 
-                        .WORLD_FROM_LOCAL = currNode.nodeTransform,
-                        // take inverse bc not orthonormal
-                        .WORLD_FROM_LOCAL_NORMAL = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currNode).nodeTransform))),
-                 },
-				//TODO: investigate why this crashes :( (probably bc some meshes do not have materials, make sure to use default if so)
-                .material = strings_to_material_idxs[currMesh->material->name],
-				//.material = strings_to_material_idxs[textureSource],
-				.cubeTexture = strings_to_cube_texture_idxs[cubeTextureSource],
-				.texture_type = texType,
-				//.texture = strings_to_texture_idxs["test"],
-            };
-            // std::cout << "This is the clip from world: \n" << std::endl;
-            // print_matrix4x4(CLIP_FROM_WORLD * currNode.nodeTransform);
-            // std::cout << "This is the texture: \n" << strings_to_texture_idxs[textureSource] <<  std::endl;
-		
-
-			std::vector< LinesPipeline::Vertex >currbbox_lines_buffer;
-			currbbox_lines_buffer.clear();
-			draw_bbox(currbbox_lines_buffer, currMesh->mesh_min, currMesh->mesh_max, currNode.nodeTransform, false);
-			newObj.bbox_lines = currbbox_lines_buffer;
-
-			scene_objects.emplace_back(newObj);
-			// idxInObjBuffer++;
-			//std::cout << "size after " << lines_vertices.size() << std::endl;
-        } 
-
-		if (currNode.node->camera) {
-			vec4 newCameraPos = {0, 0, 0, 1};
-
-			// vec3 camPos = currNode.node->translation;
-			newCameraPos = currNode.nodeTransform * newCameraPos;
-			
-
-			auto camPerspective = std::get< S72::Camera::Perspective > (currNode.node->camera->projection);
-
-			Camera newSceneCam {
-				.position = newCameraPos,
-				.transform = currNode.nodeTransform,
-
-				.aspect = camPerspective.aspect,
-				.fov = camPerspective.vfov,
-				.near = camPerspective.near,
-				.far = camPerspective.far,
-			};
-
-			// change this so that i can track the names of the cameras as well
-			scene_cameras[currNode.node->camera->name] = newSceneCam;
-
-			//std::cout << "finished cameras" << std::endl;
-		}
-
-		if (currNode.node->light) {
-			//std::cout << "This is a light" << std::endl;
-			vec4 light = {0, 0, 0, 1};
-			vec4 light_dir = {0, 0, 1, 0};
-
-			light = currNode.nodeTransform * light;
-			light_dir = currNode.nodeTransform * light_dir;
-
-			// std::cout << "This is the current light: " << currNode.node->name << std::endl;
-			// print_matrix4x4(currNode.nodeTransform);
-			// std::cout << "resulting light position" << std::endl;
-			// print_vector_4x1(light);
-			// std::cout << "resulting light direction" << std::endl;
-			// print_vector_4x1(light_dir);
-
-
-			if (S72::Light::Sun *sunPtr = std::get_if<S72::Light::Sun>(&currNode.node->light->source)) {
-				//std::cout << "sun angle " << sunPtr->angle << std::endl;
-
-				sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-					.angle_w_pad{
-						.angle = (sunPtr->angle / 2.0f),
-					},
-					.SUN_DIRECTION{
-						.x = light[0],
-						.y = light[1],
-						.z = light[2],
-					},
-					.SUN_ENERGY{
-						.r = currNode.node->light->tint.r * sunPtr->strength,
-					    .g = currNode.node->light->tint.g * sunPtr->strength,
-				        .b = currNode.node->light->tint.b * sunPtr->strength,
-					}
-				});
-			}
-
-			else if (S72::Light::Sphere *spherePtr = std::get_if<S72::Light::Sphere>(&currNode.node->light->source)) {
-				
-				spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
-					.SPHERE_POSITION_AND_RADIUS{
-						.x = light[0],
-						.y = light[1],
-						.z = light[2],
-						.radius = spherePtr->radius,
-					},
-					.SPHERE_POWER_AND_LIMIT{
-						.r = currNode.node->light->tint.r * spherePtr->power,
-						.g = currNode.node->light->tint.g * spherePtr->power,
-						.b = currNode.node->light->tint.b * spherePtr->power,
-						.limit = spherePtr->limit,
-					}
-					
-				});
-				//std::cout << "This is the sphere light's position: " << spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.x << "," <<spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.y << "," << spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.z << std::endl;
-			}
-
-			else if (S72::Light::Spot *spotPtr = std::get_if<S72::Light::Spot>(&currNode.node->light->source)) {
-				spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
-					.SPOT_POSITION_AND_RADIUS{
-						.x = light[0],
-						.y = light[1],
-						.z = light[2],
-						.radius = spotPtr->radius,
-					},
-					.SPOT_DIRECTION{
-						.x = light_dir[0],
-						.y = light_dir[1],
-						.z = light_dir[2],
-					},
-					.SPOT_POWER_AND_LIMIT{
-						.r = currNode.node->light->tint.r * spotPtr->power,
-						.g = currNode.node->light->tint.g * spotPtr->power,
-						.b = currNode.node->light->tint.b * spotPtr->power,
-						.limit = spotPtr->limit,
-					},
-					.SPOT_OUTER_AND_INNER_LIM{
-						.outer = spotPtr->fov / 2.0f,
-						.inner = (spotPtr->fov * (1 - spotPtr->blend)) / 2.0f,
-					}
-				});
-				//std::cout << "This is the spot light's direction: " << spotlight_insts[0].SPOT_DIRECTION.x << "," <<spotlight_insts[0].SPOT_DIRECTION.y << "," << spotlight_insts[0].SPOT_DIRECTION.z << std::endl;
-			}
-		}
-
-		if (currNode.node -> environment) {
-
-		}
-
-        for (S72::Node *child : currNode.node->children) {
-            NodeInfo childNode {
-                .node = child,
-                .nodeTransform = currNode.nodeTransform * get_node_xform(child),
-            };
-            
-            nodeStack.push(childNode);
-        }
-    }
 }
 
 // void cursorPositionCallback(GLFWwindow *window, double xpos, double ypos) {
@@ -4226,6 +3997,17 @@ void Tutorial::on_input(InputEvent const &evt) {
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_D) {
 		drawMode = !drawMode;
 		std::cout << "drawmode: " << drawMode << std::endl;
+		return;
+	}
+
+	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_UP) {
+		user_draw_depth_scale += 0.5;
+		return;
+	}
+
+	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_DOWN) {
+		user_draw_depth_scale -= 0.5;
+		return;
 	}
 
 	if (drawMode && (evt.type == InputEvent::MouseButtonDown && evt.button.button == GLFW_MOUSE_BUTTON_LEFT)) {
@@ -4741,7 +4523,7 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 	}
 }
 
-void Tutorial::draw_line(mat4 curr_xform) { 
+void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) { 
 	// figures out what the last vertex was in the buffer and duplicates it 
 	// then add the next point 
 	// use draw_line to update the intermediate buffer, copy it into the main buffer back in Tutorial::update()
@@ -4758,9 +4540,14 @@ void Tutorial::draw_line(mat4 curr_xform) {
 	vec4 ray_dir = WORLD_ray_end - WORLD_ray_start;
 
 	ray_dir = normalize(ray_dir);
-
 	
-	vec4 plane_pt = vec4{currCamera.target, 1.0f}; // change this so it can become adjustable (DO NOT change target bc could potentially mess up other stuff :sob)
+	vec4 plane_pt = vec4{currCamera.target + user_target_offset, 1.0f}; // change this so it can become adjustable (DO NOT change target bc could potentially mess up other stuff :sob)
+	std::cout << "Target: ________" << std::endl;
+	print_vector_3x1(currCamera.target);
+	std::cout << "plane_pt: ________" << std::endl;
+	print_vector_4x1(plane_pt);
+	// std::cout << "currCamera position: ___________" << std::endl;
+	// print_vector_4x1(currCamera.position);
 	// also draw in a little circle or something so user knows where they are drawing relative to screen
 	vec4 plane_normal = normalize(ray_dir);
 
@@ -4794,7 +4581,7 @@ void Tutorial::draw_line(mat4 curr_xform) {
 
 void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform) {
 	
-	vec4 color = vec4{0.0, 0.0, 0.0, 0.0};
+	vec4 color = vec4{0.0, 0.0, 0.0, 1.0};
 
 	int NUM_POINTS = 24;
 	float radius = 2.0f;
@@ -4831,6 +4618,382 @@ void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_bu
 	}
 
 }
+
+mat4 Tutorial::get_node_xform(S72::Node *node) {
+    mat4 transMat = get_translation_matrix(node->translation);
+    mat4 rotMat = get_rotation_matrix(node->rotation);
+    mat4 scaleMat = get_scale_matrix(node->scale);
+
+    return get_parent_from_local(transMat, rotMat, scaleMat);
+}
+
+void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance > &scene_objects) {
+    // std::vector< S72::Node * > root_nodes = scene.scene.roots;
+    scene_objects.clear();
+	scene_cameras.clear();
+	sunlight_insts.clear();
+	spherelight_insts.clear();
+	spotlight_insts.clear();
+
+    for (S72::Node *root : scene.scene.roots) {
+        traverse_root(root, scene_objects);
+    }
+
+	if (sunlight_insts.empty()) {
+		sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
+			.angle_w_pad{
+				.angle = 0.0f,
+			},
+			.SUN_DIRECTION{	
+				.x = 0.0,
+				.y = 0.0,
+				.z = 0.0,
+			},
+			.SUN_ENERGY{
+				.r = 0.0,
+				.g = 0.0,
+				.b = 0.0,
+			}
+		});
+	}
+
+	if (spherelight_insts.empty()) {
+		spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
+				.SPHERE_POSITION_AND_RADIUS{
+					.x = 0.0,
+					.y = 0.0,
+					.z = 0.0,
+					.radius = 0.0,
+				},
+				.SPHERE_POWER_AND_LIMIT{
+					.r = 0.0,
+					.g = 0.0,
+					.b = 0.0,
+					.limit = 0.0,
+				}
+				
+			});
+		}
+
+	if (spotlight_insts.empty()) {
+		spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
+			.SPOT_POSITION_AND_RADIUS{
+				.x = 0.0,
+				.y = 0.0,
+				.z = 0.0,
+				.radius = 0.0,
+			},
+			.SPOT_DIRECTION{
+				.x = 0.0,
+				.y = 0.0,
+				.z = 1.0,
+			},
+			.SPOT_POWER_AND_LIMIT{
+				.r = 0.0,
+				.g = 0.0,
+				.b = 0.0,
+				.limit = 0.0,
+			},
+			.SPOT_OUTER_AND_INNER_LIM{
+				.outer = 0.0,
+				.inner = 0.0,
+			}
+		});
+	}
+}
+
+void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &scene_objects) {
+    std::stack< NodeInfo > nodeStack;
+
+    // get the root onto the stack
+
+    mat4 root_parent_from_local = get_node_xform(root);
+
+    NodeInfo rootNode {
+        .node = root,
+        .nodeTransform = root_parent_from_local,
+    };
+
+    nodeStack.push(rootNode);
+
+	// keep track of which mesh instance each node controls by indexing into obj buffer (object_instances)
+	//size_t idxInObjBuffer = 0;
+
+    while(!nodeStack.empty()) {
+        NodeInfo currNode = nodeStack.top();
+
+        nodeStack.pop();
+
+        if (currNode.node->mesh) {
+            // add this mesh to an intermediate buffer, or get each property from mesh and then add those to separate buffers 
+            // e.g. take the mesh and start processing the binary blob immediately using offset and count and then adding those to their own buffers per mesh property/xform/texture
+            
+            // emplace back into an objectInstance buffer 
+            // 
+
+            S72::Mesh *currMesh = currNode.node->mesh;
+			//std::cout << "this is the current mesh: " << currNode.node->mesh->name << std::endl;
+            std::string textureSource;
+			std::string cubeTextureSource;
+			std::string normalSource;
+            uint8_t texType = 0;
+
+            // std::cout << "meshct: " << currMesh->count << std::endl;
+            // std::cout << "offset: " << currMesh->offset_in_static_buffer << std::endl;
+			if (!currMesh->material) {
+				//std::cout << "no material attached!" << std::endl;
+				texType = 0;
+				textureSource = "blank";
+				//std::cout << "This is the texture source: " << textureSource << std::endl;
+			}
+			else {
+
+				if (currMesh->material->normal_map) {
+					//std::cout << "This material has a normal map! " << currMesh->name << currMesh->material->normal_map->src << std::endl;
+					normalSource = currMesh->material->normal_map->src;
+				}
+				else {
+					//std::cout << "This material does not have a normal map! " << currMesh->name << std::endl;
+					normalSource = "defaultNorm";
+				}
+				
+				//std::cout << "didnt crash 2: " << std::endl;
+
+				if (S72::Material::Lambertian *brdfPtr = std::get_if<S72::Material::Lambertian> (&currMesh->material->brdf)) {
+					texType = 0;
+					
+					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->albedo)) {
+						
+						textureSource = (*texturePtr)->src;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+					else if (std::holds_alternative<S72::color> (brdfPtr->albedo)) {
+						//std::cout << "didnt crash 3" << std::endl;
+						textureSource = currMesh->material->name;
+						//std::cout << "didnt crash 4" << std::endl;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+				}
+
+				else if (S72::Material::PBR *brdfPtr = std::get_if<S72::Material::PBR> (&currMesh->material->brdf)) {
+					texType = 0;
+					// albedo 
+					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->albedo)) {
+						textureSource = (*texturePtr)->src;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+					else if (std::holds_alternative<S72::color> (brdfPtr->albedo)) {
+						textureSource = currMesh->material->name;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+					
+					// roughness
+					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->roughness)) {
+						textureSource = (*texturePtr)->src;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+					else if (std::holds_alternative<float> (brdfPtr->roughness)) {
+						textureSource = currMesh->material->name;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+
+					// metalness
+					if (S72::Texture **texturePtr = std::get_if<S72::Texture *> (&brdfPtr->metalness)) {
+						textureSource = (*texturePtr)->src;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+					else if (std::holds_alternative<float> (brdfPtr->metalness)) {
+						textureSource = currMesh->material->name;
+						//std::cout << "This is the texture source: " << textureSource << std::endl;
+					}
+				}
+
+				else if (S72::Material::Environment *brdfPtr = std::get_if<S72::Material::Environment> (&currMesh->material->brdf)) {
+					(void) brdfPtr;
+					texType = 1;
+					// under assumption only one environment
+					//std::cout << "grabbing cube texture source" << std::endl;
+					//std::cout << rtg.scene.environments.size() << std::endl;
+				
+					cubeTextureSource = rtg.scene.environments.begin()->second.name;
+					//std::cout << "success! cube texture source: " << cubeTextureSource << std::endl;
+				}
+
+				else if (S72::Material::Mirror *brdfPtr = std::get_if<S72::Material::Mirror> (&currMesh->material->brdf)) {
+					(void) brdfPtr;
+					texType = 2;
+					// under assumption only one environment
+					//std::cout << "grabbing cube texture source" << std::endl;
+					//std::cout << rtg.scene.environments.size() << std::endl;
+					//cubeTextureSource = rtg.scene.environments[0].name;]
+				
+					cubeTextureSource = rtg.scene.environments.begin()->second.name;
+					//std::cout << "success! cube texture source: " << cubeTextureSource << std::endl;
+				}
+			}
+
+			// now this node knows where to index in object_instances
+			currNode.node->obj_index = scene_objects.size();
+			//std::cout << "this is the material name: " << textureSource << std::endl;
+            ObjectInstance newObj{
+				.objName = currMesh->name,
+				.nodeName = currNode.node->name,
+                .vertices {
+                    .count = currMesh->count,
+                    .first = static_cast<uint32_t>((currMesh->offset_in_static_buffer) / sizeof(PosNorTanTexVertex)),
+                },
+                .transform{
+                        .CLIP_FROM_LOCAL = mat4{}, 
+                        .WORLD_FROM_LOCAL = currNode.nodeTransform,
+                        // take inverse bc not orthonormal
+                        .WORLD_FROM_LOCAL_NORMAL = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currNode).nodeTransform))),
+                 },
+				//TODO: investigate why this crashes :( (probably bc some meshes do not have materials, make sure to use default if so)
+                .material = strings_to_material_idxs[currMesh->material->name],
+				//.material = strings_to_material_idxs[textureSource],
+				.cubeTexture = strings_to_cube_texture_idxs[cubeTextureSource],
+				.texture_type = texType,
+				//.texture = strings_to_texture_idxs["test"],
+            };
+            // std::cout << "This is the clip from world: \n" << std::endl;
+            // print_matrix4x4(CLIP_FROM_WORLD * currNode.nodeTransform);
+            // std::cout << "This is the texture: \n" << strings_to_texture_idxs[textureSource] <<  std::endl;
+		
+
+			std::vector< LinesPipeline::Vertex >currbbox_lines_buffer;
+			currbbox_lines_buffer.clear();
+			draw_bbox(currbbox_lines_buffer, currMesh->mesh_min, currMesh->mesh_max, currNode.nodeTransform, false);
+			newObj.bbox_lines = currbbox_lines_buffer;
+
+			scene_objects.emplace_back(newObj);
+			// idxInObjBuffer++;
+			//std::cout << "size after " << lines_vertices.size() << std::endl;
+        } 
+
+		if (currNode.node->camera) {
+			vec4 newCameraPos = {0, 0, 0, 1};
+
+			// vec3 camPos = currNode.node->translation;
+			newCameraPos = currNode.nodeTransform * newCameraPos;
+			
+
+			auto camPerspective = std::get< S72::Camera::Perspective > (currNode.node->camera->projection);
+
+			Camera newSceneCam {
+				.position = newCameraPos,
+				.transform = currNode.nodeTransform,
+
+				.aspect = camPerspective.aspect,
+				.fov = camPerspective.vfov,
+				.near = camPerspective.near,
+				.far = camPerspective.far,
+			};
+
+			// change this so that i can track the names of the cameras as well
+			scene_cameras[currNode.node->camera->name] = newSceneCam;
+
+			//std::cout << "finished cameras" << std::endl;
+		}
+
+		if (currNode.node->light) {
+			//std::cout << "This is a light" << std::endl;
+			vec4 light = {0, 0, 0, 1};
+			vec4 light_dir = {0, 0, 1, 0};
+
+			light = currNode.nodeTransform * light;
+			light_dir = currNode.nodeTransform * light_dir;
+
+			// std::cout << "This is the current light: " << currNode.node->name << std::endl;
+			// print_matrix4x4(currNode.nodeTransform);
+			// std::cout << "resulting light position" << std::endl;
+			// print_vector_4x1(light);
+			// std::cout << "resulting light direction" << std::endl;
+			// print_vector_4x1(light_dir);
+
+
+			if (S72::Light::Sun *sunPtr = std::get_if<S72::Light::Sun>(&currNode.node->light->source)) {
+				//std::cout << "sun angle " << sunPtr->angle << std::endl;
+
+				sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
+					.angle_w_pad{
+						.angle = (sunPtr->angle / 2.0f),
+					},
+					.SUN_DIRECTION{
+						.x = light[0],
+						.y = light[1],
+						.z = light[2],
+					},
+					.SUN_ENERGY{
+						.r = currNode.node->light->tint.r * sunPtr->strength,
+					    .g = currNode.node->light->tint.g * sunPtr->strength,
+				        .b = currNode.node->light->tint.b * sunPtr->strength,
+					}
+				});
+			}
+
+			else if (S72::Light::Sphere *spherePtr = std::get_if<S72::Light::Sphere>(&currNode.node->light->source)) {
+				
+				spherelight_insts.emplace_back(ObjectsPipeline::Sphere_Light{ 
+					.SPHERE_POSITION_AND_RADIUS{
+						.x = light[0],
+						.y = light[1],
+						.z = light[2],
+						.radius = spherePtr->radius,
+					},
+					.SPHERE_POWER_AND_LIMIT{
+						.r = currNode.node->light->tint.r * spherePtr->power,
+						.g = currNode.node->light->tint.g * spherePtr->power,
+						.b = currNode.node->light->tint.b * spherePtr->power,
+						.limit = spherePtr->limit,
+					}
+					
+				});
+				//std::cout << "This is the sphere light's position: " << spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.x << "," <<spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.y << "," << spherelight_insts[0].SPHERE_POSITION_AND_RADIUS.z << std::endl;
+			}
+
+			else if (S72::Light::Spot *spotPtr = std::get_if<S72::Light::Spot>(&currNode.node->light->source)) {
+				spotlight_insts.emplace_back(ObjectsPipeline::Spot_Light{
+					.SPOT_POSITION_AND_RADIUS{
+						.x = light[0],
+						.y = light[1],
+						.z = light[2],
+						.radius = spotPtr->radius,
+					},
+					.SPOT_DIRECTION{
+						.x = light_dir[0],
+						.y = light_dir[1],
+						.z = light_dir[2],
+					},
+					.SPOT_POWER_AND_LIMIT{
+						.r = currNode.node->light->tint.r * spotPtr->power,
+						.g = currNode.node->light->tint.g * spotPtr->power,
+						.b = currNode.node->light->tint.b * spotPtr->power,
+						.limit = spotPtr->limit,
+					},
+					.SPOT_OUTER_AND_INNER_LIM{
+						.outer = spotPtr->fov / 2.0f,
+						.inner = (spotPtr->fov * (1 - spotPtr->blend)) / 2.0f,
+					}
+				});
+				//std::cout << "This is the spot light's direction: " << spotlight_insts[0].SPOT_DIRECTION.x << "," <<spotlight_insts[0].SPOT_DIRECTION.y << "," << spotlight_insts[0].SPOT_DIRECTION.z << std::endl;
+			}
+		}
+
+		if (currNode.node -> environment) {
+
+		}
+
+        for (S72::Node *child : currNode.node->children) {
+            NodeInfo childNode {
+                .node = child,
+                .nodeTransform = currNode.nodeTransform * get_node_xform(child),
+            };
+            
+            nodeStack.push(childNode);
+        }
+    }
+}
+
 
 
 // CODE GRAVEYARD:

@@ -66,6 +66,10 @@ inline vec3 operator-(vec3 u, vec3 v) {
     return ret;
 }
 
+inline vec3 operator-(vec3 u) {
+    return vec3(-u.x, -u.y, -u.z);
+}
+
 inline vec3 operator+(vec3 const &u, vec3 const &v) {
     vec3 ret;
 
