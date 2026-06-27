@@ -855,20 +855,22 @@ static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
 
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);
 
-	InputEvent event;
-	std::memset(&event, '\0', sizeof(event));
+	if (!ImGui::GetIO().WantCaptureMouse) {
+		InputEvent event;
+		std::memset(&event, '\0', sizeof(event));
 
-	event.type = InputEvent::MouseMotion;
-	event.motion.x = float(xpos);
-	event.motion.y = float(ypos);
-	event.motion.state = 0;
-	for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
-		if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
-			event.motion.state |= (1 << b);
+		event.type = InputEvent::MouseMotion;
+		event.motion.x = float(xpos);
+		event.motion.y = float(ypos);
+		event.motion.state = 0;
+		for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
+			if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
+				event.motion.state |= (1 << b);
+			}
 		}
-	}
 
-	event_queue->emplace_back(event);
+		event_queue->emplace_back(event);
+	}
 }
 
 static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -877,32 +879,34 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 
 	ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
-	InputEvent event;
-	std::memset(&event, '\0', sizeof(event));
+	if (!ImGui::GetIO().WantCaptureMouse) {
+		InputEvent event;
+		std::memset(&event, '\0', sizeof(event));
 
-	if (action == GLFW_PRESS) {
-		event.type = InputEvent::MouseButtonDown;
-	} else if (action == GLFW_RELEASE) {
-		event.type = InputEvent::MouseButtonUp;
-	} else {
-		std::cerr << "Strange: unknown mouse button action." << std::endl;
-		return;
-	}
-
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	event.button.x = float(xpos);
-	event.button.y = float(ypos);
-	event.button.state = 0;
-	for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
-		if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
-			event.button.state |= (1 << b);
+		if (action == GLFW_PRESS) {
+			event.type = InputEvent::MouseButtonDown;
+		} else if (action == GLFW_RELEASE) {
+			event.type = InputEvent::MouseButtonUp;
+		} else {
+			std::cerr << "Strange: unknown mouse button action." << std::endl;
+			return;
 		}
-	}
-	event.button.button = uint8_t(button);
-	event.button.mods = uint8_t(mods);
 
-	event_queue->emplace_back(event);
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		event.button.x = float(xpos);
+		event.button.y = float(ypos);
+		event.button.state = 0;
+		for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
+			if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
+				event.button.state |= (1 << b);
+			}
+		}
+		event.button.button = uint8_t(button);
+		event.button.mods = uint8_t(mods);
+
+		event_queue->emplace_back(event);
+	}
 }
 
 static void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
@@ -911,14 +915,17 @@ static void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) 
 
 	ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
 
-	InputEvent event;
-	std::memset(&event, '\0', sizeof(event));
+	// imgui does not want the mouse
+	if (!ImGui::GetIO().WantCaptureMouse) {
+		InputEvent event;
+		std::memset(&event, '\0', sizeof(event));
 
-	event.type = InputEvent::MouseWheel;
-	event.wheel.x = float(xoffset);
-	event.wheel.y = float(yoffset);
+		event.type = InputEvent::MouseWheel;
+		event.wheel.x = float(xoffset);
+		event.wheel.y = float(yoffset);
 
-	event_queue->emplace_back(event);
+		event_queue->emplace_back(event);
+	}
 }
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -927,24 +934,27 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 
-	InputEvent event;
-	std::memset(&event, '\0', sizeof(event));
+	// imgui no longer wants the keyboard
+	if (!ImGui::GetIO().WantCaptureKeyboard) {
+		InputEvent event;
+		std::memset(&event, '\0', sizeof(event));
 
-	if (action == GLFW_PRESS) {
-		event.type = InputEvent::KeyDown;
-	} else if (action == GLFW_RELEASE) {
-		event.type = InputEvent::KeyUp;
-	} else if (action == GLFW_REPEAT) {
-		//ignore repeats
-		return;
-	} else {
-		std::cerr << "Strange: got unknown keyboard action." << std::endl;
+		if (action == GLFW_PRESS) {
+			event.type = InputEvent::KeyDown;
+		} else if (action == GLFW_RELEASE) {
+			event.type = InputEvent::KeyUp;
+		} else if (action == GLFW_REPEAT) {
+			//ignore repeats
+			return;
+		} else {
+			std::cerr << "Strange: got unknown keyboard action." << std::endl;
+		}
+
+		event.key.key = key;
+		event.key.mods = mods;
+
+		event_queue->emplace_back(event);
 	}
-
-	event.key.key = key;
-	event.key.mods = mods;
-
-	event_queue->emplace_back(event);
 }
 
 void RTG::HeadlessSwapchainImage::save() const {
