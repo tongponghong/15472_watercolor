@@ -4,6 +4,7 @@
 #include "helperlibs/S72_loader/S72.hpp"
 #include "helperlibs/timer.hpp"
 #include "helperlibs/rgb_decoders.hpp"
+#include "helperlibs/culling.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "helperlibs/stb_image_lib/stb_image.h"
@@ -653,14 +654,14 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				for (uint32_t x = 0; x < size; ++x) {
 					float fx = (x + 0.5f) / float(size);
 					// highlight origin
-					// if      (fx < 0.05f && fy < 0.05f) data.emplace_back(0xff0000ff); // red
-					// else if ( (fx < 0.5f) == (fy < 0.5f)) data.emplace_back(0xff444444); // dark grey
+					if      (fx < 0.05f && fy < 0.05f) data.emplace_back(0xff0000ff); // red
+					else if ( (fx < 0.5f) == (fy < 0.5f)) data.emplace_back(0xff444444); // dark grey
 
-					// else data.emplace_back(0xffbbbbbb); // light grey
-					(void) fx;
-					(void) fy;
+					else data.emplace_back(0xffbbbbbb); // light grey
+					// (void) fx;
+					// (void) fy;
 
-					data.emplace_back(0xffbbbbbb);
+					//data.emplace_back(0xffbbbbbb);
 				}
 			}
 			assert(data.size() == size * size);
@@ -1006,6 +1007,15 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			strings_to_material_idxs.insert({material.second.name, obj_materials.size() - 1});
 		}
 
+		// if there are no materials in this file
+		if (strings_to_material_idxs.empty()) {
+			Obj_Material empty_material{
+				.texture_idx = 0,
+			};
+			obj_materials.emplace_back(empty_material);
+			strings_to_material_idxs.insert({"blank", 0});
+		}
+
 	
 
         // for (auto i : strings_to_texture_idxs) {
@@ -1014,9 +1024,9 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		// for (auto i : strings_to_cube_texture_idxs) {
         //     std::cout << "In strings_to_cube_tex_idxs before envs: " << i.first << ", " << i.second << std::endl;
         // }
-		// for (auto i : strings_to_material_idxs) {
-        //     std::cout << "In strings_to_materials_idxs: " << i.first << ", " << i.second << std::endl;
-        // }
+		for (auto i : strings_to_material_idxs) {
+            std::cout << "In strings_to_materials_idxs: " << i.first << ", " << i.second << std::endl;
+        }
 
 		std::cout << "loading in the cube lambertian lookup" << std::endl;
 		if (rtg.lamb_lookup_tex != "") { // handle the lambertian lookup table 
@@ -2160,6 +2170,14 @@ void Tutorial::destroy_framebuffers() {
 	}
 }
 
+void Tutorial::show_window() {
+	ImGuiIO &io = ImGui::GetIO();
+	ImGui::Begin("FPS counter");
+
+	ImGui::Text("Frame time: %.3f \nFPS: %.1f", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::TextWrapped("Number objects currently rendered: %zu", post_culled_obj_instances.size());
+	ImGui::End();
+}
 
 void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	// static std::unique_ptr< Timer > timer;
@@ -2174,8 +2192,11 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	assert(&rtg == &rtg_);
 	assert(render_params.workspace_index < workspaces.size());
 	//assert(render_params.image_index < swapchain_framebuffers.size());
-	ImGui::ShowDemoWindow();
+
+	//* ImGui render stuff
+	show_window();
 	ImGui::Render();
+
 	//get more convenient names for the current workspace and target framebuffer:
 	Workspace &workspace = workspaces[render_params.workspace_index];
 	//VkFramebuffer framebuffer = swapchain_framebuffers[render_params.image_index];
@@ -2246,9 +2267,9 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 						1, &copy_region);
 	}
 
-	if (!object_instances.empty()) { // upload object transforms:
+	if (!post_culled_obj_instances.empty()) { // upload object transforms:
 		// [re-]allocate lines buffers if needed:
-		size_t needed_bytes = object_instances.size() * sizeof(ObjectsPipeline::Transform);
+		size_t needed_bytes = post_culled_obj_instances.size() * sizeof(ObjectsPipeline::Transform);
 		//std::cout << "needed bytes" << needed_bytes << " bytes." << std::endl;
 		if (workspace.Transforms_src.handle == VK_NULL_HANDLE || 
 		    workspace.Transforms_src.size < needed_bytes) {
@@ -2318,7 +2339,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			ObjectsPipeline::Transform *out = reinterpret_cast< ObjectsPipeline::Transform * >
 															  (workspace.Transforms_src.allocation.data());
 			
-			for (ObjectInstance const &inst : object_instances) {
+			for (ObjectInstance const &inst : post_culled_obj_instances) {
 				*out = inst.transform;
 				++out;
 			}
@@ -3057,7 +3078,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			vkCmdDraw(workspace.command_buffer, uint32_t(lines_vertices.size()), 1, 0, 0);
 		}
 
-		if (!object_instances.empty()) { // draw with objects pipeline
+		if (!post_culled_obj_instances.empty()) { // draw with objects pipeline
 			vkCmdBindPipeline(workspace.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, objects_pipeline.handle);
 			
 			{ // use object_vertices (offset 0) as vertex buffer binding 0:
@@ -3102,8 +3123,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			// camera descriptor still bound but unused
 
 			// draw all instances:
-			for (ObjectInstance const &inst : object_instances) {
-				uint32_t index = uint32_t(&inst - &object_instances[0]);
+			for (ObjectInstance const &inst : post_culled_obj_instances) {
+				uint32_t index = uint32_t(&inst - &post_culled_obj_instances[0]);
 				//std::cout << "binding textures" << std::endl;
 				//bind texture descriptor set:
 				if (inst.texture_type == 0) {
@@ -3845,7 +3866,7 @@ void Tutorial::update(float dt) {
 		currCamera = scene_cameras[map_camera_idxs_to_string[scene_camera_index]];
 		camera_aspect = (currCamera).aspect;
 
-		update_camera(currCamera);
+		update_scene_camera(currCamera);
 	}
 
 	else if (camera_mode == CameraMode::Free) {
@@ -3864,6 +3885,7 @@ void Tutorial::update(float dt) {
 	
 		camera_aspect = free_camera.aspect;
 		CLIP_FROM_WORLD = persp * orbit_matrix;
+		VIEW_FROM_WORLD = orbit_matrix;
 
 		free_camera.currClipFromWorld = CLIP_FROM_WORLD;
 		currCamera = free_camera;
@@ -3891,6 +3913,7 @@ void Tutorial::update(float dt) {
 		camera_aspect = free_camera.aspect;
 
 		CLIP_FROM_WORLD = persp * orbit_matrix;
+		VIEW_FROM_WORLD = orbit_matrix;
 
 		debug_camera.currClipFromWorld = CLIP_FROM_WORLD;
 		currCamera = debug_camera;
@@ -3905,11 +3928,29 @@ void Tutorial::update(float dt) {
 	}
 
 	lines_vertices.clear();
+
+	{ // cull some objects
+		// TODO: cull objects 
+		post_culled_obj_instances.clear();
+
+		for (ObjectInstance &obj : object_instances) {
+			mat4 curr_view_from_local = VIEW_FROM_WORLD * obj.transform.WORLD_FROM_LOCAL;
+			Oriented_BB curr_OBB = transform_AABB_to_OBB(curr_view_from_local, obj.bbox_min, obj.bbox_max);
+
+			float tan_vfov = std::tan(0.5f * currCamera.fov);
+			float x_near = currCamera.aspect * currCamera.near * tan_vfov;
+			float y_near = currCamera.near * tan_vfov;
+
+			if (culling_test(curr_OBB, -currCamera.near, -currCamera.far, x_near, y_near)) {
+				post_culled_obj_instances.emplace_back(obj);
+			}
+		}
+	}
 	
 	{ // make some objects:
 		//std::cout << "Curr num of objs: " << object_instances.size() << std::endl;
 
-		for (ObjectInstance &obj : object_instances) {
+		for (ObjectInstance &obj : post_culled_obj_instances) {
 			//std::cout << " curr object: " << obj.vertices.first << std::endl;
 			obj.transform.CLIP_FROM_LOCAL = CLIP_FROM_WORLD * obj.transform.WORLD_FROM_LOCAL;
 
@@ -3958,14 +3999,9 @@ void Tutorial::update(float dt) {
 		worldFromFreeCam[13] = currCamera.target.y + user_target_offset.y;
 		worldFromFreeCam[14] = currCamera.target.z + user_target_offset.z;
 
-		// worldFromFreeCam[12] = camera_dir.x;
-		// worldFromFreeCam[13] = camera_dir.y;
-		// worldFromFreeCam[14] = camera_dir.z;
-
 		//print_matrix4x4(worldFromFreeCam);
 
 		draw_indicator(indicator_vertices, worldFromFreeCam);
-
 
 		lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
 
@@ -4130,22 +4166,20 @@ void Tutorial::on_input(InputEvent const &evt) {
 		// FOR SOME REASON, HOLDING DOWN key1 MAKES THE SCREEN BLACK - TODO FIX THIS
 		if (camera_mode != CameraMode::Scene){
 			prevCamera = currCamera;
-			camera_mode = CameraMode(0);
+			camera_mode = CameraMode::Scene;
 		}
 		//currCamera = scene_camera;
 		
 		//scene_camera_index = 0;
-
-		//update_camera(currCamera);
 
 		return;
 	}
 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_2) {
 		// switch camera modes
-		if (camera_mode != CameraMode(1)){
+		if (camera_mode != CameraMode::Free){
 			prevCamera = currCamera;
-			camera_mode = CameraMode(1);
+			camera_mode = CameraMode::Free;
 		}
 		//currCamera = free_camera;
 		//camera_mode = CameraMode(1);
@@ -4155,9 +4189,9 @@ void Tutorial::on_input(InputEvent const &evt) {
 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_0) {
 		// switch camera modes
-		if (camera_mode != CameraMode(2)){
+		if (camera_mode != CameraMode::Debug){
 			prevCamera = currCamera;
-			camera_mode = CameraMode(2);
+			camera_mode = CameraMode::Debug;
 		}
 		//currCamera = debug_camera;
 		//camera_mode = CameraMode(2);
@@ -4375,8 +4409,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 	}
 }
 
-
-void Tutorial::update_camera(Camera &camera) {
+void Tutorial::update_scene_camera(Camera &camera) {
 
 	mat4 persp = perspective(
 					(camera).fov,
@@ -4388,6 +4421,8 @@ void Tutorial::update_camera(Camera &camera) {
 	camera_aspect = (camera).aspect;
 	
 	CLIP_FROM_WORLD = convert_back_to_mymat4(convert_to_glm_mat4(persp) * glm::inverse(convert_to_glm_mat4((camera).transform)));
+	VIEW_FROM_WORLD = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((camera).transform)));
+
 	camera.currClipFromWorld = CLIP_FROM_WORLD;
 }
 
@@ -4519,7 +4554,6 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 			vertex.Position.y = currVecPos[1];
 			vertex.Position.z = currVecPos[2];
 		}
-
 	}
 }
 
@@ -4616,7 +4650,6 @@ void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_bu
 		}
 
 	}
-
 }
 
 mat4 Tutorial::get_node_xform(S72::Node *node) {
@@ -4849,34 +4882,30 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
                         .WORLD_FROM_LOCAL_NORMAL = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currNode).nodeTransform))),
                  },
 				//TODO: investigate why this crashes :( (probably bc some meshes do not have materials, make sure to use default if so)
-                .material = strings_to_material_idxs[currMesh->material->name],
-				//.material = strings_to_material_idxs[textureSource],
+                //.material = strings_to_material_idxs[currMesh->material->name],
+				.material = strings_to_material_idxs[textureSource],
 				.cubeTexture = strings_to_cube_texture_idxs[cubeTextureSource],
 				.texture_type = texType,
 				//.texture = strings_to_texture_idxs["test"],
             };
-            // std::cout << "This is the clip from world: \n" << std::endl;
-            // print_matrix4x4(CLIP_FROM_WORLD * currNode.nodeTransform);
             // std::cout << "This is the texture: \n" << strings_to_texture_idxs[textureSource] <<  std::endl;
-		
 
 			std::vector< LinesPipeline::Vertex >currbbox_lines_buffer;
 			currbbox_lines_buffer.clear();
 			draw_bbox(currbbox_lines_buffer, currMesh->mesh_min, currMesh->mesh_max, currNode.nodeTransform, false);
 			newObj.bbox_lines = currbbox_lines_buffer;
+			// in local! space
+			newObj.bbox_min = currMesh->mesh_min;
+			newObj.bbox_max = currMesh->mesh_max;
 
 			scene_objects.emplace_back(newObj);
-			// idxInObjBuffer++;
-			//std::cout << "size after " << lines_vertices.size() << std::endl;
         } 
 
 		if (currNode.node->camera) {
 			vec4 newCameraPos = {0, 0, 0, 1};
 
-			// vec3 camPos = currNode.node->translation;
 			newCameraPos = currNode.nodeTransform * newCameraPos;
 			
-
 			auto camPerspective = std::get< S72::Camera::Perspective > (currNode.node->camera->projection);
 
 			Camera newSceneCam {
@@ -4889,7 +4918,6 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 				.far = camPerspective.far,
 			};
 
-			// change this so that i can track the names of the cameras as well
 			scene_cameras[currNode.node->camera->name] = newSceneCam;
 
 			//std::cout << "finished cameras" << std::endl;

@@ -10,6 +10,7 @@
 
 #include "helperlibs/stb_image_lib/stb_image.h"
 
+
 struct Tutorial : RTG::Application {
 
 	Tutorial(RTG &);
@@ -337,6 +338,8 @@ struct Tutorial : RTG::Application {
 		std::string nodeName; // node that references the mesh
 		ObjectVertices vertices;
 		std::vector< LinesPipeline::Vertex > bbox_lines;
+		vec3 bbox_min;
+		vec3 bbox_max;
 
 		ObjectsPipeline::Transform transform;
 		uint32_t material = 0;
@@ -345,6 +348,7 @@ struct Tutorial : RTG::Application {
 		uint8_t texture_type = 0; // 1 is env, 2 is mirror, 0 is any else
 	};
 	std::vector< ObjectInstance > object_instances;
+	std::vector< ObjectInstance > post_culled_obj_instances; 
 	std::vector< ObjectInstance > user_object_instances;
 
 	std::vector< Obj_Material > obj_materials;
@@ -457,7 +461,6 @@ struct Tutorial : RTG::Application {
 
 	// used when camera_mode == CameraMode::Free or debug
 	struct Camera {
-		//TODO: check if its more intuitive to move the target, or to separate the target and user drawing point
 		vec3 target = vec3{0, 0, 0}; // where the camera is looking + orbiting
 		float radius = 2.0f; // distance from camera to target
 		float azimuth = 0.0f; // CCW angle around z axis between x axis and camera directon (radians)
@@ -467,6 +470,7 @@ struct Tutorial : RTG::Application {
 		vec4 position;
 		mat4 transform;
 
+		//TODO: honestly this is probably redundant? look into this later 
 		mat4 currClipFromWorld = identity_4x4();
 
 		float fov = 60.0f / 180.0f * float(M_PI); // vertical field of view (radians)
@@ -474,11 +478,12 @@ struct Tutorial : RTG::Application {
 		float aspect = 16.0f / 9.0f;
 		float far = 1000.0f; // far clipping plane
 	} free_camera, debug_camera, scene_camera;
+	//? eventually consolidate to one camera?
 
 	Camera currCamera;
 	Camera prevCamera;
 
-	void update_camera(Camera &camera);
+	void update_scene_camera(Camera &camera);
 
 	// struct SceneCamera {
 		
@@ -501,6 +506,7 @@ struct Tutorial : RTG::Application {
 	
 	// computed from the current camera (as set by camera_mode) during update() 
 	mat4 CLIP_FROM_WORLD = identity_4x4();
+	mat4 VIEW_FROM_WORLD = identity_4x4();
 
 	std::vector< LinesPipeline::Vertex > lines_vertices;
 
@@ -508,13 +514,14 @@ struct Tutorial : RTG::Application {
 	//Rendering function, uses all the resources above to queue work to draw a frame:
 
 	virtual void render(RTG &, RTG::RenderParams const &) override;
+	void show_window();
 
 	//--------------------------------------------------------------------
 	//Drawing Mode
 
 	bool drawMode = false;
 
-	float user_draw_depth_scale = 1.0f;
+	float user_draw_depth_scale = 0.0f;
 
 	std::vector< vec4 > near_clip_pts;
 	std::vector< vec4 > far_clip_pts;

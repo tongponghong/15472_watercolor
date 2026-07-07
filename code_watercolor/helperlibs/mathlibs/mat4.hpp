@@ -13,6 +13,14 @@
 using mat4 = std::array< float, 16 >;
 // using mat4 = glm::mat4;
 
+// struct mat4 {
+//     union {
+//         float data_array[16];
+
+//         glm::mat4 mat;
+//     };
+// };
+
 static_assert(sizeof(mat4) == 16 * 4, "mat4 is exactly 16 32-bit floats");
 
 //using vec4 = std::array < float, 4 >;
@@ -42,6 +50,10 @@ struct vec4 {
 
     float const& operator[](uint32_t index) const {
         return data_array[index];
+    }
+
+    vec3 xyz() const {
+        return vec3(x, y, z);
     }
 
 };
