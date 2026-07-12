@@ -2174,8 +2174,12 @@ void Tutorial::show_window() {
 	ImGuiIO &io = ImGui::GetIO();
 	ImGui::Begin("FPS counter");
 
+	vec3 cam_pos = get_eye(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
+
 	ImGui::Text("Frame time: %.3f \nFPS: %.1f", 1000.0f / io.Framerate, io.Framerate);
 	ImGui::TextWrapped("Number objects currently rendered: %zu", post_culled_obj_instances.size());
+	ImGui::TextWrapped("Camera position: %.3f, %.3f, %.3f", cam_pos.x, cam_pos.y, cam_pos.z);
+	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
 	ImGui::End();
 }
 
@@ -3615,7 +3619,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdCopyImage(
 			workspace.command_buffer,
 			// srcImage (change this to be watercolor or not)  srcImageLayout
-			final_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			offscreen_input_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			// dstImage                     dstImageLayout    
 			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
 			1, &region    
@@ -3646,8 +3650,6 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdBeginRenderPass (workspace.command_buffer, 
 			                  &begin_info, 
 			                  VK_SUBPASS_CONTENTS_INLINE);
-
-
 
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), workspace.command_buffer);
 
@@ -3929,7 +3931,7 @@ void Tutorial::update(float dt) {
 
 	lines_vertices.clear();
 
-	{ // cull some objects
+	{ // cull some objects- is it worth changing this to a hive eventually?
 		// TODO: cull objects 
 		post_culled_obj_instances.clear();
 
@@ -3980,7 +3982,7 @@ void Tutorial::update(float dt) {
 		std::vector< LinesPipeline::Vertex > indicator_vertices;
 
 		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
-
+		(void) worldFromClip;
 		mat4 freeCamFromWorld = orbit(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
 		mat4 worldFromFreeCam = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4(freeCamFromWorld)));
 		
@@ -3994,7 +3996,8 @@ void Tutorial::update(float dt) {
 										  	   currCamera.elevation, currCamera.radius);
 
 		vec3 user_target_offset = camera_dir * user_draw_depth_scale;
-
+		
+		//TODO: NOT CORRECTLY DRAWING THE LINES ONTO THE TARGET!!!
 		worldFromFreeCam[12] = currCamera.target.x + user_target_offset.x;
 		worldFromFreeCam[13] = currCamera.target.y + user_target_offset.y;
 		worldFromFreeCam[14] = currCamera.target.z + user_target_offset.z;
@@ -4571,18 +4574,35 @@ void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) {
 	vec4 WORLD_ray_start = curr_xform * curr_ray_start;
 	vec4 WORLD_ray_end = curr_xform * curr_ray_end;
 
+	if (WORLD_ray_start.w != 0.0f) {
+		WORLD_ray_start.x /= WORLD_ray_start.w;
+		WORLD_ray_start.y /= WORLD_ray_start.w;
+		WORLD_ray_start.z /= WORLD_ray_start.w;
+		WORLD_ray_start.w = 1.0f;
+	}
+
+	if (WORLD_ray_end.w != 0.0f) {
+		WORLD_ray_end.x /= WORLD_ray_end.w;
+		WORLD_ray_end.y /= WORLD_ray_end.w;
+		WORLD_ray_end.z /= WORLD_ray_end.w;
+		WORLD_ray_end.w = 1.0f;
+	}
+
 	vec4 ray_dir = WORLD_ray_end - WORLD_ray_start;
 
 	ray_dir = normalize(ray_dir);
-	
+
+	//TODO: the target and plane point are the same so the plane is not the issue, but the drawn lines are not correctly being placed on the plane?
+
 	vec4 plane_pt = vec4{currCamera.target + user_target_offset, 1.0f}; // change this so it can become adjustable (DO NOT change target bc could potentially mess up other stuff :sob)
-	std::cout << "Target: ________" << std::endl;
-	print_vector_3x1(currCamera.target);
-	std::cout << "plane_pt: ________" << std::endl;
-	print_vector_4x1(plane_pt);
+	// std::cout << "Target: ________" << std::endl;
+	// print_vector_3x1(currCamera.target);
+	// std::cout << "plane_pt: ________" << std::endl;
+	// print_vector_4x1(plane_pt);
 	// std::cout << "currCamera position: ___________" << std::endl;
 	// print_vector_4x1(currCamera.position);
 	// also draw in a little circle or something so user knows where they are drawing relative to screen
+	//? Might need to change this to camera dir?
 	vec4 plane_normal = normalize(ray_dir);
 
 	// float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);

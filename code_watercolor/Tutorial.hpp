@@ -252,7 +252,44 @@ struct Tutorial : RTG::Application {
 		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
 		void destroy (RTG &);
 	} style_pipeline;
+	
+	struct DrawPipeline {
+		// descriptor set layouts
+		// a descriptor is pointer to resource in GPU memory with a specific type
+		// for how the shader will use the memory chunk it points to
 
+		VkDescriptorSetLayout set0_Transforms = VK_NULL_HANDLE;
+		VkDescriptorSetLayout set1_BrushTex = VK_NULL_HANDLE;
+		// VkDescriptorSetLayout set2_TEXTURE_CUBE = VK_NULL_HANDLE;
+		// VkDescriptorSetLayout set2_TEXTURE_LAMB = VK_NULL_HANDLE;
+
+		// types for descriptors 
+
+		struct Transform {
+			mat4 CLIP_FROM_LOCAL;
+			mat4 WORLD_FROM_LOCAL;
+			mat4 WORLD_FROM_LOCAL_NORMAL;
+		};
+		static_assert(sizeof(Transform) == 16 * 4 + 16 * 4 + 16 * 4, "Transform is the expected size.");
+
+		// push constants
+		struct Push {
+			float time;
+			float near;
+    		float far;
+		};
+
+		VkPipelineLayout layout = VK_NULL_HANDLE;
+
+		// vertex bindings
+		
+		using Vertex = PosNorTanTexVertex;
+
+		VkPipeline handle = VK_NULL_HANDLE;
+
+		void create (RTG &, VkRenderPass render_pass, uint32_t subpass);
+		void destroy (RTG &);
+	} draw_pipeline;
 	//pools from which per-workspace things are allocated:
 	VkCommandPool command_pool = VK_NULL_HANDLE;
 	VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;

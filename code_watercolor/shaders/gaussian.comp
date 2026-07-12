@@ -37,24 +37,6 @@ float G(float x, float y, float stdev){
 
 //* can be split into horizontal/vertical as needed
 vec3 gaussianBlur(int x, int y){
-    //* create kernel
-    // float kernel[kernelSize * kernelSize]; 
-    // float sum = 0.0f;
-    // for (int i = 0; i < kernelSize; i++){
-    //     for (int j = 0; j < kernelSize; j++){
-    //         float g = G(i - halfSize, j - halfSize, stdev);
-    //         kernel[i * kernelSize + j] = g;
-    //         sum += g;
-    //     }
-    // }
-
-    // //* normalize
-    // for (int i = 0; i < kernelSize; i++){
-    //     for (int j = 0; j < kernelSize; j++){
-    //         kernel[i * kernelSize + j] /= sum;
-    //     }
-    // }
-
     // convolve
     ivec2 size = imageSize(inputImage);
     vec4 total = vec4(0.0);
@@ -119,3 +101,21 @@ void main(){
 
     imageStore(outputImage, texelCoord, vec4(blurred, 1.0));
 }
+
+    //* create kernel
+    // float kernel[kernelSize * kernelSize]; 
+    // float sum = 0.0f;
+    // for (int i = 0; i < kernelSize; i++){
+    //     for (int j = 0; j < kernelSize; j++){
+    //         float g = G(i - halfSize, j - halfSize, stdev);
+    //         kernel[i * kernelSize + j] = g;
+    //         sum += g;
+    //     }
+    // }
+
+    // //* normalize
+    // for (int i = 0; i < kernelSize; i++){
+    //     for (int j = 0; j < kernelSize; j++){
+    //         kernel[i * kernelSize + j] /= sum;
+    //     }
+    // }
