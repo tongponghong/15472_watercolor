@@ -2170,19 +2170,6 @@ void Tutorial::destroy_framebuffers() {
 	}
 }
 
-void Tutorial::show_window() {
-	ImGuiIO &io = ImGui::GetIO();
-	ImGui::Begin("FPS counter");
-
-	vec3 cam_pos = get_eye(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
-
-	ImGui::Text("Frame time: %.3f \nFPS: %.1f", 1000.0f / io.Framerate, io.Framerate);
-	ImGui::TextWrapped("Number objects currently rendered: %zu", post_culled_obj_instances.size());
-	ImGui::TextWrapped("Camera position: %.3f, %.3f, %.3f", cam_pos.x, cam_pos.y, cam_pos.z);
-	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
-	ImGui::End();
-}
-
 void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	// static std::unique_ptr< Timer > timer;
 	// timer.reset(new Timer([](double dt){
@@ -4089,7 +4076,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 				float currMouseY = 0.0f;
 				// vertical bars of width
 				if (currAspectRatio > camera_aspect) {
-					float width_diff = rtg.swapchain_extent.width - newWidth;
+					float width_diff = rtg.swapchain_extent.width / 2 - newWidth;
 					float scissorWidth = width_diff / 2.0f;
 				
 					//width = newWidth;
@@ -4105,17 +4092,18 @@ void Tutorial::on_input(InputEvent const &evt) {
 				
 				// horizontal bars of height 
 				else {
-					float height_diff = rtg.swapchain_extent.height - newHeight;
+					float height_diff = rtg.swapchain_extent.height / 2 - newHeight;
 					float scissorHeight = height_diff / 2.0f;
 			
 					//height = newHeight;
 					//y = scissorHeight;
-					//std::cout << scissorHeight << " scissorheight" << std::endl;
+					std::cout << scissorHeight << " scissorheight" << std::endl;
 					currMouseX = std::max(0.0f, evt.motion.x);
 					currMouseY = std::max(scissorHeight / 2, evt.motion.y);
 					
 					currMouseX = std::min(static_cast<float>(rtg.swapchain_extent.width / 2), currMouseX);
 					currMouseY = std::min(static_cast<float>(rtg.swapchain_extent.height / 2) - scissorHeight / 2, currMouseY);
+					std::cout << "mouseY: " << currMouseY << std::endl;
 				}
 				
 				// check for potential floating point issues on edges?
@@ -4126,7 +4114,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 				//std::cout << "currM: " << currMouseX << "|| " << currMouseY << std::endl;
 
 				//TODO: NEED TO FIX THIS BC ITS MAPPING INCORRECTLY BASED ON WIDTH AND HEIGHT 
-				//std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
+				std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
 				float NDC_x = (4.0f * currMouseX / rtg.swapchain_extent.width) - 1.0f;
 				float NDC_y = (4.0f * currMouseY / rtg.swapchain_extent.height) - 1.0f;
 				//float NDC_z = 1.0f;
@@ -4560,6 +4548,23 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 	}
 }
 
+void Tutorial::show_window() {
+	ImGuiIO &io = ImGui::GetIO();
+	ImGui::Begin("FPS counter");
+
+	vec3 cam_pos = get_eye(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
+
+	ImGui::Text("Frame time: %.3f \nFPS: %.1f", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::TextWrapped("Number objects currently rendered: %zu", post_culled_obj_instances.size());
+	ImGui::TextWrapped("Camera position: %.3f, %.3f, %.3f", cam_pos.x, cam_pos.y, cam_pos.z);
+	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
+
+	// if (ImGui::CollapsingHeader("Show Mouse coords", ImGuiTreeNodeFlags_None)) {
+	// 	ImGui::Text("Hello");
+	// } 
+	ImGui::End();
+}
+
 void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) { 
 	// figures out what the last vertex was in the buffer and duplicates it 
 	// then add the next point 
@@ -4574,6 +4579,7 @@ void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) {
 	vec4 WORLD_ray_start = curr_xform * curr_ray_start;
 	vec4 WORLD_ray_end = curr_xform * curr_ray_end;
 
+	// prevents issue of that all lines getting mapped to the near plane
 	if (WORLD_ray_start.w != 0.0f) {
 		WORLD_ray_start.x /= WORLD_ray_start.w;
 		WORLD_ray_start.y /= WORLD_ray_start.w;
@@ -4602,8 +4608,8 @@ void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) {
 	// std::cout << "currCamera position: ___________" << std::endl;
 	// print_vector_4x1(currCamera.position);
 	// also draw in a little circle or something so user knows where they are drawing relative to screen
-	//? Might need to change this to camera dir?
-	vec4 plane_normal = normalize(ray_dir);
+	vec3 cam_pos = get_eye(currCamera.target, currCamera.azimuth, currCamera.elevation, currCamera.radius);
+	vec4 plane_normal = normalize(vec4{cam_pos - currCamera.target, 1.0f});
 
 	// float distance = dot((plane_pt - WORLD_ray_start), plane_normal) / dot(ray_dir, plane_normal);
 	// vec4 world_point = WORLD_ray_start + ray_dir * distance;
