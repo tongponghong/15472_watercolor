@@ -2966,14 +2966,14 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 			// set scissor rectangle
 			//subset of screen that gets drawn to 
-			VkRect2D scissor {
+			actual_window = {
 				.offset = {.x = (viewport.x >= 0) ? int32_t(viewport.x) : 0, 
 					       .y = (viewport.y >= 0) ? int32_t(viewport.y) : 0},
 				.extent = {.width = uint32_t(viewport.width),
 				           .height = uint32_t(viewport.height)}, // ensures that it covers the whole swapchain img
 			};
 			// why does a vector here not work!!!
-			vkCmdSetScissor(workspace.command_buffer, 0, 1, &scissor);
+			vkCmdSetScissor(workspace.command_buffer, 0, 1, &actual_window);
 		}
 
 		{ // set a different box color
@@ -4062,64 +4062,29 @@ void Tutorial::on_input(InputEvent const &evt) {
 			if (evt.type == InputEvent::MouseMotion) {
 				// motion, normalized so 1.0 is window height
 				//std::cout << "x, y:" << evt.motion.x << ", " << evt.motion.y << std::endl;
-
-				// convert to NDC
-
-				float newWidth = camera_aspect * rtg.swapchain_extent.height;
-				//std::cout << newWidth << " <- this is the correct width" << std::endl;
-				float newHeight = rtg.swapchain_extent.width / camera_aspect;
-				//std::cout << newHeight << " <- this is the correct height" << std::endl;
-
-				float currAspectRatio = rtg.swapchain_extent.width / rtg.swapchain_extent.height;
 				
+				// convert to NDC
 				float currMouseX = 0.0f;
 				float currMouseY = 0.0f;
-				// vertical bars of width
-				if (currAspectRatio > camera_aspect) {
-					float width_diff = rtg.swapchain_extent.width / 2 - newWidth;
-					float scissorWidth = width_diff / 2.0f;
-				
-					//width = newWidth;
-					//std::cout << "scissor width " << scissorWidth << std::endl;
 
-					currMouseX = std::max(scissorWidth / 2, evt.motion.x);
-					currMouseY = std::max(0.0f, evt.motion.y);
+				currMouseX = std::max(static_cast<float>(actual_window.offset.x), evt.motion.x);
+				currMouseY = std::max(static_cast<float>(actual_window.offset.y), evt.motion.y);
 
-					currMouseX = std::min(static_cast<float>(rtg.swapchain_extent.width / 2) - scissorWidth / 2, currMouseX);
-					currMouseY = std::min(static_cast<float>(rtg.swapchain_extent.height / 2), currMouseY);
-					//x = scissorWidth;
-				}
-				
-				// horizontal bars of height 
-				else {
-					float height_diff = rtg.swapchain_extent.height / 2 - newHeight;
-					float scissorHeight = height_diff / 2.0f;
+				currMouseX = std::min(static_cast<float>(actual_window.offset.x + actual_window.extent.width),
+										currMouseX);
+				currMouseY = std::min(static_cast<float>(actual_window.offset.y + actual_window.extent.height), 
+										currMouseY);
 			
-					//height = newHeight;
-					//y = scissorHeight;
-					std::cout << scissorHeight << " scissorheight" << std::endl;
-					currMouseX = std::max(0.0f, evt.motion.x);
-					currMouseY = std::max(scissorHeight / 2, evt.motion.y);
-					
-					currMouseX = std::min(static_cast<float>(rtg.swapchain_extent.width / 2), currMouseX);
-					currMouseY = std::min(static_cast<float>(rtg.swapchain_extent.height / 2) - scissorHeight / 2, currMouseY);
-					std::cout << "mouseY: " << currMouseY << std::endl;
-				}
-				
 				// check for potential floating point issues on edges?
 				
-				
-
 				//std::cout << "evt: " << evt.motion.x << "|| " << evt.motion.y << std::endl;
 				//std::cout << "currM: " << currMouseX << "|| " << currMouseY << std::endl;
 
 				//TODO: NEED TO FIX THIS BC ITS MAPPING INCORRECTLY BASED ON WIDTH AND HEIGHT 
-				std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
-				float NDC_x = (4.0f * currMouseX / rtg.swapchain_extent.width) - 1.0f;
-				float NDC_y = (4.0f * currMouseY / rtg.swapchain_extent.height) - 1.0f;
-				//float NDC_z = 1.0f;
-				//NEED TO REFERENCE THE POINT THAT WAS BEHIND AS WELL (EACH LINE NEEDS A REDUNDANT VERTEX)
-
+				//std::cout << "W,H: " << rtg.swapchain_extent.width << rtg.swapchain_extent.height << std::endl;
+				float NDC_x = 2.0f * ((currMouseX - actual_window.offset.x) / actual_window.extent.width) - 1.0f;
+				float NDC_y = 2.0f * ((currMouseY - actual_window.offset.y) / actual_window.extent.height) - 1.0f;
+				
 				vec4 ray_start = vec4{NDC_x, NDC_y, 0.0f, 1.0f};
 				vec4 ray_end = vec4{NDC_x, NDC_y, 1.0f, 1.0f};
 				// mat4 currProj = perspective(currCamera.fov, currCamera.aspect, currCamera.near, currCamera.far);
@@ -4128,6 +4093,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 
 				//std::cout << "After xform: " << clip_pt[0] << "||" << clip_pt[1] << "||" << clip_pt[2] << "||" << clip_pt[3] << std::endl;
 
+				//? not sure if this is emplacing extra lines when hovering, might need to check this
 				near_clip_pts.emplace_back(ray_start);
 				far_clip_pts.emplace_back(ray_end);
 
@@ -4559,9 +4525,12 @@ void Tutorial::show_window() {
 	ImGui::TextWrapped("Camera position: %.3f, %.3f, %.3f", cam_pos.x, cam_pos.y, cam_pos.z);
 	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
 
-	// if (ImGui::CollapsingHeader("Show Mouse coords", ImGuiTreeNodeFlags_None)) {
-	// 	ImGui::Text("Hello");
-	// } 
+	if (ImGui::CollapsingHeader("Show Window stats", ImGuiTreeNodeFlags_None)) {
+		ImGui::Text("Actual window extent W: %u", actual_window.extent.width);
+		ImGui::Text("Actual window extent H: %u", actual_window.extent.height);
+		ImGui::Text("Actual window offset x: %d", actual_window.offset.x);
+		ImGui::Text("Actual window offset y: %d", actual_window.offset.y);
+	} 
 	ImGui::End();
 }
 

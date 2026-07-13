@@ -540,6 +540,7 @@ struct Tutorial : RTG::Application {
 	std::map< std::string, Camera > scene_cameras;
 	std::map< int32_t, std::string> map_camera_idxs_to_string;
 	float camera_aspect = 16.0f / 9.0f;
+	VkRect2D actual_window;
 	
 	// computed from the current camera (as set by camera_mode) during update() 
 	mat4 CLIP_FROM_WORLD = identity_4x4();

@@ -849,10 +849,25 @@ void RTG::destroy_swapchain() {
 	}
 }
 
+static void scale_mouse_coords(GLFWwindow *window, float *xpos, float *ypos) {
+	float xscale;
+	float yscale;
+	glfwGetWindowContentScale(window, &xscale, &yscale);
+
+	*xpos = (*xpos) * xscale;
+	*ypos = (*ypos) * yscale;
+}
+
 static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
 	std::vector< InputEvent > *event_queue = reinterpret_cast< std::vector< InputEvent > * >(glfwGetWindowUserPointer(window));
 	if (!event_queue) return;
 
+	float xposf = float(xpos);
+	float yposf = float(ypos);
+	
+	scale_mouse_coords(window, &xposf, &yposf);
+	// std::cout << "xscale: " << xscale << std::endl;
+	// std::cout << "yscale: " << yscale << std::endl;
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);
 
 	if (!ImGui::GetIO().WantCaptureMouse) {
@@ -860,8 +875,8 @@ static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
 		std::memset(&event, '\0', sizeof(event));
 
 		event.type = InputEvent::MouseMotion;
-		event.motion.x = float(xpos);
-		event.motion.y = float(ypos);
+		event.motion.x = xposf;
+		event.motion.y = yposf;
 		event.motion.state = 0;
 		for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
 			if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
@@ -894,8 +909,14 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		event.button.x = float(xpos);
-		event.button.y = float(ypos);
+
+		float xposf = float(xpos);
+		float yposf = float(ypos);
+		
+		scale_mouse_coords(window, &xposf, &yposf);
+
+		event.button.x = xposf;
+		event.button.y = yposf;
 		event.button.state = 0;
 		for (int b = 0; b < 8 && b < GLFW_MOUSE_BUTTON_LAST; ++b) {
 			if (glfwGetMouseButton(window, b) == GLFW_PRESS) {
