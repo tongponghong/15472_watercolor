@@ -3965,7 +3965,6 @@ void Tutorial::update(float dt) {
 	}
 
 	{ // make some drawings
-
 		std::vector< LinesPipeline::Vertex > indicator_vertices;
 
 		mat4 worldFromClip = convert_back_to_mymat4(glm::inverse(convert_to_glm_mat4((currCamera).currClipFromWorld)));
@@ -3996,8 +3995,7 @@ void Tutorial::update(float dt) {
 		lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
 
 		// updates the line so that the userDrawnVertices are correctly added to the array
-		draw_line(worldFromClip, user_target_offset);
-
+		if (DRAW_MOUSEDOWN) draw_line(worldFromClip, user_target_offset);
 		{ 
 			lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
 														user_drawn_points_WORLD.end());
@@ -4055,6 +4053,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 		action = [this](InputEvent const &evt) {
 			if (evt.type == InputEvent::MouseButtonUp && evt.button.button == GLFW_MOUSE_BUTTON_LEFT) {
 				// cancel upon button lifted:
+				DRAW_MOUSEDOWN = false;
 				action = nullptr;
 				return;
 			}
@@ -4062,7 +4061,7 @@ void Tutorial::on_input(InputEvent const &evt) {
 			if (evt.type == InputEvent::MouseMotion) {
 				// motion, normalized so 1.0 is window height
 				//std::cout << "x, y:" << evt.motion.x << ", " << evt.motion.y << std::endl;
-				
+				DRAW_MOUSEDOWN = true;
 				// convert to NDC
 				float currMouseX = 0.0f;
 				float currMouseY = 0.0f;
@@ -4524,7 +4523,8 @@ void Tutorial::show_window() {
 	ImGui::TextWrapped("Number objects currently rendered: %zu", post_culled_obj_instances.size());
 	ImGui::TextWrapped("Camera position: %.3f, %.3f, %.3f", cam_pos.x, cam_pos.y, cam_pos.z);
 	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
-
+	ImGui::Text("Number of line vertices: %zu", user_drawn_points_WORLD.size());
+	ImGui::Text("Draw_MouseDown: %d", DRAW_MOUSEDOWN);
 	if (ImGui::CollapsingHeader("Show Window stats", ImGuiTreeNodeFlags_None)) {
 		ImGui::Text("Actual window extent W: %u", actual_window.extent.width);
 		ImGui::Text("Actual window extent H: %u", actual_window.extent.height);
@@ -4624,10 +4624,27 @@ void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_bu
 		}
 
 		indicator_buff.emplace_back(PosColVertex {
-				.Position{.x = radius * std::cos(currRad), .y = radius * std::sin(currRad), .z = 0.5f},
+				.Position{.x = radius * std::cos(currRad), .y = radius * std::sin(currRad), .z = 0.0f},
 				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
 			});
 	}
+
+	indicator_buff.emplace_back(PosColVertex {
+		.Position{.x = 0.75f * -radius, .y = 0.0f, .z = 0.0f},
+		.Color = {.r = 0, .g = 0, .b = 255, .a = 255},
+	});
+	indicator_buff.emplace_back(PosColVertex {
+		.Position{.x = 0.75f * radius, .y = 0.0f, .z = 0.0f},
+		.Color = {.r = 0, .g = 0, .b = 255, .a = 255},
+	});
+	indicator_buff.emplace_back(PosColVertex {
+		.Position{.x = 0.0f, .y = 0.75f * -radius, .z = 0.0f},
+		.Color = {.r = 0, .g = 0, .b = 255, .a = 255},
+	});
+	indicator_buff.emplace_back(PosColVertex {
+		.Position{.x = 0.0f, .y = 0.75f * radius, .z = 0.0f},
+		.Color = {.r = 0, .g = 0, .b = 255, .a = 255},
+	});
 
 	for (auto &vertex : indicator_buff) {
 		vec4 currVecPos = vec4{vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f};

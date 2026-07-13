@@ -558,6 +558,7 @@ struct Tutorial : RTG::Application {
 	//Drawing Mode
 
 	bool drawMode = false;
+	bool DRAW_MOUSEDOWN = false;
 
 	float user_draw_depth_scale = 0.0f;
 
