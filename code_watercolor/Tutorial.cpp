@@ -5,6 +5,7 @@
 #include "helperlibs/timer.hpp"
 #include "helperlibs/rgb_decoders.hpp"
 #include "helperlibs/culling.hpp"
+#include "helperlibs/text_help.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "helperlibs/stb_image_lib/stb_image.h"
@@ -15,7 +16,6 @@
 #include "helperlibs/imgui/backends/imgui_impl_glfw.h"
 #include "helperlibs/imgui/backends/imgui_impl_vulkan.h"
 
-#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -365,16 +365,16 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			.Device = rtg.device,
 			.QueueFamily = rtg.graphics_queue_family.value(),
 			.Queue = rtg.graphics_queue,
-			.PipelineCache = rtg.pipeline_cache,
 			.DescriptorPool = VK_NULL_HANDLE,
 			.DescriptorPoolSize = 10, // idk just something more than 8 ig lol 
+			.MinImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
+			.ImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
+			.PipelineCache = rtg.pipeline_cache,
 			.PipelineInfoMain{
 				.RenderPass = ImGui_render_pass,
 				.Subpass = 0,
 				.MSAASamples = VK_SAMPLE_COUNT_1_BIT,
 			},
-			.MinImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
-			.ImageCount = static_cast<uint32_t>(rtg.swapchain_images.size()),
 		};
 
 		ImGui_ImplVulkan_Init(&init_info);
@@ -1584,9 +1584,6 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	{ // add in default lights 
 		if (rtg.scene.lights.empty()) {
 			sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-				.angle_w_pad{
-					.angle = 0.0f,
-				},
 				.SUN_DIRECTION{	
 					.x = 6.0f / 23.0f,
 					.y = 13.0f / 23.0f,
@@ -1596,7 +1593,10 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 					.r = 1.0f,
 					.g = 1.0f,
 					.b = 0.9f,
-				}
+				},
+				.angle_w_pad{
+					.angle = 0.0f,
+				},
 			});
 		}
 	}
@@ -2980,12 +2980,15 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 			VkClearAttachment clearAttachInfo {
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.colorAttachment = 0,
-				.clearValue.color = {{0.482, 0.49, 0.502, 1.0}},
+				.clearValue = {
+					.color = {{0.482, 0.49, 0.502, 1.0}},
+				}
 			};
 
 			VkClearRect clearRectInfo {
-				.rect = {.extent = rtg.swapchain_extent, 
-				         .offset = {.x = 0, .y = 0}},
+				.rect = {.offset = {.x = 0, .y = 0},
+						 .extent = rtg.swapchain_extent,
+						},
 				.baseArrayLayer = 0,
 				.layerCount = 1,
 			};
@@ -3995,18 +3998,12 @@ void Tutorial::update(float dt) {
 		lines_vertices.insert(lines_vertices.end(), indicator_vertices.begin(), indicator_vertices.end());
 
 		// updates the line so that the userDrawnVertices are correctly added to the array
-		if (DRAW_MOUSEDOWN) draw_line(worldFromClip, user_target_offset);
-		{ 
-			lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
-														user_drawn_points_WORLD.end());
-		}
+		if (DRAW_MOUSEDOWN) point_to_world(worldFromClip, user_target_offset);
+		
+		lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
+													user_drawn_points_WORLD.end());
 	}
 }
-
-// void cursorPositionCallback(GLFWwindow *window, double xpos, double ypos) {
-	
-// 		std::cout << "mouse cursor at: " << xpos << " ," << ypos << std::endl;
-// }
 
 void Tutorial::on_input(InputEvent const &evt) {
 	// maybe add a button press to add shapes to the scene?
@@ -4055,6 +4052,12 @@ void Tutorial::on_input(InputEvent const &evt) {
 				// cancel upon button lifted:
 				DRAW_MOUSEDOWN = false;
 				action = nullptr;
+				drawn_strokes_indices.insert(user_drawn_points_WORLD.size());
+				// // TODO: something about duplicating the point before letting go? otherwise line stays on screen connecting points
+				// if (!user_drawn_points_WORLD.empty()) {
+				// 	user_drawn_points_WORLD.emplace_back(user_drawn_points_WORLD.back());
+				// }
+
 				return;
 			}
 
@@ -4092,7 +4095,6 @@ void Tutorial::on_input(InputEvent const &evt) {
 
 				//std::cout << "After xform: " << clip_pt[0] << "||" << clip_pt[1] << "||" << clip_pt[2] << "||" << clip_pt[3] << std::endl;
 
-				//? not sure if this is emplacing extra lines when hovering, might need to check this
 				near_clip_pts.emplace_back(ray_start);
 				far_clip_pts.emplace_back(ray_end);
 
@@ -4525,6 +4527,8 @@ void Tutorial::show_window() {
 	ImGui::TextWrapped("Target position: %.3f, %.3f, %.3f", currCamera.target.x, currCamera.target.y, currCamera.target.z);
 	ImGui::Text("Number of line vertices: %zu", user_drawn_points_WORLD.size());
 	ImGui::Text("Draw_MouseDown: %d", DRAW_MOUSEDOWN);
+	
+	ImGui::Text("Set of indices: %s", range_to_string(drawn_strokes_indices).c_str());
 	if (ImGui::CollapsingHeader("Show Window stats", ImGuiTreeNodeFlags_None)) {
 		ImGui::Text("Actual window extent W: %u", actual_window.extent.width);
 		ImGui::Text("Actual window extent H: %u", actual_window.extent.height);
@@ -4534,7 +4538,7 @@ void Tutorial::show_window() {
 	ImGui::End();
 }
 
-void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) { 
+void Tutorial::point_to_world(mat4 curr_xform, vec3 user_target_offset) { 
 	// figures out what the last vertex was in the buffer and duplicates it 
 	// then add the next point 
 	// use draw_line to update the intermediate buffer, copy it into the main buffer back in Tutorial::update()
@@ -4588,10 +4592,6 @@ void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) {
 
 		vec4 world_point = WORLD_ray_start + ray_dir * distance;
 
-		if (user_drawn_points_WORLD.size() >= 2) {
-			user_drawn_points_WORLD.emplace_back(user_drawn_points_WORLD.back());
-		}
-
 		user_drawn_points_WORLD.emplace_back(LinesPipeline::Vertex{
 			.Position{
 				.x = world_point.x / world_point.w,
@@ -4606,6 +4606,14 @@ void Tutorial::draw_line(mat4 curr_xform, vec3 user_target_offset) {
 			}
 		});
 	}
+}
+
+void Tutorial::points_to_lines_buff() {
+	if (user_drawn_points_WORLD.size() >= 2) {
+		user_drawn_points_WORLD.emplace_back(user_drawn_points_WORLD.back());
+	}
+
+
 }
 
 void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform) {
@@ -4660,7 +4668,6 @@ void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_bu
 			vertex.Position.y = currVecPos[1];
 			vertex.Position.z = currVecPos[2];
 		}
-
 	}
 }
 
@@ -4686,9 +4693,6 @@ void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance 
 
 	if (sunlight_insts.empty()) {
 		sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-			.angle_w_pad{
-				.angle = 0.0f,
-			},
 			.SUN_DIRECTION{	
 				.x = 0.0,
 				.y = 0.0,
@@ -4698,7 +4702,10 @@ void Tutorial::traverse_scene(S72 &scene, std::vector< Tutorial::ObjectInstance 
 				.r = 0.0,
 				.g = 0.0,
 				.b = 0.0,
-			}
+			},
+			.angle_w_pad{
+				.angle = 0.0f,
+			},
 		});
 	}
 
@@ -4884,8 +4891,8 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 				.objName = currMesh->name,
 				.nodeName = currNode.node->name,
                 .vertices {
+					.first = static_cast<uint32_t>((currMesh->offset_in_static_buffer) / sizeof(PosNorTanTexVertex)),
                     .count = currMesh->count,
-                    .first = static_cast<uint32_t>((currMesh->offset_in_static_buffer) / sizeof(PosNorTanTexVertex)),
                 },
                 .transform{
                         .CLIP_FROM_LOCAL = mat4{}, 
@@ -4924,9 +4931,9 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 				.position = newCameraPos,
 				.transform = currNode.nodeTransform,
 
-				.aspect = camPerspective.aspect,
 				.fov = camPerspective.vfov,
 				.near = camPerspective.near,
+				.aspect = camPerspective.aspect,
 				.far = camPerspective.far,
 			};
 
@@ -4955,9 +4962,6 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 				//std::cout << "sun angle " << sunPtr->angle << std::endl;
 
 				sunlight_insts.emplace_back(ObjectsPipeline::Sun_Light{
-					.angle_w_pad{
-						.angle = (sunPtr->angle / 2.0f),
-					},
 					.SUN_DIRECTION{
 						.x = light[0],
 						.y = light[1],
@@ -4967,7 +4971,10 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 						.r = currNode.node->light->tint.r * sunPtr->strength,
 					    .g = currNode.node->light->tint.g * sunPtr->strength,
 				        .b = currNode.node->light->tint.b * sunPtr->strength,
-					}
+					},
+					.angle_w_pad{
+						.angle = (sunPtr->angle / 2.0f),
+					},
 				});
 			}
 

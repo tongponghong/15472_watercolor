@@ -10,7 +10,6 @@
 
 #include "helperlibs/stb_image_lib/stb_image.h"
 
-
 struct Tutorial : RTG::Application {
 
 	Tutorial(RTG &);
@@ -469,8 +468,8 @@ struct Tutorial : RTG::Application {
 
 	// change this later to be optimized
 	VkExtent2D shadowAtlasExtent {
-		.height = 4096,
 		.width = 4096,
+		.height = 4096,
 	};
 
 	Helpers::AllocatedImage shadow_atlas_image;
@@ -564,9 +563,13 @@ struct Tutorial : RTG::Application {
 
 	std::vector< vec4 > near_clip_pts;
 	std::vector< vec4 > far_clip_pts;
+	// not in GPU format yet 
 	std::vector< LinesPipeline::Vertex > user_drawn_points_WORLD; 
+	// contains the index of the LAST vertex added before the next stroke
+	std::set< uint32_t > drawn_strokes_indices;
 
-	void draw_line(mat4 curr_xform, vec3 user_target_offset);
+	void point_to_world(mat4 curr_xform, vec3 user_target_offset);
+	void points_to_lines_buff(std::vector< LinesPipeline::Vertex >& intermediate_lines_buff);
 	void draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform);
 };
 
