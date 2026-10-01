@@ -24,6 +24,8 @@ struct Tutorial : RTG::Application {
 
 	//chosen format for depth buffer:
 	VkFormat depth_format{};
+	// chosen format for the intermediate images
+	VkFormat compute_format{};
 	//Render passes describe how pipelines write to images:
 	VkRenderPass render_pass = VK_NULL_HANDLE;
 	VkRenderPass shadow_render_pass = VK_NULL_HANDLE;
@@ -569,7 +571,7 @@ struct Tutorial : RTG::Application {
 	std::set< uint32_t > drawn_strokes_indices;
 
 	void point_to_world(mat4 curr_xform, vec3 user_target_offset);
-	void points_to_lines_buff(std::vector< LinesPipeline::Vertex >& intermediate_lines_buff);
+	void points_to_lines_buff();
 	void draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_buff, mat4 curr_xform);
 };
 

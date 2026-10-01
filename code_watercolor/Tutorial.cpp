@@ -22,6 +22,8 @@
 #include <iostream>
 #include <fstream>
 #include <glm/glm/glm.hpp>
+#include <stack>
+#include <array> 
 
 Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 	// select a depth format, at least one of these two formats must be supported according to spec, but neither required
@@ -32,12 +34,21 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 
+	compute_format = rtg.helpers.find_image_format(
+		{VK_FORMAT_R8G8B8A8_UNORM}, 
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT | 
+		VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | 
+		VK_FORMAT_FEATURE_TRANSFER_SRC_BIT
+	);
+	
+
 	{ // create render pass
 		// attachments:
 		std::array< VkAttachmentDescription, 3 > attachments{
 			// output 1
 			VkAttachmentDescription{ // 0 - color attachment (format determined by output surface)
-				.format = rtg.surface_format.format,
+				.format = compute_format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				// how to load data before rendering
 				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -52,7 +63,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			},
 			// output 2 (control image)
 			VkAttachmentDescription{ // 1 - color attachment (format determined by output surface)
-				.format = rtg.surface_format.format,
+				.format = compute_format,
 				.samples = VK_SAMPLE_COUNT_1_BIT,
 				// how to load data before rendering
 				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -730,7 +741,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			
 			// make a place for the texture to live on the GPU 
 			cube_textures.emplace_back(rtg.helpers.create_image(
-				VkExtent2D{ .width = (uint) 16, .height = (uint) 16*6}, // size of image
+				VkExtent2D{ .width = (uint32_t) 16, .height = (uint32_t) 16*6}, // size of image
 				VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, // how to interpret image data 
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -782,7 +793,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				
 				if (texture.second.format == S72::Texture::Format::srgb){
 					textures_in_use.emplace_back(rtg.helpers.create_image(
-						VkExtent2D{ .width = (uint) tex_img_width, .height = (uint) tex_img_height}, // size of image
+						VkExtent2D{ .width = (uint32_t) tex_img_width, .height = (uint32_t) tex_img_height}, // size of image
 						VK_FORMAT_R8G8B8A8_SRGB, // how to interpret image data (in this case, SRGB-encoded 8-bit RGBA)
 						VK_IMAGE_TILING_OPTIMAL,
 						VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -797,7 +808,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 				
 				else if (texture.second.format == S72::Texture::Format::linear) {
 					textures_in_use.emplace_back(rtg.helpers.create_image(
-						VkExtent2D{ .width = (uint) tex_img_width, .height = (uint) tex_img_height}, // size of image
+						VkExtent2D{ .width = (uint32_t) tex_img_width, .height = (uint32_t) tex_img_height}, // size of image
 						VK_FORMAT_R8G8B8A8_UNORM, // how to interpret image data (in this case, Linear-encoded 8-bit RGBA)
 						VK_IMAGE_TILING_OPTIMAL,
 						VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -849,7 +860,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 					}
 					//std::cout << "oops" << std::endl;
 					cube_textures.emplace_back(rtg.helpers.create_image(
-						VkExtent2D{ .width = (uint) tex_img_width, .height = (uint) tex_img_height}, // size of image
+						VkExtent2D{ .width = (uint32_t) tex_img_width, .height = (uint32_t) tex_img_height}, // size of image
 						VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, // how to interpret image data 
 						VK_IMAGE_TILING_OPTIMAL,
 						VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -1065,7 +1076,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			}
 			//std::cout << "oops" << std::endl;
 			lambertian_lookup_tex.emplace_back(rtg.helpers.create_image(
-				VkExtent2D{ .width = (uint) tex_img_width, .height = (uint) tex_img_height}, // size of image
+				VkExtent2D{ .width = (uint32_t) tex_img_width, .height = (uint32_t) tex_img_height}, // size of image
 				VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, // how to interpret image data 
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -1095,7 +1106,7 @@ Tutorial::Tutorial(RTG &rtg_) : rtg(rtg_) {
 			
 			// make a place for the texture to live on the GPU 
 			lambertian_lookup_tex.emplace_back(rtg.helpers.create_image(
-				VkExtent2D{ .width = (uint) 16, .height = (uint) 16*6}, // size of image
+				VkExtent2D{ .width = (uint32_t) 16, .height = (uint32_t) 16*6}, // size of image
 				VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, // how to interpret image data 
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload
@@ -1886,7 +1897,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	// this is where the image first goes to get blurred
 	offscreen_input_image = rtg.helpers.create_image(
 		swapchain.extent,
-		rtg.surface_format.format,
+		compute_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		// render pass | compute pass
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
@@ -1897,7 +1908,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	// output of the blur shader 
 	blurred_offscreen_image = rtg.helpers.create_image(
 		swapchain.extent,
-		rtg.surface_format.format,
+		compute_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		// compute pass | back to graphics 
 		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
@@ -1908,7 +1919,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	// output of the bleed shader 
 	bleeded_offscreen_image = rtg.helpers.create_image(
 		swapchain.extent,
-		rtg.surface_format.format,
+		compute_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		// compute pass | back to graphics 
 		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
@@ -1918,7 +1929,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 
 	ctrl_image = rtg.helpers.create_image(
 		swapchain.extent,
-		rtg.surface_format.format,
+		compute_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		// render pass | compute pass
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
@@ -1929,7 +1940,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 	// output of the final shader 
 	final_image = rtg.helpers.create_image(
 		swapchain.extent,
-		rtg.surface_format.format,
+		compute_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		// compute pass | back to graphics 
 		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
@@ -1960,7 +1971,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = offscreen_input_image.handle,
 			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = rtg.surface_format.format,
+			.format = compute_format,
 			.subresourceRange{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.baseMipLevel = 0,
@@ -1978,7 +1989,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = blurred_offscreen_image.handle,
 			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = rtg.surface_format.format,
+			.format = compute_format,
 			.subresourceRange{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.baseMipLevel = 0,
@@ -1996,7 +2007,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = bleeded_offscreen_image.handle,
 			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = rtg.surface_format.format,
+			.format = compute_format,
 			.subresourceRange{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.baseMipLevel = 0,
@@ -2014,7 +2025,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = ctrl_image.handle,
 			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = rtg.surface_format.format,
+			.format = compute_format,
 			.subresourceRange{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.baseMipLevel = 0,
@@ -2032,7 +2043,7 @@ void Tutorial::on_swapchain(RTG &rtg_, RTG::SwapchainEvent const &swapchain) {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = final_image.handle,
 			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = rtg.surface_format.format,
+			.format = compute_format,
 			.subresourceRange{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.baseMipLevel = 0,
@@ -2897,8 +2908,8 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 
 	{ //* render pass part 
 		std::array< VkClearValue, 3 > clear_values {
-			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
-			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
+			VkClearValue{ .color{ .float32{0.2f, 0.5f, 1.0f, 0.8f}}},
+			VkClearValue{ .color{ .float32{0.2f, 0.5f, 1.0f, 0.8f}}},
 			VkClearValue{ .depthStencil { .depth = 1.0f, .stencil = 0}},
 		};
 
@@ -2981,7 +2992,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.colorAttachment = 0,
 				.clearValue = {
-					.color = {{0.482, 0.49, 0.502, 1.0}},
+					.color = {{0.482f, 0.49f, 0.502f, 1.0f}},
 				}
 			};
 
@@ -3609,7 +3620,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 		vkCmdCopyImage(
 			workspace.command_buffer,
 			// srcImage (change this to be watercolor or not)  srcImageLayout
-			offscreen_input_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			final_image.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			// dstImage                     dstImageLayout    
 			rtg.swapchain_images[render_params.image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,  
 			1, &region    
@@ -3619,7 +3630,7 @@ void Tutorial::render(RTG &rtg_, RTG::RenderParams const &render_params) {
 	{ //* ImGui render pass!
 
 		std::array< VkClearValue, 1 > clear_values {
-			VkClearValue{ .color{ .float32{0.2, 0.5f, 1.0f, 0.8f}}},
+			VkClearValue{ .color{ .float32{0.2f, 0.5f, 1.0f, 0.8f}}},
 		};
 
 		VkRenderPassBeginInfo begin_info {
@@ -4109,12 +4120,12 @@ void Tutorial::on_input(InputEvent const &evt) {
 
 	// change exposure 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_RIGHT_BRACKET) {
-		rtg.exposure += 0.2;
+		rtg.exposure += 0.2f;
 		return;
 	}
 
 	if (evt.type == InputEvent::KeyDown && evt.key.key == GLFW_KEY_LEFT_BRACKET) {
-		rtg.exposure -= 0.2;
+		rtg.exposure -= 0.2f;
 		return;
 	}
 	
@@ -4397,103 +4408,103 @@ void Tutorial::draw_bbox(std::vector< LinesPipeline::Vertex > &lines_buff, vec3 
 	// first square 
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 
     // second square 
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 
 	// lines in between
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1], .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0] + box_width, .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2]},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	lines_buff.emplace_back(PosColVertex {
 				.Position{.x = box_min[0], .y = box_min[1] + box_height, .z = box_min[2] + box_depth},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 		
 	for (auto &vertex : lines_buff) {
@@ -4633,7 +4644,7 @@ void Tutorial::draw_indicator(std::vector< LinesPipeline::Vertex > &indicator_bu
 
 		indicator_buff.emplace_back(PosColVertex {
 				.Position{.x = radius * std::cos(currRad), .y = radius * std::sin(currRad), .z = 0.0f},
-				.Color = {.r = u_char(color[0]), .g = u_char(color[1]), .b = u_char(color[2]), .a = u_char(color[3])},
+				.Color = {.r = uint8_t(color[0]), .g = uint8_t(color[1]), .b = uint8_t(color[2]), .a = uint8_t(color[3])},
 			});
 	}
 
@@ -5121,7 +5132,7 @@ void Tutorial::traverse_root(S72::Node *root, std::vector< ObjectInstance > &sce
 	// 		}
 			
 	// 		cube_textures.emplace_back(rtg.helpers.create_image(
-	// 			VkExtent2D{ .width = (uint) tex_img_width, .height = (uint) tex_img_height}, // size of image
+	// 			VkExtent2D{ .width = (uint32_t) tex_img_width, .height = (uint32_t) tex_img_height}, // size of image
 	// 			VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, // how to interpret image data 
 	// 			VK_IMAGE_TILING_OPTIMAL,
 	// 			VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, // will sample and upload

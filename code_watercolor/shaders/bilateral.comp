@@ -16,11 +16,11 @@ layout(push_constant) uniform Push {
 
 
 layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding=0) readonly uniform image2D Ii; // color image
-layout(binding=1) uniform image2D Ci; // control image
+layout(rgba8, binding=0) readonly uniform image2D Ii; // color image
+layout(rgba8, binding=1) uniform image2D Ci; // control image
 layout(binding=2) uniform sampler2D Zi; // depth image
 
-layout(binding=3) uniform image2D Bi; // bleed image
+layout(rgba8, binding=3) uniform image2D Bi; // bleed image
 
 
 //* paper uses kernel size 21 with stdev 20

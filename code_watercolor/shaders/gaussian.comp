@@ -8,8 +8,8 @@
 #extension GL_EXT_shader_image_load_formatted : require
 
 layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding=0) readonly uniform image2D inputImage;
-layout(binding=1) writeonly uniform image2D outputImage;
+layout(rgba8, binding=0) readonly uniform image2D inputImage;
+layout(rgba8, binding=1) writeonly uniform image2D outputImage;
 
 
 const float PI = 3.1415926535897932384626433832795;

@@ -164,8 +164,16 @@ function custom_flags_and_rules() {
 			'/wd4100', //unused formal parameter
 			'/wd4201', //nameless struct/union
 			'/wd4146', //-1U is unsigned
+			'/wd4267', //size_t -> uint32_t narrowing
+			'/wd4244', //double -> float narrowing
+			'/wd4456', //declaration hides previous local
 			`/I${VULKAN_SDK}/Include`,
 			`/I../glfw-3.4.bin.WIN64/include`,
+			`/Ihelperlibs`,
+			`/Ihelperlibs/imgui`,
+			`/Ihelperlibs/mathlibs`,
+			`/I.`,
+
 		];
 
 		maek.options.LINKLibs = [

@@ -1,5 +1,6 @@
 {
     "files.exclude": {
      "**/.git": false
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/Tunger/Documents/vsc15362/TungerVulkan_15472/15472_watercolor/code_watercolor/helperlibs/glm"
 }
