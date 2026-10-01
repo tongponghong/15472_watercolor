@@ -4010,9 +4010,11 @@ void Tutorial::update(float dt) {
 
 		// updates the line so that the userDrawnVertices are correctly added to the array
 		if (DRAW_MOUSEDOWN) point_to_world(worldFromClip, user_target_offset);
-		
-		lines_vertices.insert(lines_vertices.end(), user_drawn_points_WORLD.begin(), 
-													user_drawn_points_WORLD.end());
+		std::vector< LinesPipeline::Vertex >& intermediate_lines_buff;
+		points_to_lines_buff(intermediate_lines_buff);
+
+		lines_vertices.insert(lines_vertices.end(), intermediate_lines_buff.begin(), 
+													intermediate_lines_buff.end());
 	}
 }
 
@@ -4550,8 +4552,7 @@ void Tutorial::show_window() {
 }
 
 void Tutorial::point_to_world(mat4 curr_xform, vec3 user_target_offset) { 
-	// figures out what the last vertex was in the buffer and duplicates it 
-	// then add the next point 
+	// changes all user defined points to be projected into world space 
 	// use draw_line to update the intermediate buffer, copy it into the main buffer back in Tutorial::update()
 
 	if (near_clip_pts.empty() || far_clip_pts.empty()) return;
@@ -4619,7 +4620,7 @@ void Tutorial::point_to_world(mat4 curr_xform, vec3 user_target_offset) {
 	}
 }
 
-void Tutorial::points_to_lines_buff() {
+void Tutorial::points_to_lines_buff(std::vector< LinesPipeline::Vertex >& intermediate_lines_buff) {
 	if (user_drawn_points_WORLD.size() >= 2) {
 		user_drawn_points_WORLD.emplace_back(user_drawn_points_WORLD.back());
 	}
